@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
 import networkx as nx
+from operator import itemgetter
 
 # params = {
 #         'axes.labelsize':28,
@@ -20,14 +21,16 @@ import networkx as nx
 # plt.rcParams.update(params)
 
 area = 1
-density = 200
+density = 50
 
 no_points = np.random.poisson(density * area)
 
 xx = np.random.uniform(0,1,((no_points, 1)))
 yy = np.random.uniform(0,1,((no_points, 1)))
 xy_prime = np.concatenate([xx,yy], axis = 1)
-xy = np.concatenate([np.array([[0,0],[1,1]]), xy_prime])
+xy_unsorted = np.concatenate([np.array([[0,0],[1,1]]), xy_prime])
+xy = sorted(xy_unsorted, key = itemgetter(0))
+
 
 # plt.scatter(xx,yy)
 #node 0 has coordinates xy[0]
@@ -35,7 +38,7 @@ xy = np.concatenate([np.array([[0,0],[1,1]]), xy_prime])
 #%%
 all_new_edges = []
 
-R = 0.1
+R = 0.3
 for u in range(no_points):
     u_coord = xy[u]
     new_xy = xy - u_coord
@@ -55,8 +58,11 @@ nx.draw_networkx_edges(G, pos, ax = ax )
 ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
 #%%
 
-paths = nx.all_simple_paths(G, 3, 5)
-print(list(paths))
+paths = list(nx.all_simple_paths(G, 0, 1))
+path_length_network = [len(v) for v in paths]
+min_path_length = min(path_length_network)
+max_path_length = max(path_length_network)
+shortest_path = [paths[p] for p in range(len(paths)) if path_length_network[p] == min_path_length]
 
 
 
