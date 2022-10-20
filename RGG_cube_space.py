@@ -4,7 +4,7 @@ Created on Mon Oct 10 10:55:15 2022
 
 @author: kevin
 """
-
+#%%
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
@@ -48,18 +48,23 @@ def distance_check(v):
         return False
     
 # R = 0.14
+net_dict = {}
 for u in range(no_points+2):
     u_coord = xy[u]
     new_xy = xy - u_coord
     # edge_connection = [v for v in range(no_points+2) 
     #                    if new_xy[v,0] < R and new_xy[v,0] > 0 # turn this into a function
     #                    and new_xy[v,1] < R and new_xy[v,1] > 0]
+    
+    candidate_points = new_xy[u:]
     edge_connection = [v for v in range(no_points+2)
                        if distance_check(new_xy[v]) == True]
     new_edges = [(u,v) for v in edge_connection]
     for i in new_edges:
         all_new_edges.append(i)
-        
+    
+    net_dict[u] = [v for v in edge_connection]
+
 G = nx.DiGraph()
 G.add_edges_from(all_new_edges)
 pos = xy
@@ -95,9 +100,27 @@ ax.set_xlim(-0.01,1.01)
 ax.set_ylim(-0.01,1.01)
 plt.show()
 
+#%%
+#IMPLEMENT BFS ALGORITHM
+def bfs(graph, node):
+  queue = []     #Initialize a queue
+  visited = [] # List to keep track of visited nodes.
+  bfs_path = []
+  visited.append(node)
+  queue.append(node)
 
+  while queue:
+    s = queue.pop(0) 
+    #print(s, end = " ")
+    bfs_path.append(s) 
 
+    for neighbour in graph[s]:
+      if neighbour not in visited:
+        visited.append(neighbour)
+   
+        queue.append(neighbour)
+  
+  return(bfs_path) 
 
-
-
-
+#RUN
+bfs(net_dict, 0)
