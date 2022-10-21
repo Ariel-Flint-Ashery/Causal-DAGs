@@ -105,7 +105,7 @@ plt.show()
 def bfs(graph, node):
   queue = []     #Initialize a queue
   visited = [] # List to keep track of visited nodes.
-  bfs_path = []
+  bfs_path = [] #shortest path
   visited.append(node)
   queue.append(node)
 
@@ -120,7 +120,35 @@ def bfs(graph, node):
    
         queue.append(neighbour)
   
-  return(bfs_path) 
-
+  return bfs_path 
+#%%
 #RUN
-bfs(net_dict, 0)
+bfs_test = bfs(net_dict, 0)
+print(len(bfs_test))
+#%%
+#TOPOLOGICAL SORT USING BFS & KAHN'S ALGORITHM
+
+#create list of 'source' nodes (i.e. nodes with no incoming edges)
+#find list of all nodes that have incoming edges
+#connection_list = sorted({x for v in net_dict.values() for x in v})
+#ele for ele in range(max(test_list)+1) if ele not in test_list
+#S = [ele for ele in list(net_dict.keys()) if ele not in connection_list] #Set of all nodes with no incoming edge
+#L = [] #list that will contain sorted elements
+
+def kahn_sort(graph):
+  connection_list = sorted({x for v in net_dict.values() for x in v})
+  S = [ele for ele in list(graph.keys()) if ele not in connection_list]
+  G = graph.copy()
+  L = []
+  while S: #while S is not empty, will return True
+    n = S.pop(0)
+    L.append(n)
+
+    for m in G[n]:
+      G[n].remove(m)
+      if m not in sorted({x for v in G.values() for x in v}):
+        S.append(m)
+    
+    return L
+
+# %%
