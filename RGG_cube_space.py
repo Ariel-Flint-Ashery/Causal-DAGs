@@ -4,7 +4,7 @@ Created on Mon Oct 10 10:55:15 2022
 
 @author: kevin
 """
-#%%
+
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
@@ -21,7 +21,7 @@ params = {
 plt.rcParams.update(params)
 
 area = 1
-density = 200
+density = 50
 
 no_points = np.random.poisson(density * area)
 
@@ -40,7 +40,7 @@ all_new_edges = []
 
 def distance_check(v):
     p = 2
-    R = 0.15
+    R = 0.3
     distance = (np.abs(v[0])**p + np.abs(v[1])**p)**(1/p)
     if distance < R and v[0]> 0 and v[1] > 0:
         return True
@@ -48,23 +48,18 @@ def distance_check(v):
         return False
     
 # R = 0.14
-net_dict = {}
 for u in range(no_points+2):
     u_coord = xy[u]
     new_xy = xy - u_coord
     # edge_connection = [v for v in range(no_points+2) 
     #                    if new_xy[v,0] < R and new_xy[v,0] > 0 # turn this into a function
     #                    and new_xy[v,1] < R and new_xy[v,1] > 0]
-    
-    candidate_points = new_xy[u:]
     edge_connection = [v for v in range(no_points+2)
                        if distance_check(new_xy[v]) == True]
     new_edges = [(u,v) for v in edge_connection]
     for i in new_edges:
         all_new_edges.append(i)
-    
-    net_dict[u] = [v for v in edge_connection]
-
+        
 G = nx.DiGraph()
 G.add_edges_from(all_new_edges)
 pos = xy
@@ -123,8 +118,9 @@ def bfs(graph, node):
   return bfs_path 
 #%%
 #RUN
+net_dict = {k:list(v) for k, v in G.adjacency()}
 bfs_test = bfs(net_dict, 0)
-print(len(bfs_test))
+# print(len(bfs_test))
 #%%
 #TOPOLOGICAL SORT USING BFS & KAHN'S ALGORITHM
 
@@ -151,4 +147,51 @@ def kahn_sort(graph):
     
     return L
 
-# %%
+
+#%%
+def bfs_3(graph):
+    """
+    Breadth first search from source to target
+        Source is specifically node 0
+        Target is specifically the last node in the network
+            Note: The network must be sorted in a way that the source node has
+                  no incoming edge and the target has no outgoing edges.
+    
+    Input:
+        Graph represented as an adjacency list in the form of a python dictionary
+        e.g {0: [1, 2, 3],
+             1: [2, 3],
+             2: [4, 6]
+             ...}
+    
+    Output:
+        Yields a generator listing all paths from the source to the target
+    """
+    source = 0 
+    target = {len(graph) - 1}
+    
+    visited = dict.fromkeys([source]) 
+    queue = [(v for v in G[source])] # list containing iterable generators which are the children of the node
+    
+    while queue:
+        children = queue[-1] # picks out last iterable generator in the queue list  
+        child = next(children, None) # generates the first child
+        if child is None: # if there are no more child, remove the current generator from the queue
+            queue.pop()
+            visited.popitem()
+        else:
+            if child in visited: # if the child has been visited before, do nothing
+                continue
+            if child in target: # if the child is the target not, yield the entire path from source to target
+                yield list(visited) + [child]
+            visited[child] = None # record the child as a visited node
+            if target - set(visited.keys()): # if the target is not yet visited, add the children of this child to the queue
+                queue.append((v for v in G[child]))
+            else: # if the target is visited, remove it from the visited nodes so we don't prematurely stop searching
+                visited.popitem()
+
+#%%
+paths = bfs_3(net_dict)
+for i in paths:
+    print(i)
+    
