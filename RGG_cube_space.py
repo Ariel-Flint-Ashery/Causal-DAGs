@@ -171,7 +171,7 @@ def bfs_3(graph):
     target = {len(graph) - 1}
     
     visited = dict.fromkeys([source]) 
-    queue = [(v for v in G[source])] # list containing iterable generators which are the children of the node
+    queue = [iter(G[source])] # list containing iterable generators which are the children of the node
     
     while queue:
         children = queue[-1] # picks out last iterable generator in the queue list  
@@ -186,7 +186,7 @@ def bfs_3(graph):
                 yield list(visited) + [child]
             visited[child] = None # record the child as a visited node
             if target - set(visited.keys()): # if the target is not yet visited, add the children of this child to the queue
-                queue.append((v for v in G[child]))
+                queue.append(iter(G[child]))
             else: # if the target is visited, remove it from the visited nodes so we don't prematurely stop searching
                 visited.popitem()
 
