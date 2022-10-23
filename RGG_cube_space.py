@@ -194,4 +194,70 @@ def bfs_3(graph):
 paths = bfs_3(net_dict)
 for i in paths:
     print(i)
+
+def bfs_4(G, target):
+    """
+    Breadth first search from source to target
+        Source is specifically node 0
+        Target is specifically the last node in the network
+            Note: The network must be sorted in a way that the source node has
+                  no incoming edge and the target has no outgoing edges.
     
+    Input:
+        Graph represented as an adjacency list in the form of a python dictionary
+        e.g {0: [1, 2, 3],
+             1: [2, 3],
+             2: [4, 6]
+             ...}
+    
+    Output:
+        Yields a generator listing all paths from the source to the target
+    """
+    target = {target}
+    
+    visited = dict.fromkeys([0]) 
+    queue = [iter(G[0])]
+    
+    d_min = None # index tracker for the shortest path length
+    d_max = 0 # index tracker for the longest path length
+    
+    shortest_paths = []
+    longest_paths = []
+    
+    while queue:
+        children = queue[-1] # picks out last iterable generator in the queue list  
+        child = next(children, None) # generates the first child
+        if child is None: # if there are no more child, remove the current generator from the queue
+            queue.pop()
+            visited.popitem()
+        else:
+            if child in visited: # if the child has been visited before, do nothing
+                continue
+            if child in target: # if the child is the target, yield the entire path from source to target
+                distance = len(visited) # dstance = number of nodes visited (not including the child)
+                
+                if distance >= d_max: 
+                    if distance > d_max: # if the distance is larger than d_max, update d_max and forget the previous list of longest paths
+                        longest_paths = []
+                        d_max = distance
+                    longest_paths.append(list(visited) + [child]) 
+                
+                elif d_min is None: # initial d_min must have some value (maybe there is a better way to initialise this?)
+                    d_min = distance 
+                    shortest_paths.append(list(visited) + [child])
+                
+                elif distance <= d_min:
+                    if distance < d_min: # if the distance is less than d_min, update d_min and forget the previous list of shortest paths
+                        shortest_paths = []
+                        d_min = distance
+                    shortest_paths.append(list(visited) + [child])
+                
+                
+            visited[child] = None # record the child as a visited node
+            if target - set(visited.keys()): # if the target is not yet visited, add the children of this child to the queue
+                queue.append(iter(G[child]))
+            else: # if the target is visited, remove it from the visited nodes so we don't prematurely stop searching
+                visited.popitem()
+    yield shortest_paths
+    yield longest_paths
+
