@@ -98,24 +98,24 @@ plt.show()
 #%%
 #IMPLEMENT BFS ALGORITHM
 def bfs(graph, node):
-  queue = []     #Initialize a queue
-  visited = [] # List to keep track of visited nodes.
-  bfs_path = [] #shortest path
-  visited.append(node)
-  queue.append(node)
+    queue = []     #Initialize a queue
+    visited = [] # List to keep track of visited nodes.
+    bfs_path = [] #shortest path
+    visited.append(node)
+    queue.append(node)
 
-  while queue:
-    s = queue.pop(0) 
-    #print(s, end = " ")
-    bfs_path.append(s) 
+    while queue:
+        s = queue.pop(0) 
+        #print(s, end = " ")
+        bfs_path.append(s) 
 
-    for neighbour in graph[s]:
-      if neighbour not in visited:
-        visited.append(neighbour)
-   
-        queue.append(neighbour)
-  
-  return bfs_path 
+        for neighbour in graph[s]:
+            if neighbour not in visited:
+                visited.append(neighbour)
+    
+            queue.append(neighbour)
+    
+    return bfs_path 
 #%%
 #RUN
 net_dict = {k:list(v) for k, v in G.adjacency()}
@@ -132,18 +132,19 @@ bfs_test = bfs(net_dict, 0)
 #L = [] #list that will contain sorted elements
 
 def kahn_sort(graph):
-  connection_list = sorted({x for v in net_dict.values() for x in v})
-  S = [ele for ele in list(graph.keys()) if ele not in connection_list]
-  G = graph.copy()
-  L = []
-  while S: #while S is not empty, will return True
-    n = S.pop(0)
-    L.append(n)
 
-    for m in G[n]:
-      G[n].remove(m)
-      if m not in sorted({x for v in G.values() for x in v}):
-        S.append(m)
+    connection_list = sorted({x for v in graph.values() for x in v})
+    S = [ele for ele in list(graph.keys()) if ele not in connection_list]
+    G = graph.copy()
+    L = []
+    while S: #while S is not empty, will return True
+        n = S.pop(0)
+        L.append(n)
+
+        for m in G[n]:
+            G[n].remove(m)
+            if m not in sorted({x for v in G.values() for x in v}):
+                S.append(m)
     
     return L
 
@@ -261,3 +262,20 @@ def bfs_4(G, target):
     yield shortest_paths
     yield longest_paths
 
+#%%
+
+#DEFINE PERCOLATION FUNCTION
+"""
+PSEUDOCODE FOR BINARY SEARCH PERCOLATION
+
+Start from R = 1, down to R = 0.
+RH = 1, RL = 0
+set R = 1 #or RH.copy() ?
+if BFS(R) == True: #path exists i.e. Graph is connected.
+	RH = R
+	R = RH - (RH-RL)/2
+if BFS(R) == False: #we have reached a point of no connection
+	RL = R
+	R = RL + (RH - RL)/2
+iterate until RL == RH
+"""
