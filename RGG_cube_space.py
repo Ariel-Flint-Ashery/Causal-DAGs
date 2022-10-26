@@ -262,6 +262,49 @@ def bfs_4(G, target):
     yield shortest_paths
     yield longest_paths
 
+def bfs_percolating(G, target):
+    """
+    Breadth first search through a network for a path from source to target.
+    Existence of a path means that the system is percolating.
+    
+    Input:
+        G: Graph represented as an adjacency list in the form of a python dictionary
+        e.g {0: [1, 2, 3],
+             1: [2, 3],
+             2: [4, 6]
+             ...}
+        
+     Output:
+         True if a path exists between the source and target
+         False if a path does not exist between the source and target
+    """
+     
+    if 0 not in G: # Checks if the initial source even has connections to other nodes
+        return False
+    
+    target = {target}
+    
+    visited = dict.fromkeys([0])
+    queue = [iter(G[0])]
+
+    
+    while queue: 
+        children = queue[-1]
+        child = next(children, None)
+        if child is None:
+            queue.pop()
+            visited.popitem()
+        else:
+            if child in visited:
+                continue
+            if child in target:
+                return True # Returns true the moment the first path is found
+            visited[child] = None
+            if target - set(visited.keys()):
+                queue.append(iter(G[child]))
+            else:
+                visited.popitem()
+    return False # Returns false only if the while queue loop terminates, which indicates no path is found
 #%%
 
 #DEFINE PERCOLATION FUNCTION
