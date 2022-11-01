@@ -2,11 +2,14 @@
 """
 Created on Wed Oct 26 23:26:37 2022
 
-@author: kevin
+@authors: Kevin & Ariel
 
 This is a prototype module for Directed Acyclic Graph projects.
 This module contains path searching algorithms.
 """
+from DAG_Library.module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
+import matplotlib.pyplot as plt
+import numpy as np
 
 def BFS_all_paths(graph_dict, target):
     """
@@ -75,7 +78,7 @@ def BFS_all_paths(graph_dict, target):
     yield shortest_paths
     yield longest_paths
 
-def BFS_percolating(graph_dict, target):
+def BFS_percolating(graph_dict, target = None):
     """
     Breadth first search through a network for a path from source to target.
     Existence of a path means that the system is percolating.
@@ -92,6 +95,9 @@ def BFS_percolating(graph_dict, target):
          False if a path does not exist between the source and target
     """
      
+    if target == None:
+        target = len(graph_dict) - 1
+
     if 0 not in graph_dict: # Checks if the initial source even has connections to other nodes
         return False
     
@@ -119,4 +125,50 @@ def BFS_percolating(graph_dict, target):
                 visited.popitem()
     return False # Returns false only if the while queue loop terminates, which indicates no path is found
 
+def R_BinarySearchPercolation(X, p, epsilon = 0.01):
+    """
+    Binary Search for a critical Radius for a given graph.
+    Input:
+        X: LIST of numpy.ndarray, contains a list of 1xd arrays.
+            The dth element of each array represents the dth dimensional coordinate of that point.
+        p: Minkowski index (the Lp space we are interested in)
+        epsilon: Convergence criterion. default = 0.001
     
+    Output:
+        R: Critical percolation radius.
+    """
+    R = 1
+    RL, RH = 0, 1
+    while abs(RL - RH) > epsilon:
+        G = lp_random_geometric_graph(X, R, p) #create new graph in each iteration, for the same set of points
+        if BFS_percolating(G):
+            RH = R.copy()
+            R = RH - (RH - RL)/2
+        else: #if BFS(R) == False
+            RL = R.copy()
+            R = RL + (RH - RL)/2
+    
+    return R #returns critical R value
+
+def RadiusPercolation(p, N):
+    crit_dict = {}
+    for item in p:
+        R_list = [] #list of critical R values for a graph for fixed p. 
+        for i in range(N): #generate N graphs
+            X = _poisson_cube_sprinkling()
+            Rcrit = R_BinarySearchPercolation(X, item)
+            R_list.append(Rcrit)
+    
+        crit_dict['%s' % (item)] = R_list
+    
+    return crit_dict
+
+def percolate_plot(crit_dict, bins = 100):
+    for item in crit_dict:
+        x = crit_dict[item]
+        plt.hist(x, bins, histtype=u'step', label = "p = %s" % (item), density= True)
+    
+    plt.xlabel('Critical Radius')
+    plt.ylabel('Count')
+    plt.title('Numerical Percolation Transition for connectedness in Lp Cube Space RGGs')
+    plt.show()    

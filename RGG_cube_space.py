@@ -322,3 +322,17 @@ if BFS(R) == False: #we have reached a point of no connection
 	R = RL + (RH - RL)/2
 iterate until RL == RH
 """
+
+def binary_percolate(G):
+    R = 1
+    RL, RH = 0, 1
+    while RL != RH:
+        if bfs_percolating(G):
+            RH = R.copy()
+            R = RH - (RH - RL)/2
+        else: #if BFS(R) == False
+            RL = R.copy()
+            R = RL + (RH - RL)/2
+    
+    return R #returns critical R value
+
