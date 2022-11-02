@@ -32,7 +32,6 @@ def _poisson_cube_sprinkling(density, vol, d):
     
     coords_array = np.concatenate([x for x in coords.values()], axis = 1)
     coords_array_sorted = sorted(coords_array, key = itemgetter(0))
-    print(coords_array)
     return coords_array_sorted
     
 def _fixed_lp_distance_connection(v, R, p):
@@ -87,7 +86,7 @@ def lp_random_geometric_graph(X, R, p):
     for u in range(no_points):
         U = X[u]
         X_prime = X - U
-        edge_trigger = {v for v in range(no_points) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
+        edge_trigger = {v:{} for v in range(u+1, no_points) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
         new_edges = [(u,v) for v in edge_trigger]
         
         adjacency_list[u] = edge_trigger
