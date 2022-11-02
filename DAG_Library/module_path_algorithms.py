@@ -7,7 +7,6 @@ Created on Wed Oct 26 23:26:37 2022
 This is a prototype module for Directed Acyclic Graph projects.
 This module contains path searching algorithms.
 """
-from DAG_Library.module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -105,22 +104,17 @@ def BFS_percolating(graph_dict, target = None):
     
     visited = dict.fromkeys([0])
     queue = [iter(graph_dict[0])]
-
     
     while queue: 
         children = queue[-1]
         child = next(children, None)
         if child is None:
             queue.pop()
-            visited.popitem()
         else:
             if child in visited:
                 continue
             if child in target:
                 return True # Returns true the moment the first path is found
             visited[child] = None
-            if target - set(visited.keys()):
-                queue.append(iter(graph_dict[child]))
-            else:
-                visited.popitem()
+            queue.append(iter(graph_dict[child]))
     return False # Returns false only if the while queue loop terminates, which indicates no path is found
