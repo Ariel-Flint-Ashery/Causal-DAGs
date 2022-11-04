@@ -118,3 +118,48 @@ def BFS_percolating(graph_dict, target = None):
             visited[child] = None
             queue.append(iter(graph_dict[child]))
     return False # Returns false only if the while queue loop terminates, which indicates no path is found
+
+def DFS_percolating(graph_dict, target = None):
+    """
+    Depth first search through a network for a path from the source to the target.
+    The depth first serach also prioritises higher indexed nodes, which are likely
+    to be closer to the target if graph_dict is sorted.
+    
+     Input:
+        G: Graph represented as an adjacency list in the form of a python dictionary
+        e.g {0: [1, 2, 3],
+             1: [2, 3],
+             2: [4, 6]
+             ...}
+        
+     Output:
+         True if a path exists between the source and target
+         False if a path does not exist between the source and target
+    """
+    if target == None:
+        target = len(graph_dict) - 1
+        
+    if 0 not in graph_dict:
+        return False
+    
+    visited = dict.fromkeys([0])
+    queue = [c for c in graph_dict[0]]
+    
+    if target in queue:
+        return True
+    
+    while queue:
+        child = queue[-1]
+        queue.pop()
+        if child in visited:
+            continue
+        elif child == target:
+            return True
+        else:
+            visited[child] = None
+            children = [c for c in graph_dict[child]]
+            if target in children:
+                return True
+            for c in children:
+                queue.append(c)
+    return False
