@@ -81,12 +81,20 @@ def lp_random_geometric_graph(X, R, p):
     
     no_points = len(X)
     edge_list = []
-    adjacency_list = {}
+    adjacency_list = dict.fromkeys(range(len(X)), None)
     
     for u in range(no_points):
         U = X[u]
         X_prime = X - U
-        edge_trigger = {v:{} for v in range(u+1, no_points) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
+        u_max = u + 1
+        for Y in X_prime[u+1:, 0]:
+            u_max +=1
+            if Y >R:
+                break
+            else:
+                continue
+        
+        edge_trigger = {v:{} for v in range(u + 1, u_max) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
         new_edges = [(u,v) for v in edge_trigger]
         
         adjacency_list[u] = edge_trigger
