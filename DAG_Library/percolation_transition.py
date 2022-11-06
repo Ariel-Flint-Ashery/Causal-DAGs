@@ -1,8 +1,9 @@
-from DAG_Library.module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
-from DAG_Library.module_path_algorithms import BFS_percolating
+from module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
+from module_path_algorithms import BFS_percolating
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.special import gamma
+from tqdm import tqdm
 
 def R_BinarySearchPercolation(X, p, epsilon = 0.01, N=100):
     """
@@ -101,7 +102,7 @@ def percolate_plot(crit_dict, bins = 100):
     plt.savefig('Critical Radius Percolation.png')
     plt.show()  
 
-def AnalyticRTest(p_vals, N, d, density, vol, deg =1):
+def AnalyticRTest(p_val, N, d, density, vol, deg =1):
     """
     Calculate probability of connectedness for analytic solution for critical
     radius in a DAG. 
@@ -121,20 +122,24 @@ def AnalyticRTest(p_vals, N, d, density, vol, deg =1):
 
     #note: clean up code by setting d & density to **kargs or similar
     percolation_probability = []
-    for p in p_vals:
+    for p in p_val:
         count = 0
-        for i in range(N):
+        print(p)
+        R = AnalyticCritRadius(p, d, density, deg)
+        print(R)
+        for i in tqdm(range(N)):
             X = _poisson_cube_sprinkling(density, vol, d)
-            R = AnalyticCritRadius(p, d, density, deg)
             G = lp_random_geometric_graph(X, R, p)
             if BFS_percolating(G):
                 count += 1
+            else:
+                continue
         
-        if count == 0:
-            percolation_probability.append(0)
+        #if count == 0:
+        #    percolation_probability.append(0)
 
-        else:
-            percolation_probability.append(count/N)
+        #else:
+        percolation_probability.append(count/N)
 
     return percolation_probability
 

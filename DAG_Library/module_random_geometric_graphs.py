@@ -103,4 +103,4 @@ def lp_random_geometric_graph(X, R, p):
     return edge_list, adjacency_list
 
 #%% Testing
-el, al = lp_random_geometric_graph(50, 1, 2, 0.5, 2)
+#el, al = lp_random_geometric_graph(50, 1, 2, 0.5, 2)
