@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.special import gamma
 
-def R_BinarySearchPercolation(X, p, epsilon = 0.01):
+def R_BinarySearchPercolation(X, p, epsilon = 0.01, N=100):
     """
     Binary Search for a critical Radius for a given graph.
     Input:
@@ -12,13 +12,15 @@ def R_BinarySearchPercolation(X, p, epsilon = 0.01):
             The dth element of each array represents the dth dimensional coordinate of that point.
         p: Minkowski index (the Lp space we are interested in)
         epsilon: Convergence criterion. default = 0.001
+        N: maximum number of iterations
     
     Output:
         R: Critical percolation radius.
     """
     R = 1
     RL, RH = 0, 1
-    while abs(RL - RH) > epsilon:
+    n = 0
+    while abs(RL - RH) > epsilon or n<N:
         G = lp_random_geometric_graph(X, R, p) #create new graph in each iteration, for the same set of points
         if BFS_percolating(G):
             RH = R.copy()
@@ -26,6 +28,7 @@ def R_BinarySearchPercolation(X, p, epsilon = 0.01):
         else: #if BFS(R) == False
             RL = R.copy()
             R = RL + (RH - RL)/2
+        n += 1
     
     return R #returns critical R value
 
@@ -74,7 +77,7 @@ def AnalyticCritRadius(p, d, density, deg = 1):
         p-Minkowski volume.
     """
 
-    R = (deg/gamma(1+1/p))*(gamma(1+(d/p))/density)**(1/d)
+    R = (deg/gamma(1+(1/p)))*(gamma(1+(d/p))/density)**(1/d)
     return R
 
 def percolate_plot(crit_dict, bins = 100):
