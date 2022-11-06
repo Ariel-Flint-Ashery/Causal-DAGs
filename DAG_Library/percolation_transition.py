@@ -122,7 +122,7 @@ def AnalyticRTest(p_val, N, d, density, vol, deg =1):
 
     #note: clean up code by setting d & density to **kargs or similar
     percolation_probability = []
-    for p in p_val:
+    for p in tqdm(p_val):
         count = 0
         print(p)
         R = AnalyticCritRadius(p, d, density, deg)
