@@ -1,11 +1,11 @@
 from module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
-from module_path_algorithms import BFS_percolating
+from module_path_algorithms import BFS_percolating, DFS_percolating
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.special import gamma
 from tqdm import tqdm
 
-def R_BinarySearchPercolation(X, p, epsilon = 0.01, N=100):
+def R_BinarySearchPercolation(X, p, epsilon, end, search):
     """
     Binary Search for a critical Radius for a given graph.
     Input:
@@ -13,27 +13,44 @@ def R_BinarySearchPercolation(X, p, epsilon = 0.01, N=100):
             The dth element of each array represents the dth dimensional coordinate of that point.
         p: Minkowski index (the Lp space we are interested in)
         epsilon: Convergence criterion. default = 0.001
-        N: maximum number of iterations
-    
+        end: maximum number of iterations
+        search: Type traversal algorithm used. 'DFS' or 'BFS'
     Output:
         R: Critical percolation radius.
     """
-    R = 1
-    RL, RH = 0, 1
+    R = 1.0
+    RL, RH = 0.0, 1.0
     n = 0
-    while abs(RL - RH) > epsilon or n<N:
-        G = lp_random_geometric_graph(X, R, p) #create new graph in each iteration, for the same set of points
-        if BFS_percolating(G):
-            RH = R.copy()
-            R = RH - (RH - RL)/2
-        else: #if BFS(R) == False
-            RL = R.copy()
-            R = RL + (RH - RL)/2
-        n += 1
-    
+    if search == None:
+        raise Exception('Traversal mode not specified')
+        
+    if search == 'BFS':
+        #print('BFS Traversal Mode', end)
+        while (abs(RL - RH) > epsilon and n<end):
+            G = lp_random_geometric_graph(X, R, p) #create new graph in each iteration, for the same set of points
+            if BFS_percolating(G[1]):
+                RH = R
+                R = RH - (RH - RL)/2
+            else: #if BFS(R) == False
+                RL = R
+                R = RL + (RH - RL)/2
+            n += 1
+            
+    if search == 'DFS':
+        #print('DFS Traversal Mode', end)
+        while (abs(RL - RH) > epsilon and n<end):
+            G = lp_random_geometric_graph(X, R, p) #create new graph in each iteration, for the same set of points
+            if DFS_percolating(G[1]):
+                RH = R
+                R = RH - (RH - RL)/2
+            else: #if BFS(R) == False
+                RL = R
+                R = RL + (RH - RL)/2
+            n += 1
+    #print(n)
     return R #returns critical R value
 
-def RadiusPercolation(p_val, N, density, vol, d, epsilon):
+def RadiusPercolation(p_val, N, density, vol, d, search, epsilon=0.01, end = 10):
     """
     Find the critical radius for a set of p values using numerical methods.
     Currently implemented for binary search.
@@ -53,9 +70,14 @@ def RadiusPercolation(p_val, N, density, vol, d, epsilon):
     crit_dict = {}
     for p in p_val:
         R_list = [] #list of critical R values for a graph for fixed p. 
-        for i in range(N): #generate N graphs
+        print("""
+              ------------------
+              %s Traversal Mode
+              ------------------
+              """ % (search))
+        for i in tqdm(range(N)): #generate N graphs
             X = _poisson_cube_sprinkling(density, vol, d)
-            Rcrit = R_BinarySearchPercolation(X, p, epsilon)
+            Rcrit = R_BinarySearchPercolation(X, p, epsilon, end, search)
             R_list.append(Rcrit)
     
         crit_dict['%s' % (p)] = R_list
@@ -127,13 +149,14 @@ def AnalyticRTest(p_val, N, d, density, vol, deg =1):
         print(p)
         R = AnalyticCritRadius(p, d, density, deg)
         print(R)
-        for i in tqdm(range(N)):
+        for i in range(N):
             X = _poisson_cube_sprinkling(density, vol, d)
             G = lp_random_geometric_graph(X, R, p)
-            if BFS_percolating(G):
+            if BFS_percolating(G[1]) == True:
                 count += 1
-            else:
-                continue
+                #print('CONNECTION')
+            # else:
+            #     continue
         
         #if count == 0:
         #    percolation_probability.append(0)

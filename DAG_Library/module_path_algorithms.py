@@ -97,7 +97,9 @@ def BFS_percolating(graph_dict, target = None):
     if target == None:
         target = len(graph_dict) - 1
 
-    if 0 not in graph_dict: # Checks if the initial source even has connections to other nodes
+    if 0 not in graph_dict:
+        # Checks if the initial source even has connections to other nodes
+        print('no source connections')
         return False
     
     target = {target}
