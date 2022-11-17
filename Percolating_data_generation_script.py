@@ -2,6 +2,8 @@
 """
 Created on Tue Nov 15 13:48:49 2022
 
+IMPORTANT: download the DAG_data_files folder into the same directory as DAG_Library to save time on running the simulations
+
 @author: kevin
 """
 
