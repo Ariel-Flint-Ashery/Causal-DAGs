@@ -239,7 +239,7 @@ def num_percolating(density, vol, d, p, R_range, iterations):
 def binomial_variance(n, p):
     """
     Returns:
-        Binomail variance of N measurements with success rate p
+        Binomial variance of N measurements with success rate p
     """
     q = (1-p)
     return n*p*q
@@ -266,4 +266,142 @@ def criticality_function_fit(x, y, p0 = None, sigma = None):
     u = np.linspace(x[0], x[-1], num = 1000)
     v = criticality_function(u, *params)
     return u, v, params, cov
+
+#%%
+#Percolation for degrees
+def _find_degree_range(density, vol, d, p, iterations = 50):
+    """
+    For a given density, volume, dimension and p:
+        Finds the range of values degree between degree_min and degree_max.
+        degree_min is the maximum value of degree that does NOT yield a percolating graph
+        degree_max is the minimum value of degree that DOES yield a percolating graph
+    Returns:
+        degree_min, degree_max: float
+    """
+    iterations = int(iterations)
+    poisson_point_list = []
+    for m in range(iterations):
+        poisson_point_list.append(mod_rgg._poisson_cube_sprinkling(density, vol, d))
     
+    min_found = False
+    max_found = False
+    deg_init = 1
+    delta = 0.5
+    R_init = R_analytic(p, d, density)
+    R_new = R_init
+    over = False
+    over_new = False
+    while min_found == False:
+        perc_count = 0
+        for X in poisson_point_list:
+            _, al = mod_rgg.lp_random_geometric_graph(X, R_new, p)
+            path_status = mod_paths.DFS_percolating(al)
+            if path_status == True:
+                perc_count += 1
+                
+        print(f'perc_count = {perc_count}, Expected Avg. Degree = {round(deg_init, 5)}, delta = {round(delta, 5)}')
+        if (perc_count == 0 and over != over_new) or (delta<0.001):
+            degree_min = deg_init
+            min_found = True
+            
+        over = over_new
+        if perc_count == 0:
+            deg_new = deg_init + delta
+            R_new = R_init*deg_new
+            over_new = False
+        else:
+            deg_new = deg_init - delta
+            R_new = R_init*deg_new
+            over_new = True
+        if over_new != over:
+            delta = delta * 0.5
+        deg_init = deg_new
+        
+    delta = 0.5
+    #R_init = R_analytic(p, d, density)
+    over = False
+    over_new = False
+    while max_found == False:
+        perc_count = 0
+        for X in poisson_point_list:
+            _, al = mod_rgg.lp_random_geometric_graph(X, R_new, p)
+            path_status = mod_paths.DFS_percolating(al)
+            if path_status == True:
+                perc_count += 1
+                
+        print(f'perc_count = {perc_count}, Expected Avg. Degree = {round(deg_init, 5)}, delta = {round(delta, 5)}')
+        if (perc_count == iterations and over != over_new) or (delta<0.001):
+            degree_max = deg_init
+            max_found = True
+            
+        over = over_new
+        if perc_count == iterations:
+            deg_new = deg_init - delta
+            R_new = R_init*deg_new
+            over_new = True
+        else:
+            deg_new = deg_init + delta
+            R_new = R_init*deg_new
+            over_new = False
+        if over_new != over:
+            delta = delta * 0.5
+        deg_init = deg_new
+        
+    return degree_min, degree_max
+
+def _get_degree_ranges(densities, vol, d, p, iterations = 50): #don't run this directly
+    """
+    For a given set of densities:
+        Find the R ranges for each density.
+        Stores the data in DAG_data_files in percolation_file_id() format.
+    Return
+        R_ranges: dict, keys = densities, values = [R_min, R_max]
+    """
+    iterations = int(iterations)
+    fname = 'deg_ranges'
+    deg_ranges = dict.fromkeys(densities)
+    for rho in deg_ranges:
+        degree_min, degree_max = _find_degree_range(rho, vol, d, p, iterations)
+        deg_ranges[rho] = [degree_min, degree_max]
+    # f = open(f'DAG_data_files/r_ranges_rho{densities}_v{vol}_d{d}_p{p}_iter{iterations}.pkl', 'wb')
+    f = open(f'{percolation_file_id(fname, densities, vol, d, p, iterations)}', 'wb')
+    pickle.dump(deg_ranges, f)
+    f.close()
+    return deg_ranges
+    
+def get_degree_ranges(densities, vol, d, p, iterations = 50, overwrite = False):  #run this ###############################################
+    """
+    For a given set of densities:
+        Open the file containing the R ranges, OR
+        Find the R ranges for each density.
+    Return
+        R_ranges: dict, keys = densities, values = [R_min, R_max]
+    """
+    iterations = int(iterations)
+    fname = 'deg_ranges'
+    try:
+        degree_ranges = pickle.load(open(f'{percolation_file_id(fname, densities, vol, d, p, iterations)}', 'rb'))
+    except:
+        degree_ranges = _get_degree_ranges(densities, vol, d, p, iterations)
+    return degree_ranges
+
+def create_R_degree_intervals(densities, vol, d, p, iterations = 50, no_points = 20): 
+    """
+    For a given set of degree ranges for varying densities:
+        Create intervals in degree such that the behaviour around the critical point is clearly seen.
+        Number of intervals created is no_points.
+        Stores the data in DAG_data_files in percolation_file_id() format.
+    Return:
+        degree_ranges_intervals: dict, keys = densities, values = [degree_min, ..., degree_max], len(values) = no_points
+    """
+    R_ranges_intervals = {}
+    degree_ranges_intervals = {}
+    deg_ranges = get_degree_ranges(densities, vol, d, p, iterations)
+    for rho in deg_ranges:
+        degree_min, degree_max = deg_ranges[rho]
+        degree_ranges_intervals[rho] = np.linspace(0.8*degree_min, degree_max*1.2, no_points, endpoint = True)
+        R_ranges_intervals[rho] = np.linspace(0.8*degree_min, degree_max*1.2, no_points, endpoint = True)*R_analytic(p,d, rho)
+
+    return R_ranges_intervals, degree_ranges_intervals
+
+#add function to find range of degrees only, or modify percolate function to take degree interval too. 

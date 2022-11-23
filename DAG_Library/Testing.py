@@ -22,9 +22,9 @@ import matplotlib.pyplot as plt
 #INITIALISE CONSTANTS
 d = 2 #dimensions
 vol = 1 #area
-density = 500 #adaptable
+density = [250,500] #adaptable
 N_anal = 100000 #number of graphs generated for each analytic iteration
-N_numeric = 1000
+N_numeric = 500
 p_val = [0.5, 1, 1.5, 2,2.5, 3] #p indices to test
 
 #%%
@@ -70,17 +70,28 @@ plt.show()
 #%%
 
 #find critical radius numerically
-numeric_Rcrit = RadiusPercolation(p_val, N_numeric, density, vol, d, search = 'DFS', end = 20, epsilon = 0.005)
+numeric_Rcrit = []
+for rho in density:
+    numeric_Rcrit.append(RadiusPercolation(p_val, N_numeric, rho, vol, d, search = 'DFS', end = 20, epsilon = 0.005))
 #%%
-percolate_plot(numeric_Rcrit, bins = 20)
+for RCRIT in numeric_Rcrit:
+    percolate_plot(RCRIT, bins = 20)
 
 #%%
-numeric_Rcrit_mean, numeric_Rcrit_std = NumericalCritRadius(numeric_Rcrit)
-analyticR = [AnalyticCritRadius(p, d, density) for p in p_val]
+numeric_Rcrit_mean = []
+numeric_Rcrit_std = []
+for RCRIT in numeric_Rcrit:
+    mean, std = NumericalCritRadius(RCRIT)
+    numeric_Rcrit_mean.append(mean)
+    numeric_Rcrit_std.append(std)
+
+#%%error
+analyticR = [AnalyticCritRadius(p, d, density[0]) for p in p_val]
 #%%
 plt.plot(p_val, analyticR,label = 'Analytic Critical Radius')
-plt.errorbar(p_val, numeric_Rcrit_mean, yerr = numeric_Rcrit_std, label = 'error')
-plt.plot(p_val, numeric_Rcrit_mean, '.k', label = 'Numerical Critical Radius')
+plt.errorbar(p_val, numeric_Rcrit_mean[0], yerr = numeric_Rcrit_std[0], label = 'rho = 250')
+plt.errorbar(p_val, numeric_Rcrit_mean[1], yerr = numeric_Rcrit_std[1], label = 'rho = 500')
+#plt.plot(p_val, numeric_Rcrit_mean, '.k', label = 'Numerical Critical Radius')
 plt.xlabel('p value')
 plt.ylabel('critical radius')
 plt.legend()
