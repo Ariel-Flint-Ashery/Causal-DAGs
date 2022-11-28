@@ -11,11 +11,12 @@ import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 os.chdir(dir_path)
 from module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
-from percolation_transition import R_BinarySearchPercolation, RadiusPercolation, AnalyticCritRadius, percolate_plot, AnalyticRTest, NumericalCritRadius
+from percolation_transition import R_BinarySearchPercolation, RadiusPercolation, AnalyticCritRadius, percolate_plot, AnalyticRTest, NumericalCritRadius, bastas
 from module_path_algorithms import BFS_percolating, DFS_percolating
-
+from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import minimize
 
 #%%
 
@@ -115,3 +116,45 @@ plt.grid()
 plt.show()
 
 
+#%%
+#FIND CRITICAL EXPONENTS
+x0 = [1, 1.65]
+res = minimize(bastas, x0, method = 'BFGS',args = (50, 2, 250, 1, 2), tol = 1e-2)
+
+
+# %%
+res.x
+
+#%%
+degree = np.linspace(1.6, 2, 10)
+x_range = np.linspace(-2, 1, 10)
+Z = np.zeros((len(degree), len(x_range)))
+
+for i in tqdm(range(len(x_range))):
+    for j in range(len(degree)):
+        val = np.array([x_range[i], degree[j]])
+        Z[i][j] = bastas(val, 20, 2, 250, 1, 2)
+        
+#%%
+z = Z
+z = z[:-1, :-1]
+z_min, z_max = -np.abs(z).max(), np.abs(z).max()
+
+c = plt.pcolormesh(x_range, degree, z, cmap ='nipy_spectral')
+plt.colorbar(c)
+plt.xlabel('x range')
+plt.ylabel('degree')
+plt.show()
+# %%
+x_range = np.linspace(0.5, 2, 10)
+results = []
+for x in x_range:
+    result = bastas([x, 1.6], 50, 2, 250, 1, 2)
+
+#%%
+plt.plot(x_range, results)
+plt.grid()
+plt.xlabel('critical exponent')
+plt.ylabel('lambda')
+plt.show()
+# %%

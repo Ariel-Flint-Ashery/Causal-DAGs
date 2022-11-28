@@ -189,3 +189,90 @@ def NumericalCritRadius(crit_dict):
     
     return Rcrit_val, Rcrit_val_std
 
+def bastas(input_array, iterations, p, density, vol, d):
+    """
+    Run the Bastas et al. (2014) method for finding critical exponent and critical degree.
+    https://journals.aps.org/pre/abstract/10.1103/PhysRevE.90.062101
+    
+    """
+    x, degree = input_array
+
+    R = AnalyticCritRadius(p,d,density, degree)
+    pi_list = [] #for each degree
+    N_list = []
+    for i in tqdm(range(iterations)):
+        N = np.random.poisson(density * vol)
+        count = 0
+        for j in range(iterations):
+            X = _poisson_cube_sprinkling(density, vol, d, N)
+            G = lp_random_geometric_graph(X, R, p)
+            if DFS_percolating(G[1]) == True:
+                count += 1
+        pi = count/iterations
+        pi_list.append(pi)
+        N_list.append(N)
+    pi_arr = np.array(pi_list)
+    N_arr = np.array(N_list)
+    # print(pi_arr, 'PI')
+    # print(N_arr, 'N')
+    # print('begin H calculation')
+
+    H = pi_arr*(N_arr**x) + 1/(pi_arr*(N_arr**x))
+    #print(H, 'H')
+    
+    LAM = 0
+    for i in range(iterations):
+        for j in range(iterations):
+            if i == j:
+                continue
+            LAM += (H[i]- H[j])**2
+
+    print(LAM)
+    return LAM
+
+    # LEGACY CODE FOR MULTIPLE DEGREES
+    # for degree in degrees:
+    #     R = AnalyticCritRadius(p,d,density, degree)
+    #     pi_list = [] #for each degree
+    #     N_list = []
+    #     for i in range(iterations):
+    #         N = np.random.poisson(density * vol)
+    #         count = 0
+    #         for j in range(iterations):
+    #             X = _poisson_cube_sprinkling(density, vol, d, N)
+    #             G = lp_random_geometric_graph(X, R, p)
+    #             if DFS_percolating(G[1]) == True:
+    #                 count += 1
+    #         pi = count/iterations
+    #         pi_list.append(pi)
+    #         N_list.append(N)
+    #     pi_dict[degree] = np.array(pi_list)
+    #     N_dict[degree] = np.array(N_list)
+    
+    # def H(x):
+    #     H_dict = {}
+    #     for degree in degrees:
+    #         H_dict[degree] = [(pi_dict[degree][i]*(N_dict[degree][i]**x) + 1/(pi_dict[degree][i]*(N_dict[degree][i]**x))) for i in range(iterations)]
+    #     return H_dict
+    
+    #def Lam(x, degree, H_dict):
+        #H_dict = {}
+        # for degree in degrees:
+        #     H_dict[degree] = [(pi_dict[degree][i]*(N_dict[degree][i]**x) + 1/(pi_dict[degree][i]*(N_dict[degree][i]**x))) for i in range(iterations)]
+        
+        # lam = 0
+        # for i in range(iterations):
+        #     for j in range(iterations):
+        #         if i == j:
+        #             continue
+        #         lam += (H_dict[degree][i] - H_dict[degree][j])**2
+    
+    # x0 = []
+    # res = minimize(Lam, x0, method = 'BFGS', jac = )
+
+                
+        
+
+
+
+

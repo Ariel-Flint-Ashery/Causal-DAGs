@@ -11,7 +11,7 @@ import scipy as sp
 import networkx as nx
 from operator import itemgetter
 
-def _poisson_cube_sprinkling(density, vol, d):
+def _poisson_cube_sprinkling(density, vol, d, fixed_N = None):
     """
     Generate a set of geometric points in a d-dimensional cube with a 'volume' of vol at a specified density
     
@@ -19,12 +19,16 @@ def _poisson_cube_sprinkling(density, vol, d):
         density: float, specifies the density of points in the d-dimensional space.
         vol: float, the generalised d-dimensional volume of the d-dimensional cube
         d: INT, the dimension of the system.
+        fixed_N: float, value must be picked from a poisson distribution.
+                specifies a fixed number of points to sprinkle. Default = None
     
     Outputs:
         coords_array_sorted: LIST of numpy.ndarray, contains a list of 1xd arrays.
                              The dth element of each array represents the dth dimensional coordinate of that point.
     """
     no_points = np.random.poisson(density * vol)
+    if fixed_N != None:
+        no_points = fixed_N
     
     coords = {}
     for d in range(d):
