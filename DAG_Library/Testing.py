@@ -118,38 +118,41 @@ plt.show()
 
 #%%
 #FIND CRITICAL EXPONENTS
-x0 = [1, 1.65]
-res = minimize(bastas, x0, method = 'BFGS',args = (50, 2, 250, 1, 2), tol = 1e-2)
+x0 = [0.05, 2.4]
+res = minimize(bastas, x0, method = 'BFGS',args = ([50,250], 2, 250, 1, 2), tol = 1e-4, callback = True, options = {'disp': True})
 
 
 # %%
 res.x
 
 #%%
-degree = np.linspace(1.6, 2, 10)
-x_range = np.linspace(-2, 1, 10)
-Z = np.zeros((len(degree), len(x_range)))
-
+#degree = np.linspace(1.6, 2.2, 6)
+degree = np.array([1.5, 1.6, 1.9]) #console 2
+#x_range = np.array([0.1, 0.3, 0.5, 1, 1.5, 2])
+x_range = np.array([0.05, 0.1, 0.15]) #console 2
+Z = np.zeros((len(x_range), len(degree)))
+#%%
 for i in tqdm(range(len(x_range))):
     for j in range(len(degree)):
         val = np.array([x_range[i], degree[j]])
-        Z[i][j] = bastas(val, 20, 2, 250, 1, 2)
+        Z[i][j] = bastas(val, [30, 300], 2, 500, 1, 2)
         
 #%%
 z = Z
 z = z[:-1, :-1]
 z_min, z_max = -np.abs(z).max(), np.abs(z).max()
 
-c = plt.pcolormesh(x_range, degree, z, cmap ='nipy_spectral')
+c = plt.pcolormesh(degree, x_range, z, cmap ='nipy_spectral')
 plt.colorbar(c)
-plt.xlabel('x range')
-plt.ylabel('degree')
+plt.xlabel('degree')
+plt.ylabel('x_range')
 plt.show()
 # %%
-x_range = np.linspace(0.5, 2, 10)
+x_range = np.array([-1, -0.5, 0.5, 1])
 results = []
 for x in x_range:
-    result = bastas([x, 1.6], 50, 2, 250, 1, 2)
+    result = bastas([x, 1.6], [20,100], 2, 250, 1, 2)
+    results.append(result) 
 
 #%%
 plt.plot(x_range, results)

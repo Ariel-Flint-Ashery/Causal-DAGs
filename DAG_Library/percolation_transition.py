@@ -200,15 +200,15 @@ def bastas(input_array, iterations, p, density, vol, d):
     R = AnalyticCritRadius(p,d,density, degree)
     pi_list = [] #for each degree
     N_list = []
-    for i in tqdm(range(iterations)):
+    for i in tqdm(range(iterations[0])):
         N = np.random.poisson(density * vol)
         count = 0
-        for j in range(iterations):
+        for j in range(iterations[1]):
             X = _poisson_cube_sprinkling(density, vol, d, N)
             G = lp_random_geometric_graph(X, R, p)
             if DFS_percolating(G[1]) == True:
                 count += 1
-        pi = count/iterations
+        pi = count/iterations[1]
         pi_list.append(pi)
         N_list.append(N)
     pi_arr = np.array(pi_list)
@@ -221,8 +221,8 @@ def bastas(input_array, iterations, p, density, vol, d):
     #print(H, 'H')
     
     LAM = 0
-    for i in range(iterations):
-        for j in range(iterations):
+    for i in range(iterations[0]):
+        for j in range(iterations[0]):
             if i == j:
                 continue
             LAM += (H[i]- H[j])**2
