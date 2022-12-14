@@ -14,16 +14,17 @@ import math
 import os
 
 
-def R_analytic(p, d, density):
+def R_analytic(p, d, density, k = 1):
     """
-    Analytic value of the critical R value for a given p, d and density.
+    Analytic value of the critical R value for a given p, d, density and k (default = 1).
     Returns:
-        (1/gamma(1+1/p))*(gamma(1+d/p)/density)^(1/d)
+        k*(1/gamma(1+1/p))*(gamma(1+d/p)/density)^(1/d)
     """
-    return (1/math.gamma(1+1/p))*(math.gamma(1+d/p)/density)**(1/d)
+    return k*(1/math.gamma(1+1/p))*(math.gamma(1+d/p)/density)**(1/d)
 
-def percolation_file_id(name, rho, v, d, p, iterations, pkl = True, directory = None):
+def percolation_file_id(name, rho, v, d, p, iterations, pkl = True, directory = None, percolation_type = 'k'):
     """
+    percolation_type: 'r': Radius, 'k': Degree. (For Legacy. Final implementation is k only. Default = 'k')
     Returns:
         the file name for a given data set with parameters rho, v, d, p, iterations.
     """
@@ -70,7 +71,7 @@ def _find_R_range(density, vol, d, p, iterations = 50):
     iterations = int(iterations)
     poisson_point_list = []
     for m in range(iterations):
-        poisson_point_list.append(mod_rgg._poisson_cube_sprinkling(density, vol, d))
+        poisson_point_list.append(mod_rgg._poisson_cube_sprinkling(vol, d, density))
     
     min_found = False
     max_found = False
@@ -186,7 +187,7 @@ def create_R_intervals(densities, vol, d, p, iterations = 50, no_points = 20):
     return R_ranges_intervals
 
 #%%
-def _percolating_data_generator(density, vol, d, p, R_range, iterations):
+def _radius_percolating_data_generator(density, vol, d, p, R_range, iterations):
     """
     For a given set of parameters: density, vol, d, p, R_range, iterations:
         Count the number of percolating graphs over the range R_range for M iterations.
@@ -195,13 +196,13 @@ def _percolating_data_generator(density, vol, d, p, R_range, iterations):
         perc_counter: dict, keys = R, values = number of percolating graphs.
         avg_degree_counter: dict, keys = R, values = average degree of graphs.
     """
-    fname_perc = 'perc_counter'
-    fname_avg_degree = 'avg_degree_counter'
+    fname_perc = 'r_perc_counter'
+    fname_avg_degree = 'r_avg_degree_counter'
     R = R_range
     perc_counter = dict.fromkeys(R, 0)
     avg_degree_counter = dict.fromkeys(R, [0])
     for j in range(iterations):
-        X = mod_rgg._poisson_cube_sprinkling(density, vol, d)
+        X = mod_rgg._poisson_cube_sprinkling(vol, d, density)
         for r in R:
             el, al = mod_rgg.lp_random_geometric_graph(X, r, p)
             if mod_paths.DFS_percolating(al, len(al) - 1) == True:
@@ -216,8 +217,28 @@ def _percolating_data_generator(density, vol, d, p, R_range, iterations):
     g.close()
     return perc_counter, avg_degree_counter
 
+
+def _degree_percolating_data_generator(N, vol, d, p, K_range, iterations = 200):
+
+    fname_perc = 'k_perc_counter'
+    K = K_range
+    perc_counter = dict.fromkeys(K, [0])
+    for j in range(iterations):
+        X = mod_rgg._poisson_cube_sprinkling(N, vol, d, fixed_N = True)
+        for k in K:
+            r = R_analytic(p,d, N/vol,k)
+            el, al = mod_rgg.lp_random_geometric_graph(X, r, p)
+            if mod_paths.DFS_percolating(al, len(al) - 1) == True:
+                perc_counter[k] += 1
+        print(f'p = {p}, N = {N}: Iteration {j}:done')
+    f = open(f'{percolation_file_id(fname_perc, N, vol, d, p, iterations)}', 'wb')
+    pickle.dump(perc_counter, f)
+    f.close()
+    return perc_counter
+
+
     
-def num_percolating(density, vol, d, p, R_range, iterations):
+def num_percolating(density, vol, d, p, Range, iterations, dtype):
     """
     For a given set of parameters: density, vol, d, p, R_Range, iterations:
         Count the number of percolating graphs over the range R_range for M iterations.
@@ -226,15 +247,19 @@ def num_percolating(density, vol, d, p, R_range, iterations):
         N: np.ndarray = numpy array of integers counting the number of percolating graphs
         var_N: np.ndarray =  array of floats of the variance in N
     """
-    fname = 'perc_counter'
+    fname = f'{dtype}_perc_counter'
     try:
         perc_counter = pickle.load(open(f'{percolation_file_id(fname, density, vol, d, p, iterations)}', 'rb'))
     except:
-        perc_counter, _ = _percolating_data_generator(density, vol, d, p, R_range, iterations)
+        if dtype == 'r':
+            perc_counter, _ = _radius_percolating_data_generator(density, vol, d, p, Range, iterations)
+        if dtype == 'k':
+            perc_counter = _degree_percolating_data_generator(density, vol, d, p, Range, iterations)
+
     N = np.array(list(perc_counter.values()))
-    R = np.array(list(perc_counter.keys()))
+    key = np.array(list(perc_counter.keys()))
     var_N = binomial_variance(N, N/iterations)
-    return R, N, var_N
+    return key, N, var_N
 
 def binomial_variance(n, p):
     """
@@ -281,7 +306,7 @@ def _find_degree_range(density, vol, d, p, iterations = 50):
     iterations = int(iterations)
     poisson_point_list = []
     for m in range(iterations):
-        poisson_point_list.append(mod_rgg._poisson_cube_sprinkling(density, vol, d))
+        poisson_point_list.append(mod_rgg._poisson_cube_sprinkling(vol, d, density))
     
     min_found = False
     max_found = False

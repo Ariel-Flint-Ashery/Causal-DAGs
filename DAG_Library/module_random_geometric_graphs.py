@@ -2,7 +2,7 @@
 """
 Created on Mon Oct 31 01:41:47 2022
 
-@author: kevin
+@author: kevin & Ariel 
 """
 
 import numpy as np
@@ -11,7 +11,7 @@ import scipy as sp
 import networkx as nx
 from operator import itemgetter
 
-def _poisson_cube_sprinkling(density, vol, d, fixed_N = None):
+def _poisson_cube_sprinkling(density, vol, d, fixed_N = False):
     """
     Generate a set of geometric points in a d-dimensional cube with a 'volume' of vol at a specified density
     
@@ -19,16 +19,16 @@ def _poisson_cube_sprinkling(density, vol, d, fixed_N = None):
         density: float, specifies the density of points in the d-dimensional space.
         vol: float, the generalised d-dimensional volume of the d-dimensional cube
         d: INT, the dimension of the system.
-        fixed_N: float, value must be picked from a poisson distribution.
-                specifies a fixed number of points to sprinkle. Default = None
+        fixed_N: bool, choose fix number of nodes in graph. If True, number of nodes
+                determined through Poisson Point Process. Default = False (due to legacy code)
     
     Outputs:
         coords_array_sorted: LIST of numpy.ndarray, contains a list of 1xd arrays.
                              The dth element of each array represents the dth dimensional coordinate of that point.
     """
-    no_points = np.random.poisson(density * vol)
-    if fixed_N != None:
-        no_points = fixed_N
+    no_points = density
+    if fixed_N == False:
+        no_points = np.random.poisson(density * vol)
     
     coords = {}
     for d in range(d):
@@ -69,7 +69,7 @@ def kahn_sort(graph):
         L.append(n)
 
         for m in G[n]:
-            G[n].remove(m)
+            G[n].pop(m)
             if m not in sorted({x for v in G.values() for x in v}):
                 S.append(m)
     

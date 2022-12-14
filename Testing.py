@@ -10,14 +10,15 @@ Testing Percolation
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 os.chdir(dir_path)
-from module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
-from percolation_transition import R_BinarySearchPercolation, RadiusPercolation, AnalyticCritRadius, percolate_plot, AnalyticRTest, NumericalCritRadius, bastas
-from module_path_algorithms import BFS_percolating, DFS_percolating
+from DAG_Library.module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
+from DAG_Library.percolation_transition import R_BinarySearchPercolation, RadiusPercolation, AnalyticCritRadius, percolate_plot, AnalyticRTest, NumericalCritRadius, bastas
+from DAG_Library.module_path_algorithms import BFS_percolating, DFS_percolating
+import DAG_Library.module_percolation_generators as pg
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
-
+import DAG_Library.custom_functions as cf
 #%%
 
 #INITIALISE CONSTANTS
@@ -42,7 +43,7 @@ plt.show()
 #%%
 #test single graph
 p = 2
-X = _poisson_cube_sprinkling(density, vol, d)
+X = _poisson_cube_sprinkling(vol, d, density)
 R = AnalyticCritRadius(p, d, density, deg = 1)
 #R = 0.7
 G = lp_random_geometric_graph(X, R, p)
@@ -161,3 +162,48 @@ plt.xlabel('critical exponent')
 plt.ylabel('lambda')
 plt.show()
 # %%
+
+a, b = 1, 3.5
+phi = np.linspace(3, 10, 100)
+x1 = a*phi - b*np.sin(phi) #+ a*np.cos(phi)
+y1 = a + b*np.cos(phi) - 2
+
+x2 = phi
+y2 = np.sin(phi)+2
+
+x, y = cf.intersection(x1, y1, x2, y2)
+
+plt.plot(x1, y1, c="r")
+plt.plot(x2, y2, c="g")
+plt.plot(x, y, "*k")
+plt.show()
+# %%
+N = [2500, 2000, 1500]
+K_range = np.linspace(1, 3, 20)
+keys, vals, errs = [], [], []
+for n in tqdm(N):
+    key, val, err = pg.num_percolating(n, 1, 2, 2, K_range, 200, 'k')
+    keys.append(key)
+    vals.append(val)
+    errs.append(err)
+
+#%%
+import itertools
+from sklearn.metrics.pairwise import euclidean_distances
+beta = np.linspace(-2,2)
+combos = list(itertools.combinations(range(len(N)), 2))
+
+for b in beta:
+    for combo in combos:
+        x1, y1 = keys[combo[0]], vals[combo[0]]
+        x2, y2 = keys[combo[1]], vals[combo[1]]
+        x, y = cf.intersection(x1, y1, x2, y2)
+        points = np.column_stack((x,y))
+        distance = euclidean_distances(points, points)
+        epsilon = distance[np.triu_indices(distance.shape[0], k = 1)]
+        if np.sum(np.all(epsilon < 0.01)) == len(points):
+            break
+        
+
+
+

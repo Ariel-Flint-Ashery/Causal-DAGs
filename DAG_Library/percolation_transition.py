@@ -1,5 +1,5 @@
-from module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
-from module_path_algorithms import BFS_percolating, DFS_percolating
+from DAG_Library.module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
+from DAG_Library.module_path_algorithms import BFS_percolating, DFS_percolating
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.special import gamma
@@ -204,7 +204,7 @@ def bastas(input_array, iterations, p, density, vol, d):
         N = np.random.poisson(density * vol)
         count = 0
         for j in range(iterations[1]):
-            X = _poisson_cube_sprinkling(density, vol, d, N)
+            X = _poisson_cube_sprinkling(N, vol, d, fixed_N = True)
             G = lp_random_geometric_graph(X, R, p)
             if DFS_percolating(G[1]) == True:
                 count += 1
@@ -239,7 +239,7 @@ def bastas(input_array, iterations, p, density, vol, d):
     #         N = np.random.poisson(density * vol)
     #         count = 0
     #         for j in range(iterations):
-    #             X = _poisson_cube_sprinkling(density, vol, d, N)
+    #             X = _poisson_cube_sprinkling(N, vol, d, fixed_N = True)
     #             G = lp_random_geometric_graph(X, R, p)
     #             if DFS_percolating(G[1]) == True:
     #                 count += 1
