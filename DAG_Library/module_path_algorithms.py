@@ -165,3 +165,34 @@ def DFS_percolating(graph_dict, target = None):
             for c in children:
                 queue.append(c)
     return False
+
+def greedy_path(graph_dict, target = None):
+    if target == None:
+        target = len(graph_dict) - 1
+        
+    visited = [0]
+    queue = [0]
+    
+    while queue:
+        print(queue)
+        children = graph_dict[queue[-1]]
+        queue.pop()
+        
+        if target in children:
+            visited.append(target)
+            return visited
+        
+        grand_children = {len(graph_dict[c].keys()):c for c in children}
+        most_childs = max(grand_children)
+        if most_childs == 0:
+            return "No greedy path found"
+        else:
+            greedy_child = grand_children[most_childs]
+        
+        visited.append(greedy_child)
+        queue.append(greedy_child)
+        
+        if greedy_child == target:
+            return visited
+        else:
+            continue
