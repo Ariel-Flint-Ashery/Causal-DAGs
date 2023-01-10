@@ -222,7 +222,7 @@ def _degree_percolating_data_generator(N, vol, d, p, K_range, iterations = 200):
 
     fname_perc = 'k_perc_counter'
     K = K_range
-    perc_counter = dict.fromkeys(K, [0])
+    perc_counter = dict.fromkeys(K, 0)
     for j in range(iterations):
         X = mod_rgg._poisson_cube_sprinkling(N, vol, d, fixed_N = True)
         for k in K:

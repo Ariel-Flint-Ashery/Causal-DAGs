@@ -179,31 +179,104 @@ plt.plot(x, y, "*k")
 plt.show()
 # %%
 N = [2500, 2000, 1500]
-K_range = np.linspace(1, 3, 20)
+#N = [500, 1000, 1500, 2000]
+K_range = np.linspace(1, 2.5, 15)
+#K_range = np.linspace(1, 2.5, 10)
 keys, vals, errs = [], [], []
+K_crit = []
+plt.style.use('default')
+plt.style.use('bmh')
 for n in tqdm(N):
-    key, val, err = pg.num_percolating(n, 1, 2, 2, K_range, 200, 'k')
+    key, val, var = pg.num_percolating(n, 1, 2, 2, K_range, 200, 'k')
     keys.append(key)
     vals.append(val)
-    errs.append(err)
+    errs.append(var)
+    p0 = [key[0], 5]
+    pi = val/200
+    std_pi = np.sqrt(var)/200
+    K_prime, pi_prime, params, _ =  pg.criticality_function_fit(key, pi, p0 = p0, sigma = None)
+    #K_infl = params[0]
+    #K_crit.append(K_infl)
+    #K_res = (key - K_infl)/K_infl
+    plt.errorbar(key,  pi, yerr = std_pi, label = rf'$\rho$ = {n}, p = {2}', ls = ':')
+
+
+plt.legend(loc = 'lower right')
+plt.xlabel('Reduced K')
+plt.ylabel(r'$\pi$(k)')
+#plt.savefig('Data collapse.png')
+plt.show()
 
 #%%
 import itertools
 from sklearn.metrics.pairwise import euclidean_distances
-beta = np.linspace(-2,2)
+beta = np.linspace(0,1, 50)
 combos = list(itertools.combinations(range(len(N)), 2))
-
-for b in beta:
+K_crit = np.array(K_crit)
+#%%
+epsilons = []
+candidate_beta = []
+for b in tqdm(beta):
+    points = []
     for combo in combos:
-        x1, y1 = keys[combo[0]], vals[combo[0]]
-        x2, y2 = keys[combo[1]], vals[combo[1]]
+        x1, y1 = (keys[combo[0]] - K_crit[combo[0]])**b, vals[combo[0]]/200
+        x2, y2 = (keys[combo[1]] - K_crit[combo[1]])**b, vals[combo[1]]/200
         x, y = cf.intersection(x1, y1, x2, y2)
-        points = np.column_stack((x,y))
-        distance = euclidean_distances(points, points)
-        epsilon = distance[np.triu_indices(distance.shape[0], k = 1)]
-        if np.sum(np.all(epsilon < 0.01)) == len(points):
-            break
+        point = np.column_stack((x,y))
+        points.append(point)
+    
+    points = np.concatenate(points)
+    #print(points)
+    if len(points) == 0:
+        continue
+    distance = euclidean_distances(points, points)
+    epsilon = distance[np.triu_indices(distance.shape[0], k = 1)]
+    epsilons.append(epsilon)
+    candidate_beta.append(b)
+    if np.sum(epsilon < 0.2) == len(points):
+        print(b)
+        break
+        
+#%%
+#N = [500, 1000, 1500, 2000]
+#K_range = np.linspace(0.5, 2.5, 10)
+keys, vals, errs = [], [], []
+N = [2500, 2000, 1500]
+K_range = np.linspace(1, 2.5, 15)
+K_crit = []
+for n in tqdm(N):
+    key, val, var = pg.num_percolating(n, 1, 2, 2, K_range, 200, 'k')
+    keys.append(key)
+    vals.append(val)
+    errs.append(var)
+    p0 = [key[0]*1.5, 50]
+    pi = val/200
+    std_pi = np.sqrt(var)/200
+    K_prime, pi_prime, params, _ =  pg.criticality_function_fit(key, pi, p0 = p0, sigma = None)
+    K_infl = params[0]
+    K_crit.append(K_infl)
+    K_res = (key - K_infl)**b
+    plt.errorbar(K_res,  pi, yerr = std_pi, label = rf'$\rho$ = {n}, p = {2}', ls = ':')
+plt.legend()
+plt.xlabel('K - Kc')
+plt.ylabel(r'$\pi$')
+#plt.savefig('figure 1a bastas reproduced.png')
+plt.show()
         
 
 
 
+
+# %%
+for i in range(3):
+    p0 = [K[0]*1.5, 50]
+    K_prime, pi_prime, params, _ =  pg.criticality_function_fit(K, pi, p0 = p0, sigma = None)
+    K_infl = params[0]
+    plt.plot(keys[i], vals[i], label = f'N = {N[i]}', marker = '*')
+
+plt.legend()
+plt.xlabel('<k>')
+plt.ylabel('pi')
+plt.grid()
+plt.show()
+# %%

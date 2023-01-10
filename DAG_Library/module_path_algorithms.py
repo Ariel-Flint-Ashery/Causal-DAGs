@@ -165,3 +165,12 @@ def DFS_percolating(graph_dict, target = None):
             for c in children:
                 queue.append(c)
     return False
+
+def pathDist(graph_dict, path,p):
+    queue = []
+    distance = 0.0
+    
+    for i in range(len(path)-1):
+        distance += graph_dict[path[i]][path[i+1]].values() #[-1]
+
+    return distance, len(path) #geometric distance, network distance

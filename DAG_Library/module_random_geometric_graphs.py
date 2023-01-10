@@ -37,7 +37,14 @@ def _poisson_cube_sprinkling(density, vol, d, fixed_N = False):
     coords_array = np.concatenate([x for x in coords.values()], axis = 1)
     coords_array_sorted = sorted(coords_array, key = itemgetter(0))
     return coords_array_sorted
-    
+
+def minkDist(v,p):
+    """
+    Recover the Minkowski distance between a vertex vector and the origin.
+    """
+    distance = np.power(np.sum([np.abs(v[i])**p for i in range(len(v))]), 1/p)
+    return distance    
+
 def _fixed_lp_distance_connection(v, R, p):
     """
     A function that checks whether a vector v is greater or less than a distance R away from the origin,
@@ -98,7 +105,7 @@ def lp_random_geometric_graph(X, R, p):
             else:
                 continue
         
-        edge_trigger = {v:{} for v in range(u + 1, u_max) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
+        edge_trigger = {v:{minkDist(v,p)} for v in range(u + 1, u_max) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
         new_edges = [(u,v) for v in edge_trigger]
         
         adjacency_list[u] = edge_trigger
@@ -106,5 +113,26 @@ def lp_random_geometric_graph(X, R, p):
             edge_list.append(i)
     return edge_list, adjacency_list
 
+def reduceGraph(graph_dict, X):
+    """
+    check vertex has incoming edges. If vertex does not exist in neighbour's 
+    adjacenecy list, we delete it and remove from the PPP distribution. 
+
+    Neighbours are defined by sorting in 1 dimension. 
+    """
+    queue = []
+    for v in graph_dict.keys():
+        if v == len(graph_dict.keys() - 1):
+            break
+        if v not in graph_dict[v+1].keys():
+            del graph_dict[v]
+            queue.append(v)
+
+    reducedX  = np.delete(X, queue)
+
+    return graph_dict, reducedX
+
 #%% Testing
 #el, al = lp_random_geometric_graph(50, 1, 2, 0.5, 2)
+test_dict = {1: {3:{},4:{1}}, 2: 5}
+# %%
