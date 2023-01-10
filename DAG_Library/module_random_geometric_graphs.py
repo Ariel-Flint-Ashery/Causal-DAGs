@@ -122,17 +122,17 @@ def reduceGraph(graph_dict, X):
     """
     queue = []
     for v in graph_dict.keys():
-        if v == len(graph_dict.keys() - 1):
+        if v == len(graph_dict.keys()) - 1:
             break
         if v not in graph_dict[v+1].keys():
             del graph_dict[v]
             queue.append(v)
 
-    reducedX  = np.delete(X, queue)
+    X  = np.delete(X, queue)
 
-    return graph_dict, reducedX
+    return graph_dict, X
 
 #%% Testing
 #el, al = lp_random_geometric_graph(50, 1, 2, 0.5, 2)
-test_dict = {1: {3:{},4:{1}}, 2: 5}
+#test_dict = {1: {3:{},4:{1}}, 2: 5}
 # %%
