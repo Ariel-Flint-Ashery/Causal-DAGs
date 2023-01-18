@@ -43,10 +43,18 @@ plt.show()
 #%%
 #test single graph
 p = 2
-X = _poisson_cube_sprinkling(vol, d, density)
-R = AnalyticCritRadius(p, d, density, deg = 1)
-#R = 0.7
+vol = 1
+d = 2
+density = 2000
+X = _poisson_cube_sprinkling(density, vol, d, fixed_N = True)
+R = AnalyticCritRadius(p, d, density, deg = 2.5)
+#R = 0.3
 G = lp_random_geometric_graph(X, R, p)
+
+#%%
+
+
+
 
 #%%
 print(BFS_percolating(G[1]))

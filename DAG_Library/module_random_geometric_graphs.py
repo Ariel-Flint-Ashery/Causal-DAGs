@@ -32,7 +32,7 @@ def _poisson_cube_sprinkling(density, vol, d, fixed_N = False):
     
     coords = {}
     for d in range(d):
-        coords[d] = np.concatenate([np.random.uniform(0, 1, ((no_points, 1))), np.array([[0], [1]])])
+        coords[d] = np.concatenate([np.random.uniform(0, 1, ((no_points-2, 1))), np.array([[0], [1]])])
     
     coords_array = np.concatenate([x for x in coords.values()], axis = 1)
     coords_array_sorted = sorted(coords_array, key = itemgetter(0))
@@ -104,8 +104,7 @@ def lp_random_geometric_graph(X, R, p):
                 break
             else:
                 continue
-        
-        edge_trigger = {v:{minkDist(v,p)} for v in range(u + 1, u_max) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
+        edge_trigger = {v: minkDist(X_prime[v],p) for v in range(u + 1, u_max) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
         new_edges = [(u,v) for v in edge_trigger]
         
         adjacency_list[u] = edge_trigger
@@ -131,8 +130,3 @@ def reduceGraph(graph_dict, X):
     X  = np.delete(X, queue)
 
     return graph_dict, X
-
-#%% Testing
-#el, al = lp_random_geometric_graph(50, 1, 2, 0.5, 2)
-#test_dict = {1: {3:{},4:{1}}, 2: 5}
-# %%

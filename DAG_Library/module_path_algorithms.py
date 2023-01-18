@@ -205,3 +205,43 @@ def pathDist(graph_dict, path,p):
         distance += graph_dict[path[i]][path[i+1]].values() #[-1]
 
     return distance, len(path) #geometric distance, network distance
+
+def dijkstra(graph_dict, target = None):
+    if target == None:
+        target = len(graph_dict) - 1
+    
+    shortest_dict = dict.fromkeys(graph_dict.keys())
+    #initialise dictionary
+    for key in graph_dict.keys():
+        shortest_dict[key] = {'dist': np.inf, 'bestParent': None }
+    shortest_dict[0] = {'dist': 0.0, 'bestParent': None }
+
+    queue = list(graph_dict.keys()) #[0]
+    visited = []
+    while queue:
+        filter_dict = {shortest_dict[c]['dist']: c for c in graph_dict.keys() if c not in visited}
+        u = filter_dict[min(filter_dict)]
+        if u == target:
+            break
+        
+        queue.remove(u)
+        children = graph_dict[u] #nearest neighbours   
+        tentativeDist = {c: shortest_dict[u]['dist'] + children[c] for c in children} #sum(shortest_dict[c]['dist'].add(children[c]))
+        
+        #compare tentative distances
+        for c in children:
+            if tentativeDist[c] < shortest_dict[c]['dist']:
+                shortest_dict[c]['dist'] = tentativeDist[c]
+                shortest_dict[c]['bestParent'] = u
+        
+        visited.append(u)
+
+    shortestPath = []
+    u = target
+    if shortest_dict[u]['bestParent'] != None or u == 0:
+        while u:
+            shortestPath.append(u)
+            u = shortest_dict[u]['bestParent']
+
+    shortestPath.reverse()
+    return shortestPath, shortest_dict[target]['dist']        
