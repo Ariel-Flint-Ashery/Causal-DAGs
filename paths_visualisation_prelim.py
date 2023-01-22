@@ -4,7 +4,10 @@ Created on Wed Jan 18 22:46:39 2023
 
 @author: kevin
 """
-
+#%%
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 import DAG_Library.module_path_algorithms as pa
 import DAG_Library.module_random_geometric_graphs as rgg
 import numpy as np
@@ -37,8 +40,9 @@ def plt_edges(edge_list, pos, paths, labels = None, node_size = 0.5, show_nodes 
 R = 0.13
 
 pos = rgg._poisson_cube_sprinkling(2000, 1, 2)
-edge_list, graph_dict, pos = rgg.lp_random_geometric_graph(pos, R, 0.5)
+edge_list, graph_dict = rgg.lp_random_geometric_graph(pos, R, 0.5)
 
+#%%
 shortest_path, longest_path = pa.short_long_paths(graph_dict, edge_list = edge_list)
 greedy_path = pa.greedy_path(graph_dict)
 
@@ -47,3 +51,10 @@ labels = ['short', 'long', 'greedy']
 
 plt_edges(edge_list, pos, paths, labels = labels, show_nodes = True, style = 'dashed')
 
+#%%
+ariel_longest_path = pa.getLongestPath(graph_dict)
+# %%
+labels = ['ariel']
+plt_edges(edge_list, pos, ariel_longest_path, labels = labels, show_nodes = True, style = 'dashed')
+
+# %%

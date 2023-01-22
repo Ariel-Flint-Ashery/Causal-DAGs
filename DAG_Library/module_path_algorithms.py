@@ -9,6 +9,7 @@ This module contains path searching algorithms.
 """
 import matplotlib.pyplot as plt
 import numpy as np
+import copy 
 
 def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target = None):
     """
@@ -141,7 +142,7 @@ def BFS_percolating(graph_dict, target = None):
             queue.append(iter(graph_dict[child]))
     return False # Returns false only if the while queue loop terminates, which indicates no path is found
 
-def DFS_percolating(graph_dict, target = None):
+def DFS_percolating(graph_dict, target = None, source = 0):
     """
     Depth first search through a network for a path from the source to the target.
     The depth first serach also prioritises higher indexed nodes, which are likely
@@ -161,11 +162,11 @@ def DFS_percolating(graph_dict, target = None):
     if target == None:
         target = len(graph_dict) - 1
         
-    if 0 not in graph_dict:
+    if source not in graph_dict:
         return False
     
-    visited = dict.fromkeys([0])
-    queue = [c for c in graph_dict[0]]
+    visited = dict.fromkeys([source])
+    queue = [c for c in graph_dict[source]]
     
     if target in queue:
         return True
@@ -185,6 +186,30 @@ def DFS_percolating(graph_dict, target = None):
             for c in children:
                 queue.append(c)
     return False
+
+def DFS(graph_dict, source=0):
+    if source not in graph_dict:
+        raise ValueError('Source not in graph')
+    
+    visited = dict.fromkeys(graph_dict)
+    for key in visited.keys():
+        visited[key] = False
+    visited[source] = True  
+    queue = [c for c in graph_dict[source]]
+    while queue:
+        child = queue[-1]
+        queue.pop()
+        if visited[child]:
+            continue
+        
+        else:
+            visited[child] = True
+            children = [c for c in graph_dict[child]]
+            for c in children:
+                queue.append(c)
+    
+    return visited
+                
 
 def greedy_path(graph_dict, target = None):
     if target == None:
@@ -218,7 +243,6 @@ def greedy_path(graph_dict, target = None):
             continue
         
 def pathDist(graph_dict, path,p):
-    queue = []
     distance = 0.0
     
     for i in range(len(path)-1):
@@ -278,7 +302,7 @@ def findAllSources(graph_dict):
         Output:
             list of all source vertices in graph_dict.
     """
-    sources = []
+    sources = [0]
     for v in graph_dict.keys():
         #break conditions
         if v == 0:
@@ -293,7 +317,7 @@ def findAllSources(graph_dict):
         if counter == v:
             sources.append(v)
     
-    if len(graph_dict) in sources:
+    if len(graph_dict)-1 in sources:
         raise ValueError('Target is a source. Check graph is complete.')
     
     return sources
@@ -329,6 +353,15 @@ def kahn_sort(graph_dict, S = None):
     
     return L
 
+def getInverseGraph(graph_dict):
+    inv_graph_dict = {u:{} for u in graph_dict}
+    edge_list = [(u,v) for u in graph_dict for v in graph_dict[u]]
+        #None #need to actually code a way to get edge list from graph dict
+    for e in edge_list:    
+        inv_graph_dict[e[1]][e[0]] = {}
+    
+    return inv_graph_dict
+            
 def getInterval(graph_dict):
     """
     Input:
@@ -337,36 +370,41 @@ def getInterval(graph_dict):
     Output:
         L: Topologically sorted (by Kahn's algorithm) interval between source and target.
     """
+    #check if node connects to source:
+    visited = DFS(graph_dict) #key:val = node:in interval?
+    
+    #perform topological sort
     S = [0] #we only consider one source node
-    G = graph_dict.copy()
+    G = copy.deepcopy(graph_dict)
+    I = getIncomingDict(graph_dict, visited)
+    i = copy.deepcopy(I)
     L = []
     while S: #while S is not empty, will return True
-        n = S.pop(0)
+        n = S.pop()
         L.append(n)
-
-        for m in G[n]:
+        #g = copy.deepcopy(graph_dict)
+        for m in graph_dict[n]:
             G[n].pop(m)
-            if getIncomingDict(graph_dict)[m] == {}:
+            i[m].remove(n)
+            if i[m] == set(): #if m has no more incoming edges
                 S.append(m)
-            # if m not in findAllSources(G):
-            #     S.append(m)
 
-    return L
-def getIncomingDict(graph_dict): #we might want to move this to geometric graph module?
+    return L, I
+def getIncomingDict(graph_dict, interval_dict = None): #we might want to move this to geometric graph module?
     """
     Return an adjacency dictionary for incoming edges.
         Input:
             graph_dict: adjacency dictionary of entire graph for edge between u and v.
-            Here, keys indicate u and values indicate v.
+            Here, keys indicate u and values indicate v. key:val = node:outgoing nodes
 
         Output:
             incoming_dict: adjacency dictionary of entire graph for edge between u and v.
-            Here, keys indicate v and values indicate u.
+            Here, keys indicate v and values indicate u. key:val = node:incoming nodes
 
     """
     incoming_dict = dict.fromkeys(graph_dict.keys())
     for key in graph_dict.keys():
-        incoming_dict[key] = {}
+        incoming_dict[key] = set()
     
     for v in graph_dict.keys():
         if v == 0:
@@ -374,7 +412,11 @@ def getIncomingDict(graph_dict): #we might want to move this to geometric graph 
 
         for i in range(v):
             if v in graph_dict[i].keys():
-                incoming_dict[v].add(i)
+                if interval_dict == None:
+                    incoming_dict[v].add(i)
+                else:
+                    if interval_dict[v] == True and interval_dict[i] == True:
+                        incoming_dict[v].add(i)
 
     return incoming_dict
 
@@ -383,9 +425,13 @@ def generateLongestNetworkPath(graph_dict):
     Find the longest network path in a directed acylic graph. 
     """
     S = findAllSources(graph_dict)
+    print('sources found')
     #L = kahn_sort(graph_dict, S)
-    L = getInterval(graph_dict)
-    I = getIncomingDict(graph_dict)
+    L, I = getInterval(graph_dict)
+    print('Interval complete')
+    #print(L)
+    # I = getIncomingDict(graph_dict)
+    # print('Incoming complete')
     
     #initialise dictionary
     longest_dict = dict.fromkeys(graph_dict.keys())
@@ -406,7 +452,8 @@ def generateLongestNetworkPath(graph_dict):
 
     return longest_dict
 
-def getLongestPath(graph_dict, target):
+def getLongestPath(graph_dict):
+    target = len(graph_dict) - 1
     longest_dict = generateLongestNetworkPath(graph_dict)
     longestPath = []
     u = target
@@ -414,6 +461,7 @@ def getLongestPath(graph_dict, target):
         while u:
             longestPath.append(u)
             u = longest_dict[u]['bestParent']
-
+            print(u)
+    longestPath.append(0)
     longestPath.reverse()
     return longestPath, longest_dict[target]['dist']   
