@@ -10,72 +10,92 @@ This module contains path searching algorithms.
 import matplotlib.pyplot as plt
 import numpy as np
 
-def BFS_all_paths(graph_dict, target):
+def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target = None):
     """
-    Breadth first search from source to target
-        Source is specifically node 0
-        Target is specifically the last node in the network
-            Note: The network must be sorted in a way that the source node has
-                  no incoming edge and the target has no outgoing edges.
+        Shortest and Longest path search by labelling the distances of each node from the origin. 
+        Shortest path obtained by tracking back from the shortest distance at the target, choosing
+        edges to nodes with -1 distance from the current node.
+        Longest path obtained by tracking back from the longest distance at the target, choosing
+        edges to nodes with -1 distance from the current node.
+        
+        Input:
+            graph_dict: Graph represented as an adjacency list in the form of a python dictionary
+            e.g {0: [1, 2, 3],
+                  1: [2, 3],
+                  2: [4, 6]
+                  ...}
+            
+            edge_list: Graph represented as an edge list, i.e [(0,1), (0,3), ...]
+            
+            inv_graph_dict: Inverse graph, i.e the graph with edges pointing backwards
+            
+            target: target node for the path to reach
+        
+        Output:
+            Yields a generator listing all paths from the source to the target
+        """
+    if inv_graph_dict == None:
+        inv_graph_dict = {u:{} for u in graph_dict}
+        if edge_list == None:
+            edge_list = [(u,v) for u in graph_dict for v in graph_dict[u]]
+            None #need to actually code a way to get edge list from graph dict
+        for e in edge_list:    
+            inv_graph_dict[e[1]][e[0]] = {}
+        
+    target = len(graph_dict) - 1
+    print(inv_graph_dict[target])
+    queue = [0]
+    visited = {}
+    node_dist = {u:{} for u in graph_dict}
+    node_dist[0][0] = None
     
-    Input:
-        G: Graph represented as an adjacency list in the form of a python dictionary
-        e.g {0: [1, 2, 3],
-             1: [2, 3],
-             2: [4, 6]
-             ...}
-    
-    Output:
-        Yields a generator listing all paths from the source to the target
-    """
-    target = {target}
-    
-    visited = dict.fromkeys([0]) 
-    queue = [iter(graph_dict[0])]
-    
-    d_min = None
-    d_max = 0
-    
-    shortest_paths = []
-    longest_paths = []
-    
-    while queue:
-        children = queue[-1] # picks out last iterable generator in the queue list  
-        child = next(children, None) # generates the first child
-        if child is None: # if there are no more child, remove the current generator from the queue
-            queue.pop()
-            visited.popitem()
-        else:
-            if child in visited: # if the child has been visited before, do nothing
+    while queue:    # create a dictionary where key:values pairs are node:{distances from origin}
+        current = queue[0]
+        children = graph_dict[current]
+        for child in children:
+            dist = [d + 1 for d in node_dist[current].keys()]
+            for d in dist:
+                node_dist[child][d] = None
+            if child in visited:
                 continue
-            if child in target: # if the child is the target, yield the entire path from source to target
-                distance = len(visited) 
-                
-                
-                if distance >= d_max: # if distance to child is >= the previously recorded max distance
-                    if distance > d_max: # if it is greater, then forget all past longest paths and record new ones
-                        longest_paths = []
-                        d_max = distance
-                    longest_paths.append(list(visited) + [child])
-                
-                elif d_min is None: # initialise min distance
-                    d_min = distance
-                    shortest_paths.append(list(visited) + [child])
-                
-                elif distance <= d_min: # if distance to child is <= the previously recorded max distance
-                    if distance < d_min: # if it is less, then forget all past shortest paths and record new ones
-                        shortest_paths = []
-                        d_min = distance
-                    shortest_paths.append(list(visited) + [child])
-                
-                
-            visited[child] = None # record the child as a visited node
-            if target - set(visited.keys()): # if the target is not yet visited, add the children of this child to the queue
-                queue.append(iter(graph_dict[child]))
-            else: # if the target is visited, remove it from the visited nodes so we don't prematurely stop searching
-                visited.popitem()
-    yield shortest_paths
-    yield longest_paths
+            else:
+                visited[child] = None
+                queue.append(child)
+        queue.pop(0)
+    
+    long_path_dist = max(node_dist[target])
+    short_path_dist = min(node_dist[target])
+    
+    long_queue = [target]
+    while long_queue:   # choose nodes starting from the target and working backwards
+        current = long_queue[-1]
+        long_path_dist -= 1
+        if long_path_dist == 0:
+            long_queue.append(0)
+            break
+        parents = iter(inv_graph_dict[current])
+        while parents:
+            parent = next(parents, None)
+            print(long_path_dist)
+            if long_path_dist in node_dist[parent]:
+                parents = None
+        long_queue.append(parent)
+    
+    short_queue = [target]
+    while short_queue:
+        current = short_queue[-1]
+        short_path_dist -= 1
+        if short_path_dist == 0:
+            short_queue.append(0)
+            break
+        parents = iter(inv_graph_dict[current])
+        while parents:
+            parent = next(parents, None)
+            if short_path_dist in node_dist[parent]:
+                parents = None
+        short_queue.append(parent)
+        
+    return short_queue, long_queue
 
 def BFS_percolating(graph_dict, target = None):
     """
