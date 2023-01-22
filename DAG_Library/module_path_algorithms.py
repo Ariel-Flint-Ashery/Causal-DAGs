@@ -263,8 +263,6 @@ def findAllSources(graph_dict):
         #break conditions
         if v == 0:
             continue
-        if v == len(graph_dict.keys()):
-            break
 
         #find source nodes
         counter = 0
@@ -274,14 +272,18 @@ def findAllSources(graph_dict):
 
         if counter == v:
             sources.append(v)
-
+    
+    if len(graph_dict) in sources:
+        raise ValueError('Target is a source. Check graph is complete.')
+    
     return sources
 
-def kahn_sort(graph_dict):
+def kahn_sort(graph_dict, S = None):
     """
     Run a kahn sorting algorithm on a directed acylic graph.
         Input:
             graph_dict: adjacency dictionary of entire graph.
+            S: list of all source nodes.
 
         Output:
             L: Topologically sorted order of vertices. 
@@ -291,8 +293,9 @@ def kahn_sort(graph_dict):
     #legacy
     # connection_list = sorted({x for v in graph.values() for x in v})
     # S = [ele for ele in list(graph.keys()) if ele not in connection_list]
+    if S == None:
+        S = findAllSources(graph_dict)
 
-    S = findAllSources(graph_dict)
     G = graph_dict.copy()
     L = []
     while S: #while S is not empty, will return True
@@ -305,3 +308,92 @@ def kahn_sort(graph_dict):
                 S.append(m)
     
     return L
+
+def getInterval(graph_dict):
+    """
+    Input:
+        graph_dict
+
+    Output:
+        L: Topologically sorted (by Kahn's algorithm) interval between source and target.
+    """
+    S = [0] #we only consider one source node
+    G = graph_dict.copy()
+    L = []
+    while S: #while S is not empty, will return True
+        n = S.pop(0)
+        L.append(n)
+
+        for m in G[n]:
+            G[n].pop(m)
+            if getIncomingDict(graph_dict)[m] == {}:
+                S.append(m)
+            # if m not in findAllSources(G):
+            #     S.append(m)
+
+    return L
+def getIncomingDict(graph_dict): #we might want to move this to geometric graph module?
+    """
+    Return an adjacency dictionary for incoming edges.
+        Input:
+            graph_dict: adjacency dictionary of entire graph for edge between u and v.
+            Here, keys indicate u and values indicate v.
+
+        Output:
+            incoming_dict: adjacency dictionary of entire graph for edge between u and v.
+            Here, keys indicate v and values indicate u.
+
+    """
+    incoming_dict = dict.fromkeys(graph_dict.keys())
+    for key in graph_dict.keys():
+        incoming_dict[key] = {}
+    
+    for v in graph_dict.keys():
+        if v == 0:
+            continue
+
+        for i in range(v):
+            if v in graph_dict[i].keys():
+                incoming_dict[v].add(i)
+
+    return incoming_dict
+
+def generateLongestNetworkPath(graph_dict):
+    """
+    Find the longest network path in a directed acylic graph. 
+    """
+    S = findAllSources(graph_dict)
+    #L = kahn_sort(graph_dict, S)
+    L = getInterval(graph_dict)
+    I = getIncomingDict(graph_dict)
+    
+    #initialise dictionary
+    longest_dict = dict.fromkeys(graph_dict.keys())
+    for key in graph_dict.keys():
+        longest_dict[key] = {'dist': 0.0, 'bestParent': None}
+    
+    for v in L:
+        #skip if v is a source
+        if v in S:
+            continue
+        
+        else:
+            tempDist = {longest_dict[parent]['dist']+1: parent for parent in I[v]}
+            temp = max(tempDist.keys())
+            if temp > longest_dict[v]['dist']:
+                longest_dict[v]['dist'] = temp
+                longest_dict[v]['bestParent'] = tempDist[temp]
+
+    return longest_dict
+
+def getLongestPath(graph_dict, target):
+    longest_dict = generateLongestNetworkPath(graph_dict)
+    longestPath = []
+    u = target
+    if longest_dict[u]['bestParent'] != None or u == 0:
+        while u:
+            longestPath.append(u)
+            u = longest_dict[u]['bestParent']
+
+    longestPath.reverse()
+    return longestPath, longest_dict[target]['dist']   
