@@ -64,23 +64,6 @@ def _fixed_lp_distance_connection(v, R, p):
         return True
     else:
         return False
-
-def kahn_sort(graph):
-
-    connection_list = sorted({x for v in graph.values() for x in v})
-    S = [ele for ele in list(graph.keys()) if ele not in connection_list]
-    G = graph.copy()
-    L = []
-    while S: #while S is not empty, will return True
-        n = S.pop(0)
-        L.append(n)
-
-        for m in G[n]:
-            G[n].pop(m)
-            if m not in sorted({x for v in G.values() for x in v}):
-                S.append(m)
-    
-    return L
     
 def lp_random_geometric_graph(X, R, p):
     """
@@ -111,22 +94,3 @@ def lp_random_geometric_graph(X, R, p):
         for i in new_edges:
             edge_list.append(i)
     return edge_list, adjacency_list
-
-def reduceGraph(graph_dict, X):
-    """
-    check vertex has incoming edges. If vertex does not exist in neighbour's 
-    adjacenecy list, we delete it and remove from the PPP distribution. 
-
-    Neighbours are defined by sorting in 1 dimension. 
-    """
-    queue = []
-    for v in graph_dict.keys():
-        if v == len(graph_dict.keys()) - 1:
-            break
-        if v not in graph_dict[v+1].keys():
-            del graph_dict[v]
-            queue.append(v)
-
-    X  = np.delete(X, queue)
-
-    return graph_dict, X

@@ -276,15 +276,15 @@ plt.show()
 
 
 # %%
-for i in range(3):
-    p0 = [K[0]*1.5, 50]
-    K_prime, pi_prime, params, _ =  pg.criticality_function_fit(K, pi, p0 = p0, sigma = None)
-    K_infl = params[0]
-    plt.plot(keys[i], vals[i], label = f'N = {N[i]}', marker = '*')
+# for i in range(3):
+#     p0 = [K[0]*1.5, 50]
+#     K_prime, pi_prime, params, _ =  pg.criticality_function_fit(K, pi, p0 = p0, sigma = None)
+#     K_infl = params[0]
+#     plt.plot(keys[i], vals[i], label = f'N = {N[i]}', marker = '*')
 
-plt.legend()
-plt.xlabel('<k>')
-plt.ylabel('pi')
-plt.grid()
-plt.show()
+# plt.legend()
+# plt.xlabel('<k>')
+# plt.ylabel('pi')
+# plt.grid()
+# plt.show()
 # %%

@@ -245,3 +245,63 @@ def dijkstra(graph_dict, target = None):
 
     shortestPath.reverse()
     return shortestPath, shortest_dict[target]['dist']        
+
+def findAllSources(graph_dict):
+    """
+    Find all vertices with no incoming edges in a directed acyclic graph.
+    Graph is sorted in one dimension, such that neighbouring indices must connect
+    if they satisfy the radius condition. 
+        Input:
+            graph_dict: adjacency dictionary of entire graph. 
+            {i: {j,k,l....}}, j, k, l are outgoing from i.
+        
+        Output:
+            list of all source vertices in graph_dict.
+    """
+    sources = []
+    for v in graph_dict.keys():
+        #break conditions
+        if v == 0:
+            continue
+        if v == len(graph_dict.keys()):
+            break
+
+        #find source nodes
+        counter = 0
+        for i in range(v):
+            if v not in graph_dict[i].keys():
+                counter += 1
+
+        if counter == v:
+            sources.append(v)
+
+    return sources
+
+def kahn_sort(graph_dict):
+    """
+    Run a kahn sorting algorithm on a directed acylic graph.
+        Input:
+            graph_dict: adjacency dictionary of entire graph.
+
+        Output:
+            L: Topologically sorted order of vertices. 
+    
+    """
+    
+    #legacy
+    # connection_list = sorted({x for v in graph.values() for x in v})
+    # S = [ele for ele in list(graph.keys()) if ele not in connection_list]
+
+    S = findAllSources(graph_dict)
+    G = graph_dict.copy()
+    L = []
+    while S: #while S is not empty, will return True
+        n = S.pop(0)
+        L.append(n)
+
+        for m in G[n]:
+            G[n].pop(m)
+            if m not in findAllSources(G):
+                S.append(m)
+    
+    return L
