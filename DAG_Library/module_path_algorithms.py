@@ -39,12 +39,10 @@ def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target
         inv_graph_dict = {u:{} for u in graph_dict}
         if edge_list == None:
             edge_list = [(u,v) for u in graph_dict for v in graph_dict[u]]
-            None #need to actually code a way to get edge list from graph dict
         for e in edge_list:    
             inv_graph_dict[e[1]][e[0]] = {}
         
     target = len(graph_dict) - 1
-    print(inv_graph_dict[target])
     queue = [0]
     visited = {}
     node_dist = {u:{} for u in graph_dict}
@@ -68,7 +66,7 @@ def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target
     short_path_dist = min(node_dist[target])
     
     long_queue = [target]
-    while long_queue:   # choose nodes starting from the target and working backwards
+    while long_queue:
         current = long_queue[-1]
         long_path_dist -= 1
         if long_path_dist == 0:
@@ -77,7 +75,6 @@ def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target
         parents = iter(inv_graph_dict[current])
         while parents:
             parent = next(parents, None)
-            print(long_path_dist)
             if long_path_dist in node_dist[parent]:
                 parents = None
         long_queue.append(parent)
@@ -95,6 +92,8 @@ def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target
             if short_path_dist in node_dist[parent]:
                 parents = None
         short_queue.append(parent)
+    short_queue.reverse()
+    long_queue.reverse()
         
     return short_queue, long_queue
 
