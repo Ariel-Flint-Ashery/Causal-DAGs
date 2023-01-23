@@ -249,6 +249,21 @@ def pathDist(graph_dict, path,p):
 
     return distance, len(path) #geometric distance, network distance
 
+def pathJaggy(graph_dict, pos, path):
+    theta = 0
+    
+    for i in range(len(path) - 2):
+        u = pos[path[i+1]] - pos[path[i]]
+        v = pos[path[i+2]] - pos[path[i+1]]
+        grad_u = u[1]/u[0]
+        grad_v = v[1]/v[0]
+        sign = 1
+        if grad_v < grad_u:
+            sign = -1
+        theta += sign * np.arccos(np.dot(u, v)/(np.linalg.norm(pos[-1]) * np.linalg.norm(u)))
+    
+    return theta/(len(path) - 1)
+
 def dijkstra(graph_dict, target = None):
     if target == None:
         target = len(graph_dict) - 1
