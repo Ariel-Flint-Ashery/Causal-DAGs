@@ -43,25 +43,25 @@ def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target
             inv_graph_dict[e[1]][e[0]] = {}
         
     target = len(graph_dict) - 1
-    queue = [0]
-    visited = {}
-    node_dist = {u:{} for u in graph_dict}
-    node_dist[0][0] = None
+    queue = [{0}]
+    node_dist = {u:set() for u in graph_dict}
+    current_distance = 0 
     
     while queue:    # create a dictionary where key:values pairs are node:{distances from origin}
-        current = queue[0]
-        children = graph_dict[current]
-        for child in children:
-            dist = [d + 1 for d in node_dist[current].keys()]
-            for d in dist:
-                node_dist[child][d] = None
-            if child in visited:
-                continue
-            else:
-                visited[child] = None
-                queue.append(child)
+        next_generation = set()
+        parents = queue[0]
+        for parent in parents:
+            children = graph_dict[parent]
+            for child in children:
+                next_generation.add(child)
+            node_dist[parent].add(current_distance)
+        current_distance += 1
         queue.pop(0)
-    
+        if len(next_generation) == 0:
+            continue
+        else:
+            queue.append(next_generation)
+            
     long_path_dist = max(node_dist[target])
     short_path_dist = min(node_dist[target])
     
