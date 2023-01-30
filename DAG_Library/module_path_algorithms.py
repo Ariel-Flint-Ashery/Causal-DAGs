@@ -390,6 +390,40 @@ def getInterval(graph_dict):
                 S.append(m)
 
     return L, I
+
+def getStrictInterval(graph_dict, s = 0, t = None):
+    """
+    Return the strict interval for a directed network between two nodes.
+        Input:
+            graph_dict: adjacency dictionary for the graph.
+            s: source node.
+            t: target node.
+
+        Output:
+            interval_dict: adjacency dictionary for the graph within the interval.
+            incoming_dict: incoming adjacency dictionary for the graph within the interval.
+    """
+    if t == None:
+        t = len(graph_dict) - 1
+
+    visited = DFS(graph_dict, s) #key:val = node:in interval?
+    inv_graph = getInverseGraph(graph_dict)
+    incoming_dict = getIncomingDict(graph_dict)
+    inv_visited = DFS(inv_graph, t)
+    interval_dict = copy.deepcopy(graph_dict)
+    incoming_copy = copy.deepcopy(incoming_dict)
+    for v in graph_dict.keys():
+        if visited[v] == False or inv_visited[v] == False:
+            for c in graph_dict[v]:
+                incoming_dict[c].pop(v, None)
+
+            for p in incoming_copy[v]:
+                interval_dict[p].pop(v, None)
+            
+            interval_dict.pop(v, None)
+        
+    return interval_dict, incoming_dict
+
 def getIncomingDict(graph_dict, interval_dict = None): #we might want to move this to geometric graph module?
     """
     Return an adjacency dictionary for incoming edges.
@@ -465,3 +499,20 @@ def getLongestPath(graph_dict):
     longestPath.append(0)
     longestPath.reverse()
     return longestPath, longest_dict[target]['dist']   
+
+#def getGraphMeasures(graph_dict):
+"""
+- longest path
+- shortest path
+- greedy path
+- for each path: geometric & network distance
+- jaggedness: wrt line and path
+- Largest separation from straight line
+- average/total separation from straight line: Euclidean + Lp
+"""
+
+#def plotter(X, p_vals, iterations = 1):
+"""
+bar plots of each metric, for each p value. 
+"""
+    
