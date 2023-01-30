@@ -39,36 +39,34 @@ def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target
         inv_graph_dict = {u:{} for u in graph_dict}
         if edge_list == None:
             edge_list = [(u,v) for u in graph_dict for v in graph_dict[u]]
-            None #need to actually code a way to get edge list from graph dict
         for e in edge_list:    
             inv_graph_dict[e[1]][e[0]] = {}
         
     target = len(graph_dict) - 1
-    print(inv_graph_dict[target])
-    queue = [0]
-    visited = {}
-    node_dist = {u:{} for u in graph_dict}
-    node_dist[0][0] = None
+    queue = [{0}]
+    node_dist = {u:set() for u in graph_dict}
+    current_distance = 0 
     
     while queue:    # create a dictionary where key:values pairs are node:{distances from origin}
-        current = queue[0]
-        children = graph_dict[current]
-        for child in children:
-            dist = [d + 1 for d in node_dist[current].keys()]
-            for d in dist:
-                node_dist[child][d] = None
-            if child in visited:
-                continue
-            else:
-                visited[child] = None
-                queue.append(child)
+        next_generation = set()
+        parents = queue[0]
+        for parent in parents:
+            children = graph_dict[parent]
+            for child in children:
+                next_generation.add(child)
+            node_dist[parent].add(current_distance)
+        current_distance += 1
         queue.pop(0)
-    
+        if len(next_generation) == 0:
+            continue
+        else:
+            queue.append(next_generation)
+            
     long_path_dist = max(node_dist[target])
     short_path_dist = min(node_dist[target])
     
     long_queue = [target]
-    while long_queue:   # choose nodes starting from the target and working backwards
+    while long_queue:
         current = long_queue[-1]
         long_path_dist -= 1
         if long_path_dist == 0:
@@ -77,7 +75,6 @@ def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target
         parents = iter(inv_graph_dict[current])
         while parents:
             parent = next(parents, None)
-            print(long_path_dist)
             if long_path_dist in node_dist[parent]:
                 parents = None
         long_queue.append(parent)
@@ -95,6 +92,8 @@ def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target
             if short_path_dist in node_dist[parent]:
                 parents = None
         short_queue.append(parent)
+    short_queue.reverse()
+    long_queue.reverse()
         
     return short_queue, long_queue
 
@@ -249,6 +248,21 @@ def pathDist(graph_dict, path,p):
         distance += graph_dict[path[i]][path[i+1]].values() #[-1]
 
     return distance, len(path) #geometric distance, network distance
+
+def pathJaggy(graph_dict, pos, path):
+    theta = 0
+    
+    for i in range(len(path) - 2):
+        u = pos[path[i+1]] - pos[path[i]]
+        v = pos[path[i+2]] - pos[path[i+1]]
+        grad_u = u[1]/u[0]
+        grad_v = v[1]/v[0]
+        sign = 1
+        if grad_v < grad_u:
+            sign = -1
+        theta += sign * np.arccos(np.dot(u, v)/(np.linalg.norm(pos[-1]) * np.linalg.norm(u)))
+    
+    return theta/(len(path) - 1)
 
 def dijkstra(graph_dict, target = None):
     if target == None:
