@@ -336,33 +336,37 @@ def findAllSources(graph_dict):
     
     return sources
 
-def kahn_sort(graph_dict, S = None):
+def kahn_sort(graph_dict, incoming_dict = None, S = None):
     """
-    Run a kahn sorting algorithm on a directed acylic graph.
+    Run a Kahn sorting algorithm on a directed acylic graph.
         Input:
             graph_dict: adjacency dictionary of entire graph.
-            S: list of all source nodes.
+            S: list of all source nodes. default: find ALL sources. 
 
         Output:
             L: Topologically sorted order of vertices. 
     
     """
-    
-    #legacy
-    # connection_list = sorted({x for v in graph.values() for x in v})
-    # S = [ele for ele in list(graph.keys()) if ele not in connection_list]
     if S == None:
         S = findAllSources(graph_dict)
+    
+    if type(S) != list:
+        raise ValueError('Please give sources S as a list')
 
-    G = graph_dict.copy()
+    if incoming_dict == None:
+        incoming_dict = getIncomingDict(graph_dict)
+    
+    G = copy.deepcopy(graph_dict)
+    I = copy.deepcopy(incoming_dict)
     L = []
     while S: #while S is not empty, will return True
         n = S.pop(0)
         L.append(n)
 
-        for m in G[n]:
+        for m in graph_dict[n]:
             G[n].pop(m)
-            if m not in findAllSources(G):
+            I[m].remove(n)
+            if I[m] == set(): #if m has no more incoming edges
                 S.append(m)
     
     return L
@@ -372,7 +376,7 @@ def getInverseGraph(graph_dict):
     edge_list = [(u,v) for u in graph_dict for v in graph_dict[u]]
         #None #need to actually code a way to get edge list from graph dict
     for e in edge_list:    
-        inv_graph_dict[e[1]][e[0]] = {}
+        inv_graph_dict[e[1]][e[0]] = {graph_dict[e[0]][e[1]]}
     
     return inv_graph_dict
             
@@ -405,7 +409,7 @@ def getInterval(graph_dict):
 
     return L, I
 
-def getStrictInterval(graph_dict, s = 0, t = None):
+def getStrictInterval(graph_dict, s = None, t = None):
     """
     Return the strict interval for a directed network between two nodes.
         Input:
@@ -417,6 +421,8 @@ def getStrictInterval(graph_dict, s = 0, t = None):
             interval_dict: adjacency dictionary for the graph within the interval.
             incoming_dict: incoming adjacency dictionary for the graph within the interval.
     """
+    if s == None:
+        s = 0
     if t == None:
         t = len(graph_dict) - 1
 
@@ -427,7 +433,7 @@ def getStrictInterval(graph_dict, s = 0, t = None):
     interval_dict = copy.deepcopy(graph_dict)
     incoming_copy = copy.deepcopy(incoming_dict)
     for v in graph_dict.keys():
-        if visited[v] == False or inv_visited[v] == False:
+        if (visited[v] == False) or (inv_visited[v] == False):
             for c in graph_dict[v]:
                 incoming_dict[c].pop(v, None)
 
@@ -438,7 +444,7 @@ def getStrictInterval(graph_dict, s = 0, t = None):
         
     return interval_dict, incoming_dict
 
-def getIncomingDict(graph_dict, interval_dict = None): #we might want to move this to geometric graph module?
+def getIncomingDict(graph_dict, interval_dict = None): 
     """
     Return an adjacency dictionary for incoming edges.
         Input:
@@ -468,19 +474,18 @@ def getIncomingDict(graph_dict, interval_dict = None): #we might want to move th
 
     return incoming_dict
 
-def generateLongestNetworkPath(graph_dict):
+def generateLongestNetworkPath(graph_dict, source, target):
     """
     Find the longest network path in a directed acylic graph. 
     """
     S = findAllSources(graph_dict)
     print('sources found')
     #L = kahn_sort(graph_dict, S)
-    L, I = getInterval(graph_dict)
+    interval_dict, incoming_dict = getStrictInterval(graph_dict, source, target)
+    L = kahn_sort(interval_dict, incoming_dict, s = [source])
+    #L, I = getInterval(graph_dict)
     print('Interval complete')
-    #print(L)
-    # I = getIncomingDict(graph_dict)
-    # print('Incoming complete')
-    
+        
     #initialise dictionary
     longest_dict = dict.fromkeys(graph_dict.keys())
     for key in graph_dict.keys():
@@ -492,7 +497,7 @@ def generateLongestNetworkPath(graph_dict):
             continue
         
         else:
-            tempDist = {longest_dict[parent]['dist']+1: parent for parent in I[v]}
+            tempDist = {longest_dict[parent]['dist']+1: parent for parent in incoming_dict[v]}
             temp = max(tempDist.keys())
             if temp > longest_dict[v]['dist']:
                 longest_dict[v]['dist'] = temp
@@ -500,12 +505,15 @@ def generateLongestNetworkPath(graph_dict):
 
     return longest_dict
 
-def getLongestPath(graph_dict):
-    target = len(graph_dict) - 1
-    longest_dict = generateLongestNetworkPath(graph_dict)
+def getLongestPath(graph_dict, source = None, target = None):
+    if source == None:
+        source = 0
+    if target == None:
+        target = len(graph_dict) - 1
+    longest_dict = generateLongestNetworkPath(graph_dict, source, target)
     longestPath = []
     u = target
-    if longest_dict[u]['bestParent'] != None or u == 0:
+    if longest_dict[u]['bestParent'] != None or u == source:
         while u:
             longestPath.append(u)
             u = longest_dict[u]['bestParent']

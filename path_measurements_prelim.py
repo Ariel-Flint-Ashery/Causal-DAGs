@@ -11,11 +11,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #%% Independent Variable 
-RHO = 2000
-V = 1
-D = 2
-K = 3
-M = 20
+RHO = 2000 #density
+V = 1 #volume
+D = 2 #dimensions
+K = 3 #average expected degree
+M = 20 #number of graphs to generate (i.e. number of iterations)
 #%% Measurement variables
 _var = ['d', 'j1', 'j2', 'l']
 _path_label = ['_sp', '_lp', '_gp']
