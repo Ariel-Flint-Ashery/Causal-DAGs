@@ -264,7 +264,21 @@ def pathJaggy(graph_dict, pos, path):
     
     return theta/(len(path) - 1)
 
-def dijkstra(graph_dict, source = None, target = None):
+def getShortestPath(graph_dict, optimizer = 'net', source = None, target = None):
+    """
+    Returns the shortest path by Dijkstra's algorithm. The optimizer option 'net'
+    minimizes the path based on network length, while 'geo' minimizes the path
+    based on geometric distance in the Lp space of the network. 
+        Input:
+            graph_dict: adjacency dictionary.
+            source: source node index.
+            target: target node index.
+            optimizer: path optimization method, 'net' or 'geo'. Default: 'net'.
+
+        Output:
+            1. Ordered list of nodes in a shortest path.
+            2. Length of shortest path.
+    """
     if source == None:
         source = 0
     if target == None:
@@ -285,9 +299,17 @@ def dijkstra(graph_dict, source = None, target = None):
             break
         
         queue.remove(u)
-        children = graph_dict[u] #nearest neighbours   
-        tentativeDist = {c: shortest_dict[u]['dist'] + children[c] for c in children} #sum(shortest_dict[c]['dist'].add(children[c]))
+        children = graph_dict[u] #nearest neighbours
         
+        if optimizer == 'geo':   
+            tentativeDist = {c: shortest_dict[u]['dist'] + children[c] for c in children} #sum(shortest_dict[c]['dist'].add(children[c]))
+        
+        elif optimizer == 'net': 
+            tentativeDist = {c: shortest_dict[u]['dist'] + 1 for c in children} #sum(shortest_dict[c]['dist'].add(children[c]))
+
+        else:
+            raise ValueError('Please select optimization method.')
+
         #compare tentative distances
         for c in children:
             if tentativeDist[c] < shortest_dict[c]['dist']:
@@ -304,6 +326,9 @@ def dijkstra(graph_dict, source = None, target = None):
             u = shortest_dict[u]['bestParent']
 
     shortestPath.reverse()
+    shortestDist = shortest_dict[target]['dist']
+    if optimizer == 'net':
+         shortestDist += 1
     return shortestPath, shortest_dict[target]['dist']        
 
 def findAllSources(graph_dict):
@@ -382,35 +407,6 @@ def getInverseGraph(graph_dict):
     
     return inv_graph_dict
             
-def getInterval(graph_dict):
-    """
-    Input:
-        graph_dict
-
-    Output:
-        L: Topologically sorted (by Kahn's algorithm) interval between source and target.
-    """
-    #check if node connects to source:
-    visited = DFS(graph_dict) #key:val = node:in interval?
-    
-    #perform topological sort
-    S = [0] #we only consider one source node
-    G = copy.deepcopy(graph_dict)
-    I = getIncomingDict(graph_dict, visited)
-    i = copy.deepcopy(I)
-    L = []
-    while S: #while S is not empty, will return True
-        n = S.pop()
-        L.append(n)
-        #g = copy.deepcopy(graph_dict)
-        for m in graph_dict[n]:
-            G[n].pop(m)
-            i[m].remove(n)
-            if i[m] == set(): #if m has no more incoming edges
-                S.append(m)
-
-    return L, I
-
 def getStrictInterval(graph_dict, s = None, t = None):
     """
     Return the strict interval for a directed network between two nodes.
@@ -478,7 +474,7 @@ def getIncomingDict(graph_dict, interval_dict = None):
 
     return incoming_dict
 
-def generateLongestNetworkPath(graph_dict, source, target):
+def generateLongestNetworkPath(graph_dict, optimizer, source, target):
     """
     Find the longest network path in a directed acylic graph. 
     """
@@ -487,7 +483,6 @@ def generateLongestNetworkPath(graph_dict, source, target):
     #L = kahn_sort(graph_dict, S)
     interval_dict, incoming_dict = getStrictInterval(graph_dict, source, target)
     L = kahn_sort(interval_dict, incoming_dict, S = [source])
-    #L, I = getInterval(graph_dict)
     print('Interval complete')
         
     #initialise dictionary
@@ -501,7 +496,13 @@ def generateLongestNetworkPath(graph_dict, source, target):
             continue
         
         else:
-            tempDist = {longest_dict[parent]['dist']+1: parent for parent in incoming_dict[v]}
+            if optimizer == 'net':
+                tempDist = {longest_dict[parent]['dist']+1: parent for parent in incoming_dict[v]}
+            elif optimizer == 'geo':
+                tempDist = {longest_dict[parent]['dist']+graph_dict[parent][v]: parent for parent in incoming_dict[v]}
+            else:
+                raise ValueError('please select optimization method.')
+
             temp = max(tempDist.keys())
             if temp > longest_dict[v]['dist']:
                 longest_dict[v]['dist'] = temp
@@ -509,22 +510,29 @@ def generateLongestNetworkPath(graph_dict, source, target):
 
     return longest_dict
 
-def getLongestPath(graph_dict, source = None, target = None):
+def getLongestPath(graph_dict, optimizer = 'net', source = None, target = None):
     if source == None:
         source = 0
     if target == None:
         target = len(graph_dict) - 1
-    longest_dict = generateLongestNetworkPath(graph_dict, source, target)
+    longest_dict = generateLongestNetworkPath(graph_dict, optimizer, source, target)
     longestPath = []
     u = target
     if longest_dict[u]['bestParent'] != None or u == source:
         while u:
             longestPath.append(u)
             u = longest_dict[u]['bestParent']
-            #print(u)
     longestPath.append(0)
     longestPath.reverse()
-    return longestPath, longest_dict[target]['dist']+1   
+    longestDist = longest_dict[target]['dist']
+    if optimizer == 'net':
+        longestDist += 1
+    return longestPath, longestDist   
+
+def getPaths(graph_dict, optimizer, source = None, target=None):
+    longestPath, longestDist = getLongestPath(graph_dict, optimizer, source, target)
+    shortestPath, shortestDist = getShortestPath(graph_dict, optimizer, source, target)
+    return (longestPath, longestDist), (shortestPath, shortestDist)
 
 #def getGraphMeasures(graph_dict):
 """
@@ -541,4 +549,33 @@ def getLongestPath(graph_dict, source = None, target = None):
 """
 bar plots of each metric, for each p value. 
 """
+
+#LEGACY CODE
+# def getInterval(graph_dict):
+#     """
+#     Input:
+#         graph_dict
+
+#     Output:
+#         L: Topologically sorted (by Kahn's algorithm) interval between source and target.
+#     """
+#     #check if node connects to source:
+#     visited = DFS(graph_dict) #key:val = node:in interval?
     
+#     #perform topological sort
+#     S = [0] #we only consider one source node
+#     G = copy.deepcopy(graph_dict)
+#     I = getIncomingDict(graph_dict, visited)
+#     i = copy.deepcopy(I)
+#     L = []
+#     while S: #while S is not empty, will return True
+#         n = S.pop()
+#         L.append(n)
+#         #g = copy.deepcopy(graph_dict)
+#         for m in graph_dict[n]:
+#             G[n].pop(m)
+#             i[m].remove(n)
+#             if i[m] == set(): #if m has no more incoming edges
+#                 S.append(m)
+
+#     return L, I
