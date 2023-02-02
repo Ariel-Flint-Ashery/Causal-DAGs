@@ -264,7 +264,9 @@ def pathJaggy(graph_dict, pos, path):
     
     return theta/(len(path) - 1)
 
-def dijkstra(graph_dict, target = None):
+def dijkstra(graph_dict, source = None, target = None):
+    if source == None:
+        source = 0
     if target == None:
         target = len(graph_dict) - 1
     
@@ -272,7 +274,7 @@ def dijkstra(graph_dict, target = None):
     #initialise dictionary
     for key in graph_dict.keys():
         shortest_dict[key] = {'dist': np.inf, 'bestParent': None }
-    shortest_dict[0] = {'dist': 0.0, 'bestParent': None }
+    shortest_dict[source] = {'dist': 0.0, 'bestParent': None }
 
     queue = list(graph_dict.keys()) #[0]
     visited = []
@@ -435,10 +437,12 @@ def getStrictInterval(graph_dict, s = None, t = None):
     for v in graph_dict.keys():
         if (visited[v] == False) or (inv_visited[v] == False):
             for c in graph_dict[v]:
-                incoming_dict[c].pop(v, None)
+                if c in incoming_dict.keys():
+                    incoming_dict[c].discard(v)
 
             for p in incoming_copy[v]:
-                interval_dict[p].pop(v, None)
+                if p in interval_dict.keys():
+                    interval_dict[p].pop(v, None)
             
             interval_dict.pop(v, None)
         
@@ -482,7 +486,7 @@ def generateLongestNetworkPath(graph_dict, source, target):
     print('sources found')
     #L = kahn_sort(graph_dict, S)
     interval_dict, incoming_dict = getStrictInterval(graph_dict, source, target)
-    L = kahn_sort(interval_dict, incoming_dict, s = [source])
+    L = kahn_sort(interval_dict, incoming_dict, S = [source])
     #L, I = getInterval(graph_dict)
     print('Interval complete')
         
@@ -517,10 +521,10 @@ def getLongestPath(graph_dict, source = None, target = None):
         while u:
             longestPath.append(u)
             u = longest_dict[u]['bestParent']
-            print(u)
+            #print(u)
     longestPath.append(0)
     longestPath.reverse()
-    return longestPath, longest_dict[target]['dist']   
+    return longestPath, longest_dict[target]['dist']+1   
 
 #def getGraphMeasures(graph_dict):
 """
