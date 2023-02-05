@@ -11,27 +11,34 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #%% Independent Variable 
-RHO = 2000 #density
-V = 1 #volume
-D = 2 #dimensions
-K = 3 #average expected degree
-M = 20 #number of graphs to generate (i.e. number of iterations)
+RHO = 2000
+V = 1
+D = 2
+K = 3
+M = 20
 #%% Measurement variables
-_var = ['d', 'j1', 'j2', 'l']
-_path_label = ['_sp', '_lp', '_gp']
-var = [v + p for v in _var for p in _path_label]
-_col = ['green', 'blue', 'red']
-
-#%%
+dep_var = ['d', 'j1', 'j2', 'l']
+path_type = ['_sp', '_lp', '_gp']
 a = np.sqrt(2)
 P = list(np.round([1/a**4, 1/a**3, 1/a**2, 1/a, 1, a, a**2, a**3, a**4], decimals = 5))
 
-path_measures = {p:dict.fromkeys(var, 0) for p in P for v in var}
-path_measures = {v:{p:[] for p in P} for v in var}
+dataframe = {dv:{pt:{p:[] for p in P} for pt in path_type} for dv in dep_var}
+#%% plotting params
+params = {
+        'axes.labelsize':28,
+        'axes.titlesize':28,
+        'font.size':28,
+        'figure.figsize': [11,11],
+        'mathtext.fontset': 'stix',
+        }
+plt.rcParams.update(params)
+
+_col = ['green', 'blue', 'red']
 #%%
 for i in range(M):
     print(i)
     _P = {p:{} for p in P}
+    POS = {p:None for p in P}
     while _P:
         print('perc')
         pos = rgg._poisson_cube_sprinkling(RHO, V, D, fixed_N = True)
@@ -39,25 +46,27 @@ for i in range(M):
         for p in P:
             r = pa.convert_degree_to_radius(K, RHO, D, p)
             edge_list, graph_dict, pos = rgg.lp_random_geometric_graph(pos, r, p)
+            POS[p] = pos
             percolating = pa.DFS_percolating(graph_dict)
             if percolating == True:
                 _P.pop(p)
         
     for p in P:
         r = pa.convert_degree_to_radius(K, RHO, D, p)
-        edge_list, graph_dict, pos = rgg.lp_random_geometric_graph(pos, r, p)
+        edge_list, graph_dict, pos = rgg.lp_random_geometric_graph(POS[p], r, p)
         
         sp, lp = pa.short_long_paths(graph_dict)
         gp = pa.greedy_path(graph_dict)
         paths = [sp, lp, gp]
+        paths = {path_type[i]: paths[i] for i in range(len(paths))}
         
-        for i in range(len(paths)):
-            _d, _l = pa.pathDist(graph_dict, paths[i], p)
-            path_measures[_var[0]+_path_label[i]][p].append(_d)
-            path_measures[_var[3]+_path_label[i]][p].append(_l)
-            path_measures[_var[1]+_path_label[i]][p].append(pa.pathJaggy(graph_dict, pos, paths[i]))
-            path_measures[_var[2]+_path_label[i]][p].append(pa.pathJaggy2(graph_dict, pos, paths[i]))
-        
+        for path in path_type:
+            _d, _l = pa.pathDist(graph_dict, paths[path], p)
+            dataframe['d'][path][p].append(_d)
+            dataframe['l'][path][p].append(_l)
+            dataframe['j1'][path][p].append(pa.pathJaggy(graph_dict, pos, paths[path]))
+            dataframe['j2'][path][p].append(pa.pathJaggy2(graph_dict, pos, paths[path]))
+
         
         # spd = pa.pathDist(graph_dict, sp, p)
         # lpd = pa.pathDist(graph_dict, lp, p)
@@ -71,7 +80,7 @@ for i in range(M):
         # lpj2 = pa.pathJaggy2(graph_dict, pos, lp)
         # gpj2 = pa.pathJaggy2(graph_dict, pos, gp)
 #%%
-for v in _var:
+for v in _var[0]:
     col = iter(_col)
     for l in _path_label[:-1]:
         colour = next(col)
@@ -97,7 +106,17 @@ for p in P:
     for l in jaggy_list[p].values():
         J = J + l
     plt.hist(J, bins = 5)
+    plt.title('j1_sp ' + 'p=' + str(p))
     plt.show()
+#%%
+jaggy_dict = path_measures['j1_lp']
+jaggy_list = {p:{i:jaggy_dict[p][i][0] for i in range(M)} for p in P}
 
-# plt.hist(jaggy_list[0.25][0])
+for p in P:
+    J = []
+    for l in jaggy_list[p].values():
+        J = J + l
+    plt.hist(J, bins = 5)
+    plt.title('j1_lp  '+'p='+str(p))
+    plt.show()
         
