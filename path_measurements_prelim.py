@@ -80,7 +80,7 @@ for i in range(M):
         for path in path_type:
             dataframe['d_err'][path][p] = np.std(dataframe['d'][path][p], ddof = 1) #ddof = 1 since we are sampling from the inifinite graph ensemble
             dataframe['l_err'][path][p] = np.std(dataframe['l'][path][p], ddof = 1)
-            dataframe['j1_err'][path][p] = np.std(dataframe['j1'][path][p], ddof = 1)/np.sqrt(M)
+            dataframe['j1_err'][path][p] = np.std(dataframe['j1'][path][p], ddof = 1)/np.sqrt(M) #not correct! need to use std of each angle average
             dataframe['j2_err'][path][p] = np.std(dataframe['j2'][path][p], ddof = 1)/np.sqrt(M)
         
         # spd = pa.pathDist(graph_dict, sp, p)

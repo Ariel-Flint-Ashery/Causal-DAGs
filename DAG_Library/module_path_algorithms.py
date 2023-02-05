@@ -253,25 +253,71 @@ def pathDist(graph_dict, path,p):
 
     return distance, len(path) #geometric distance, network distance
 
-def pathJaggy(graph_dict, pos, path):
+def pathJaggy(pos, path):
+    """
+    Returns the angle relative to the path itself. Angle is measured between the in and out vectors 
+    connected to a given node.
+        Input:
+            pos: Position vectors of all sprinkled points.
+            path: The path of interest.
+        
+        Output:
+            1. List of all angles.
+            2. sum(all angles).
+            3. Mean angle.
+            4. standard deviation. 
+    """
     theta = []
     
     for i in range(len(path) - 2):
         u = pos[path[i+1]] - pos[path[i]]
         v = pos[path[i+2]] - pos[path[i+1]]
-        theta.append(np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u))))
+        theta.append(np.abs(np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u)))))
     
-    return theta, np.average(theta), np.std(theta)
+    return theta, sum(theta), np.average(theta), np.std(theta, ddof = 1)
 
-def pathJaggy2(graph_dict, pos, path):
-    theta = 0
+def pathJaggy2(pos, path):
+    """
+    Returns the angles between the position vector of a node and the straight line (0,0) to (1,1)
+        Input:
+            pos: Position vectors of all sprinkled points.
+            path: The path of interest.
+        
+        Output:
+            1. List of all angles.
+            2. sum(all angles).
+            3. Mean angle.
+            4. standard deviation. 
+    """
+    theta = [0]
     v = pos[-1]
     
-    for i in range(len(path) - 2):
-        u = pos[i+1]
-        theta += np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u)))
+    for i in range(1, len(path) - 1):
+        u = pos[i]
+        theta.append(np.abs(np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u)))))
     
-    return theta/(len(path) - 1)
+    return theta, sum(theta), np.average(theta), np.std(theta, ddof = 1)
+
+def pathJaggy3(pos, path):
+    """
+    Returns the angles between the path edge and the straight line (0,0) to (1,1).
+        Input:
+            pos: Position vectors of all sprinkled points.
+            path: The path of interest.
+        
+        Output:
+            1. List of all angles.
+            2. sum(all angles).
+            3. Mean angle.
+            4. standard deviation. 
+    """
+    theta = []
+    for i in range(len(path)-2):
+        u = pos[path[i]] + np.ones(len(pos[0]))
+        v = pos[path[i+1]] - pos[path[i]]
+        theta.append(np.abs(np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u)))))
+    
+    return theta, sum(theta), np.average(theta), np.std(theta, ddof = 1)
 
 def getShortestPath(graph_dict, optimizer = 'net', source = None, target = None):
     """
@@ -551,20 +597,7 @@ def convert_degree_to_radius(degree_array, rho, d, p):
     R = (degree_array * gamma_factor / rho)**(1/d)
     return np.round((R), decimals = 16)
 
-#def getGraphMeasures(graph_dict):
-"""
-- longest path
-- shortest path
-- greedy path
-- for each path: geometric & network distance
-- jaggedness: wrt line and path
-- Largest separation from straight line
-- average/total separation from straight line: Euclidean + Lp
-"""
 
-#def plotter(X, p_vals, iterations = 1):
-"""
-bar plots of each metric, for each p value. 
 """
 
 #LEGACY CODE
