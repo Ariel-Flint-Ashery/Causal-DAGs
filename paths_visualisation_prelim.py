@@ -58,3 +58,4 @@ labels = ['ariel']
 plt_edges(edge_list, pos, ariel_longest_path, labels = labels, show_nodes = True, style = 'dashed')
 
 # %%
+ariel_shortest_path = pa.dijkstra(graph_dict)

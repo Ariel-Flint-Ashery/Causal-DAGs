@@ -19,6 +19,7 @@ M = 20
 #%% Measurement variables
 dep_var = ['d', 'j1', 'j2', 'l']
 path_type = ['_sp', '_lp', '_gp']
+optimizer = 'net' #or 'geo'
 a = np.sqrt(2)
 P = list(np.round([1/a**4, 1/a**3, 1/a**2, 1/a, 1, a, a**2, a**3, a**4], decimals = 5))
 
@@ -45,17 +46,21 @@ for i in range(M):
         _P = {p:{} for p in P}
         for p in P:
             r = pa.convert_degree_to_radius(K, RHO, D, p)
-            edge_list, graph_dict, pos = rgg.lp_random_geometric_graph(pos, r, p)
-            POS[p] = pos
+            edge_list, graph_dict = rgg.lp_random_geometric_graph(pos, r, p)
             percolating = pa.DFS_percolating(graph_dict)
             if percolating == True:
+                POS[p] = pos
                 _P.pop(p)
         
     for p in P:
         r = pa.convert_degree_to_radius(K, RHO, D, p)
-        edge_list, graph_dict, pos = rgg.lp_random_geometric_graph(POS[p], r, p)
+        edge_list, graph_dict = rgg.lp_random_geometric_graph(POS[p], r, p)
         
-        sp, lp = pa.short_long_paths(graph_dict)
+        if optimizer = 'net':
+            sp, lp = pa.short_long_paths(graph_dict) #I think Kevin's algorith is faster for network paths.
+        if optimizer = 'geo':
+            sp, lp = pa.getPaths(graph_dict, 'geo')
+        #greey path works for network optimization only!
         gp = pa.greedy_path(graph_dict)
         paths = [sp, lp, gp]
         paths = {path_type[i]: paths[i] for i in range(len(paths))}

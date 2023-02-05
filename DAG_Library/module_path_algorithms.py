@@ -210,10 +210,14 @@ def DFS(graph_dict, source=0):
     return visited
                 
 
-def greedy_path(graph_dict, target = None):
+def greedy_path(graph_dict, source = None, target = None):
+    if source == None:
+        source = 0
     if target == None:
         target = len(graph_dict) - 1
-        
+
+    graph_dict = getInterval(graph_dict, s = source, t = target)
+ 
     visited = [0]
     queue = [0]
     
@@ -407,7 +411,7 @@ def getInverseGraph(graph_dict):
     
     return inv_graph_dict
             
-def getStrictInterval(graph_dict, s = None, t = None):
+def getInterval(graph_dict, s = None, t = None):
     """
     Return the strict interval for a directed network between two nodes.
         Input:
@@ -481,7 +485,7 @@ def generateLongestNetworkPath(graph_dict, optimizer, source, target):
     S = findAllSources(graph_dict)
     print('sources found')
     #L = kahn_sort(graph_dict, S)
-    interval_dict, incoming_dict = getStrictInterval(graph_dict, source, target)
+    interval_dict, incoming_dict = getInterval(graph_dict, source, target)
     L = kahn_sort(interval_dict, incoming_dict, S = [source])
     print('Interval complete')
         
@@ -532,7 +536,7 @@ def getLongestPath(graph_dict, optimizer = 'net', source = None, target = None):
 def getPaths(graph_dict, optimizer, source = None, target=None):
     longestPath, longestDist = getLongestPath(graph_dict, optimizer, source, target)
     shortestPath, shortestDist = getShortestPath(graph_dict, optimizer, source, target)
-    return (longestPath, longestDist), (shortestPath, shortestDist)
+    return shortestPath, LongestPath #, shortestDist, LongestDist 
 
 #def getGraphMeasures(graph_dict):
 """
