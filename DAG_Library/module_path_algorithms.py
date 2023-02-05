@@ -289,7 +289,7 @@ def pathJaggy2(pos, path):
             # 3. Mean angle.
             # 4. standard deviation. 
     """
-    theta = [0]
+    theta = []
     v = pos[-1]
     
     for i in range(1, len(path) - 1):
@@ -318,7 +318,52 @@ def pathJaggy3(pos, path):
         v = pos[path[i+1]] - pos[path[i]]
         theta.append(np.abs(np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u)))))
     
-    return theta#, sum(theta), np.average(theta), np.std(theta, ddof = 1)
+    return theta, sum(theta), np.average(theta), np.std(theta, ddof = 1)
+
+def pathSeparation1(pos, path):
+    """
+    Returns the Euclidean orthogonal separation distance from the node to the straight line diagonal
+        Input:
+            pos: Position vectors of all sprinkled points.
+            path: The path of interest.
+        
+        Output:
+            1. list of all separation distances
+    """
+    separation = []
+    v = pos[-1]
+    
+    for i in range(1, len(path)-1):
+        u = pos[path[i]]
+        w = v * np.dot(u, v)/(np.linalg.norm(v)**2)
+        x = u - w
+        distance = np.power(np.sum([np.abs(x[i])**2 for i in range(len(x))]), 1/2)
+        separation.append(distance)
+        
+    return separation, np.average(separation), np.std(separation, ddof = 1)
+        
+def pathSeparation2(pos, path, p):
+    """
+    Returns the Lp orthogonal separation distance from the node to the straight line diagonal
+        Input:
+            pos: Position vectors of all sprinkled points.
+            path: The path of interest.
+            p: the Lp value
+        
+        Output:
+            1. list of all separation distances
+    """
+    separation = []
+    v = pos[-1]
+    
+    for i in range(1, len(path)-1):
+        u = pos[path[i]]
+        w = v * np.dot(u, v)/(np.linalg.norm(v)**2)
+        x = u - w
+        distance = np.power(np.sum([np.abs(x[i])**p for i in range(len(x))]), 1/p)
+        separation.append(distance)
+        
+    return separation, np.average(separation), np.std(separation, ddof = 1)
 
 def getShortestPath(graph_dict, optimizer = 'net', source = None, target = None):
     """
