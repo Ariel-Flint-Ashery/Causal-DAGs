@@ -254,17 +254,22 @@ def pathDist(graph_dict, path,p):
     return distance, len(path) #geometric distance, network distance
 
 def pathJaggy(graph_dict, pos, path):
-    theta = 0
+    theta = []
     
     for i in range(len(path) - 2):
         u = pos[path[i+1]] - pos[path[i]]
         v = pos[path[i+2]] - pos[path[i+1]]
-        grad_u = u[1]/u[0]
-        grad_v = v[1]/v[0]
-        sign = 1
-        if grad_v < grad_u:
-            sign = -1
-        theta += sign * np.arccos(np.dot(u, v)/(np.linalg.norm(pos[-1]) * np.linalg.norm(u)))
+        theta.append(np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u))))
+    
+    return theta, np.average(theta), np.std(theta)
+
+def pathJaggy2(graph_dict, pos, path):
+    theta = 0
+    v = pos[-1]
+    
+    for i in range(len(path) - 2):
+        u = pos[i+1]
+        theta += np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u)))
     
     return theta/(len(path) - 1)
 
@@ -537,6 +542,14 @@ def getPaths(graph_dict, optimizer, source = None, target=None):
     longestPath, longestDist = getLongestPath(graph_dict, optimizer, source, target)
     shortestPath, shortestDist = getShortestPath(graph_dict, optimizer, source, target)
     return shortestPath, LongestPath #, shortestDist, LongestDist 
+
+def convert_degree_to_radius(degree_array, rho, d, p):
+    """
+    Converts an expected average degree for a given rho, d and p into a radius R.
+    """
+    gamma_factor = math.gamma(1 + d/p)/(math.gamma(1 + 1/p)**d)
+    R = (degree_array * gamma_factor / rho)**(1/d)
+    return np.round((R), decimals = 16)
 
 #def getGraphMeasures(graph_dict):
 """
