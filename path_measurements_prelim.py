@@ -40,8 +40,8 @@ for i in range(M):
     print(i)
     _P = {p:{} for p in P}
     POS = {p:None for p in P}
+    print('Percolating...')
     while _P:
-        print('perc')
         pos = rgg._poisson_cube_sprinkling(RHO, V, D, fixed_N = True)
         _P = {p:{} for p in P}
         for p in P:
@@ -51,7 +51,11 @@ for i in range(M):
             if percolating == True:
                 POS[p] = pos
                 _P.pop(p)
-        
+    print("""
+    -----------------------------
+        STARTING MEASUREMENTS
+    -----------------------------
+    """)    
     for p in P:
         r = pa.convert_degree_to_radius(K, RHO, D, p)
         edge_list, graph_dict = rgg.lp_random_geometric_graph(POS[p], r, p)
@@ -85,7 +89,7 @@ for i in range(M):
         # lpj2 = pa.pathJaggy2(graph_dict, pos, lp)
         # gpj2 = pa.pathJaggy2(graph_dict, pos, gp)
 #%%
-for v in _var[0]:
+for v in dep_var[0]:
     col = iter(_col)
     for l in _path_label[:-1]:
         colour = next(col)
