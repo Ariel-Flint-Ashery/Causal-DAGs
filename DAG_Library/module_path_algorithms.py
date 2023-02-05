@@ -543,6 +543,14 @@ def getPaths(graph_dict, optimizer, source = None, target=None):
     shortestPath, shortestDist = getShortestPath(graph_dict, optimizer, source, target)
     return shortestPath, LongestPath #, shortestDist, LongestDist 
 
+def convert_degree_to_radius(degree_array, rho, d, p):
+    """
+    Converts an expected average degree for a given rho, d and p into a radius R.
+    """
+    gamma_factor = math.gamma(1 + d/p)/(math.gamma(1 + 1/p)**d)
+    R = (degree_array * gamma_factor / rho)**(1/d)
+    return np.round((R), decimals = 16)
+
 #def getGraphMeasures(graph_dict):
 """
 - longest path
