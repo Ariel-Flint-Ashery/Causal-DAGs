@@ -263,9 +263,9 @@ def pathJaggy(pos, path):
         
         Output:
             1. List of all angles.
-            2. sum(all angles).
-            3. Mean angle.
-            4. standard deviation. 
+            # 2. sum(all angles).
+            # 3. Mean angle.
+            # 4. standard deviation. 
     """
     theta = []
     
@@ -285,9 +285,9 @@ def pathJaggy2(pos, path):
         
         Output:
             1. List of all angles.
-            2. sum(all angles).
-            3. Mean angle.
-            4. standard deviation. 
+            # 2. sum(all angles).
+            # 3. Mean angle.
+            # 4. standard deviation. 
     """
     theta = [0]
     v = pos[-1]
@@ -307,9 +307,10 @@ def pathJaggy3(pos, path):
         
         Output:
             1. List of all angles.
-            2. sum(all angles).
-            3. Mean angle.
-            4. standard deviation. 
+            #2. sum(all angles).
+            #3. Mean angle.
+            #4. standard deviation. 
+            # = cut out
     """
     theta = []
     for i in range(len(path)-2):
@@ -317,7 +318,7 @@ def pathJaggy3(pos, path):
         v = pos[path[i+1]] - pos[path[i]]
         theta.append(np.abs(np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u)))))
     
-    return theta, sum(theta), np.average(theta), np.std(theta, ddof = 1)
+    return theta#, sum(theta), np.average(theta), np.std(theta, ddof = 1)
 
 def getShortestPath(graph_dict, optimizer = 'net', source = None, target = None):
     """

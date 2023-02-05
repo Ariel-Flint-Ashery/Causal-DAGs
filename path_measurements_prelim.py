@@ -17,7 +17,7 @@ D = 2
 K = 3
 M = 20
 #%% Measurement variables
-dep_var = ['d', 'j1', 'j2', 'l']
+dep_var = ['d', 'j1', 'j2', 'j3', 'l']
 path_type = ['_sp', '_lp', '_gp']
 optimizer = 'net' #or 'geo'
 a = np.sqrt(2)
@@ -73,27 +73,80 @@ for i in range(M):
             _d, _l = pa.pathDist(graph_dict, paths[path], p)
             dataframe['d'][path][p].append(_d)
             dataframe['l'][path][p].append(_l)
+            #dataframes take angular all angular values in the form (angle list, sum, mean, std)
+            #theta, theta_m, theta_sum, theta_std = pa.pathJaggy(pos, paths[path])
             dataframe['j1'][path][p].append(pa.pathJaggy(graph_dict, pos, paths[path]))
+            #theta, theta_m, theta_sum, theta_std = pa.pathJaggy2(pos, paths[path])
             dataframe['j2'][path][p].append(pa.pathJaggy2(graph_dict, pos, paths[path]))
+            #theta, theta_m, theta_sum, theta_std = pa.pathJaggy3(pos, paths[path])
+            dataframe['j3'][path][p].append(pa.pathJaggy3(graph_dict, pos, paths[path]))
 
-        #calculate errors
-        for path in path_type:
-            dataframe['d_err'][path][p] = np.std(dataframe['d'][path][p], ddof = 1) #ddof = 1 since we are sampling from the inifinite graph ensemble
-            dataframe['l_err'][path][p] = np.std(dataframe['l'][path][p], ddof = 1)
-            dataframe['j1_err'][path][p] = np.std(dataframe['j1'][path][p], ddof = 1)/np.sqrt(M) #not correct! need to use std of each angle average
-            dataframe['j2_err'][path][p] = np.std(dataframe['j2'][path][p], ddof = 1)/np.sqrt(M)
+#calculate errors and new measures
+for p in P:
+    for path in path_type:
+        dataframe['d_err'][path][p] = np.std(dataframe['d'][path][p], ddof = 1) #ddof = 1 since we are sampling from the inifinite graph ensemble
+        dataframe['l_err'][path][p] = np.std(dataframe['l'][path][p], ddof = 1)
+        std = np.average([np.std(angles, ddof = 1) for angles in dataframe['j1'][path][p]])
+        dataframe['j1_err'][path][p] = np.std(dataframe['j1'][path][p], ddof = 1)/np.sqrt(M) #not correct! need to use std of each angle average
+        std = np.average([np.std(angles, ddof = 1) for angles in dataframe['j2'][path][p]])
+        dataframe['j2_err'][path][p] = np.std(dataframe['j2'][path][p], ddof = 1)/np.sqrt(M)
+        std = np.average([np.std(angles, ddof = 1) for angles in dataframe['j3'][path][p]])
+        dataframe['j3_err'][path][p] = np.std(dataframe['j3'][path][p], ddof = 1)/np.sqrt(M)
+        dataframe['j1_sum'][path][p] = sum(dataframe['j1'][path][p])
+        dataframe['j2_sum'][path][p] = sum(dataframe['j2'][path][p])
+        dataframe['j3_sum'][path][p] = sum(dataframe['j3'][path][p])
         
-        # spd = pa.pathDist(graph_dict, sp, p)
-        # lpd = pa.pathDist(graph_dict, lp, p)
-        # gpd = pa.pathDist(graph_dict, gp, p)
-        
-        # spj1 = pa.pathJaggy(graph_dict, pos, sp)
-        # lpj1 = pa.pathJaggy(graph_dict, pos, lp)
-        # gpj1 = pa.pathJaggy(graph_dict, pos, gp)
-        
-        # spj2 = pa.pathJaggy2(graph_dict, pos, sp)
-        # lpj2 = pa.pathJaggy2(graph_dict, pos, lp)
-        # gpj2 = pa.pathJaggy2(graph_dict, pos, gp)
+#%%
+#Plot distance
+
+col = iter(_col)
+for path in path_type:
+    colour = next(col)
+    x = P
+    y = [np.average(dataframe['d'][path][p]) for p in P]
+    yerr = [dataframe['d_err'][path][p] for p in P]
+    plt.plot(x, y, color = colour)
+    plt.errorbar(x, y, yerr = yerr, label = path, fmt = '.', ms = 20, capsize = 10, color = colour)
+
+plt.xlabel('p')
+plt.ylabel('geometric distance')
+plt.legend()
+plt.show()
+#%%
+#plot average angle
+angles = ['j1', 'j2', 'j3']
+for ang in angles:
+    col = iter(_col)
+    for path in path_type:
+        colour = next(col)
+        x = P
+        y = [np.average(dataframe[ang][path][p]) for p in P]
+        yerr = [dataframe[ang+'_err'][path][p] for p in P]
+        plt.plot(x, y, color = colour)
+        plt.errorbar(x, y, yerr = yerr, label = path, fmt = '.', ms = 20, capsize = 10, color = colour)
+
+    plt.xlabel('p')
+    plt.ylabel(ang + 'average')
+    plt.legend()
+    plt.show()
+
+#%%
+#plot cumulative angle
+angles = ['j1', 'j2', 'j3']
+for ang in angles:
+    col = iter(_col)
+    for path in path_type:
+        colour = next(col)
+        x = P
+        y = [dataframe[ang+'_sum'][path][p] for p in P]
+        #yerr = [dataframe[ang+'_err'][path][p] for p in P]
+        plt.plot(x, y, color = colour)
+        #plt.errorbar(x, y, yerr = yerr, label = path, fmt = '.', ms = 20, capsize = 10, color = colour)
+
+    plt.xlabel('p')
+    plt.ylabel(ang + 'sum')
+    plt.legend()
+    plt.show()
 #%%
 for v in dep_var[0]:
     col = iter(_col)
