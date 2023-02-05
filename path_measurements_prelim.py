@@ -76,6 +76,12 @@ for i in range(M):
             dataframe['j1'][path][p].append(pa.pathJaggy(graph_dict, pos, paths[path]))
             dataframe['j2'][path][p].append(pa.pathJaggy2(graph_dict, pos, paths[path]))
 
+        #calculate errors
+        for path in path_type:
+            dataframe['d_err'][path][p] = np.std(dataframe['d'][path][p], ddof = 1) #ddof = 1 since we are sampling from the inifinite graph ensemble
+            dataframe['l_err'][path][p] = np.std(dataframe['l'][path][p], ddof = 1)
+            dataframe['j1_err'][path][p] = np.std(dataframe['j1'][path][p], ddof = 1)/np.sqrt(M)
+            dataframe['j2_err'][path][p] = np.std(dataframe['j2'][path][p], ddof = 1)/np.sqrt(M)
         
         # spd = pa.pathDist(graph_dict, sp, p)
         # lpd = pa.pathDist(graph_dict, lp, p)
