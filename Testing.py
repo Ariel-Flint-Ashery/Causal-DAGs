@@ -5,7 +5,7 @@ Testing Percolation
 # import module_path_algorithms
 # import module_random_geometric_graphs
 
-# import .module_random_geometric_graphs 
+# import .module_random_geometric_graphs
 # import .module_path_algorithms
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -59,7 +59,7 @@ G = lp_random_geometric_graph(X, R, p)
 #%%
 print(BFS_percolating(G[1]))
 #%%
-#Probability of connectedness using analytic radius 
+#Probability of connectedness using analytic radius
 
 analytic_prob = []
 deg_list = [1]
@@ -69,7 +69,7 @@ for deg in deg_list:
 # %%
 for i in range(len(deg_list)):
     plt.plot(p_val, analytic_prob[i], label = 'degree = %s' % (deg_list[i]))
-    
+
 plt.xlabel('p-index')
 plt.ylabel('Probability of Connection')
 plt.title('PROBABILITY OF CONNECTION AT ANALYTIC CRITICAL RADIUS')
@@ -145,7 +145,7 @@ for i in tqdm(range(len(x_range))):
     for j in range(len(degree)):
         val = np.array([x_range[i], degree[j]])
         Z[i][j] = bastas(val, [30, 300], 2, 500, 1, 2)
-        
+
 #%%
 z = Z
 z = z[:-1, :-1]
@@ -161,7 +161,7 @@ x_range = np.array([-1, -0.5, 0.5, 1])
 results = []
 for x in x_range:
     result = bastas([x, 1.6], [20,100], 2, 250, 1, 2)
-    results.append(result) 
+    results.append(result)
 
 #%%
 plt.plot(x_range, results)
@@ -232,7 +232,7 @@ for b in tqdm(beta):
         x, y = cf.intersection(x1, y1, x2, y2)
         point = np.column_stack((x,y))
         points.append(point)
-    
+
     points = np.concatenate(points)
     #print(points)
     if len(points) == 0:
@@ -244,7 +244,7 @@ for b in tqdm(beta):
     if np.sum(epsilon < 0.2) == len(points):
         print(b)
         break
-        
+
 #%%
 #N = [500, 1000, 1500, 2000]
 #K_range = np.linspace(0.5, 2.5, 10)
@@ -270,7 +270,7 @@ plt.xlabel('K - Kc')
 plt.ylabel(r'$\pi$')
 #plt.savefig('figure 1a bastas reproduced.png')
 plt.show()
-        
+
 
 
 

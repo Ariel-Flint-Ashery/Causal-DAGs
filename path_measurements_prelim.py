@@ -9,7 +9,7 @@ import DAG_Library.module_random_geometric_graphs as rgg
 import DAG_Library.module_path_algorithms as pa
 import matplotlib.pyplot as plt
 import numpy as np
-import os 
+import os
 import pickle
 
 fname = 'path_data_prelim_01'
@@ -44,7 +44,7 @@ params = {
 plt.rcParams.update(params)
 
 _col = ['green', 'blue', 'red']
-#%% Independent Variable 
+#%% Independent Variable
 RHO = 1000
 V = 1
 D = 2
@@ -63,14 +63,14 @@ for v in dep_var[1:6]:
         for p in P:
             dataframe[v][path][p]['mean'] = []
             dataframe[v][path][p]['err'] = []
-            
+
 for v in dep_var[1:4]:
     for path in path_type:
         for p in P:
             dataframe[v][path][p]['sum'] = []
 
 #%%
-try: 
+try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
 except:
     for i in range(M):
@@ -91,11 +91,11 @@ except:
         -----------------------------
             STARTING MEASUREMENTS
         -----------------------------
-        """)    
+        """)
         for p in P:
             r = pa.convert_degree_to_radius(K, RHO, D, p)
             edge_list, graph_dict = rgg.lp_random_geometric_graph(POS[p], r, p)
-            
+
             if optimizer == 'net':
                 sp, lp = pa.short_long_paths(graph_dict) #I think Kevin's algorith is faster for network paths.
             if optimizer == 'geo':
@@ -104,7 +104,7 @@ except:
             #gp = pa.greedy_path(graph_dict)
             paths = [sp, lp] #, gp]
             paths = {path_type[i]: paths[i] for i in range(len(paths))}
-            
+
             for path in path_type:
                 _d, _l = pa.pathDist(graph_dict, paths[path], p)
                 _J1 = pa.pathJaggy(pos, paths[path])
@@ -112,33 +112,33 @@ except:
                 _J3 = pa.pathJaggy3(pos, paths[path])
                 _S1 = pa.pathSeparation1(pos, paths[path])
                 _S2 = pa.pathSeparation2(pos, paths[path], p)
-                
+
                 #dataframes take angular all angular values in the form (angle list, sum, mean, std)
                 #theta, theta_m, theta_sum, theta_std = pa.pathJaggy(pos, paths[path])
                 #theta, theta_m, theta_sum, theta_std = pa.pathJaggy2(pos, paths[path])
                 #theta, theta_m, theta_sum, theta_std = pa.pathJaggy3(pos, paths[path])
                 dataframe['d'][path][p]['raw'].append(_d)
                 dataframe['l'][path][p]['raw'].append(_l)
-                
+
                 dataframe['j1'][path][p]['raw'].append(_J1[0])
                 dataframe['j1'][path][p]['sum'].append(_J1[1])
                 dataframe['j1'][path][p]['mean'].append(_J1[2])
                 dataframe['j1'][path][p]['err'].append(_J1[3])
-    
+
                 dataframe['j2'][path][p]['raw'].append(_J2[0])
                 dataframe['j2'][path][p]['sum'].append(_J2[1])
                 dataframe['j2'][path][p]['mean'].append(_J2[2])
                 dataframe['j2'][path][p]['err'].append(_J2[3])
-    
+
                 dataframe['j3'][path][p]['raw'].append(_J3[0])
                 dataframe['j3'][path][p]['sum'].append(_J3[1])
                 dataframe['j3'][path][p]['mean'].append(_J3[2])
                 dataframe['j3'][path][p]['err'].append(_J3[3])
-    
+
                 dataframe['s1'][path][p]['raw'].append(_S1[0])
                 dataframe['s1'][path][p]['mean'].append(_S1[1])
                 dataframe['s1'][path][p]['err'].append(_S1[2])
-    
+
                 dataframe['s2'][path][p]['raw'].append(_S2[0])
                 dataframe['s2'][path][p]['mean'].append(_S2[1])
                 dataframe['s2'][path][p]['err'].append(_S2[2])
@@ -163,7 +163,7 @@ f.close()
 #         dataframe['j1_sum'][path][p] = sum(dataframe['j1'][path][p])
 #         dataframe['j2_sum'][path][p] = sum(dataframe['j2'][path][p])
 #         dataframe['j3_sum'][path][p] = sum(dataframe['j3'][path][p])
-        
+
 #%%
 # plot distance
 
@@ -191,7 +191,7 @@ for ang in angles:
         colour = next(col)
         x = P
         y = [np.average(dataframe[ang][path][p]['mean']) for p in P]
-        yerr = [np.average(dataframe[ang][path][p]['err'])/np.sqrt(M) for p in P]
+        yerr = [np.average(dataframe[ang][path][p]['err'])/np.sqrt(M) for p in P] # not entirely sure if this is the correct mathematics
         plt.plot(x, y, color = colour)
         plt.errorbar(x, y, yerr = yerr, label = path, fmt = '.', ms = 20, capsize = 10, color = colour)
 
@@ -203,7 +203,7 @@ for ang in angles:
     plt.show()
 
 #%%
-# plot cumulative angle
+# plot cumulative angle (looks relatively uninteresting so far, not sure if we need it)
 angles = ['j1', 'j2', 'j3']
 for ang in angles:
     col = iter(_col)
@@ -211,7 +211,7 @@ for ang in angles:
         colour = next(col)
         x = P
         y = [np.average(dataframe[ang][path][p]['sum']) for p in P]
-        yerr = [np.std(dataframe[ang][path][p]['sum']) for p in P]
+        yerr = [np.std(dataframe[ang][path][p]['sum']) for p in P] # not entirely sure if this is the correct mathematics
         plt.plot(x, y, color = colour)
         plt.errorbar(x, y, yerr = yerr, label = path, fmt = '.', ms = 20, capsize = 10, color = colour)
     plt.xlabel('p')
@@ -220,7 +220,7 @@ for ang in angles:
     plt.xscale('log')
     plt.yscale('log')
     plt.show()
-    
+
 #%%
 # plot separation
 separation = ['s1', 's2']
