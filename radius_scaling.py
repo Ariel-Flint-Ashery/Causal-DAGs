@@ -73,7 +73,7 @@ params = {
         }
 plt.rcParams.update(params)
 
-_col = ['green', 'blue', 'red']
+_col = ['green', 'blue']
 #%%
 dataframe = {p: {rho: [] for rho in RHO} for p in P}
 
@@ -85,21 +85,23 @@ for i in tqdm(range(M)):
             dataframe[p][rho].append(radiusBinarySearch(X, p, epsilon))
 #%%
 import pickle
-f = open(f'radius_scaling_df', 'wb')
+f = open(f'radius_scaling_df.pkl', 'wb')
 pickle.dump(dataframe, f)
 f.close()
 
 #%%
-col = iter(_col)
+
 error = epsilon/np.sqrt(M)
 for p in P:
     dataframe[p]['rho_avg'] = {rho: np.average(dataframe[p][rho]) for rho in RHO}
     dataframe[p]['rho_scale'] = [dataframe[p]['rho_avg'][rho]/analyticCritRadius(p, D, rho) for rho in RHO]
     dataframe[p]['rho_err'] = [error/analyticCritRadius(p, D, rho) for rho in RHO]
-
+#%%
+col = iter(_col)
+for p in P:
     colour = next(col)
-    plt.plot(rho, dataframe[p]['rho_scale'], color = colour)
-    plt.errorbar(rho, dataframe[p]['rho_scale'], yerr = dataframe[p]['rho_err'], label = p, fmt = '.', ms = 20, capsize = 10, color = colour)
+    plt.plot(RHO, dataframe[p]['rho_scale'], color = colour)
+    plt.errorbar(RHO, dataframe[p]['rho_scale'], yerr = dataframe[p]['rho_err'], label = p, fmt = '.', ms = 20, capsize = 10, color = colour)
 
 plt.xlabel('density')
 plt.ylabel('radius scaling')
