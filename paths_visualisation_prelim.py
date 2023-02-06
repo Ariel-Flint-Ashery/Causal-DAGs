@@ -52,9 +52,9 @@ labels = ['short', 'long', 'greedy']
 plt_edges(edge_list, pos, paths, labels = labels, show_nodes = True, style = 'dashed')
 
 #%%
-ariel_longest_path = pa.getLongestPath(graph_dict, 'geo')
-ariel_shortest_path = pa.getShortestPath(graph_dict, 'geo')
-ariel_paths = pa.getPaths(graph_dict, 'geo')
+#ariel_longest_path = pa.getLongestPath(graph_dict, 'geo')
+#ariel_shortest_path = pa.getShortestPath(graph_dict, 'geo')
+ariel_paths = pa.getPaths(graph_dict, 'net')
 #%%
 #path distances:
 ariel_shortest_path_dist = pa.pathDist(graph_dict, ariel_paths[0], 0.5)
@@ -66,11 +66,9 @@ greedy_path_dist = pa.pathDist(graph_dict, greedy_path, 0.5)
 #print(ariel_shortest_path_dist == pa.pathDist(graph_dict, ariel_shortest_path[0], 0.5))
 
 #%%
-labels = ['ariel']
-plt_edges(edge_list, pos, ariel_longest_path, labels = labels, show_nodes = True, style = 'dashed')
+#labels = ['ariel']
+#plt_edges(edge_list, pos, ariel_longest_path, labels = labels, show_nodes = True, style = 'dashed')
 
 #%%
 #test greedy path
 greedy_path = pa.greedy_path(graph_dict)
-#%%
-interval_dict, _ = pa.getInterval()

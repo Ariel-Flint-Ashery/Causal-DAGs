@@ -51,14 +51,14 @@ RHO = 1000
 V = 1
 D = 2
 K = 3
-M = 20 #500
+M = 100 #20 #500
 #%% Measurement variables
 dep_var = ['d', 'j1', 'j2', 'j3', 's1', 's2', 'l']
-path_type = ['spg', 'lpg', 'gp'] #['spn', 'lpn', 'gp']  #use __n for network optimization, __g for geometric optimization
+path_type = ['spg', 'lpg']#, 'gp'] #['spg', 'lpg', 'gp'] or #['spn', 'lpn', 'gp']  #use __n for network optimization, __g for geometric optimization
 optimizer = 'geo' #'net' or 'geo'
 a = np.sqrt(2)
 P = list(np.round([1/a**4, 1/a**3, 1/a**2, 1/a, 1, a, a**2, a**3, a**4], decimals = 5))
-
+#%%
 dataframe = {dv:{pt:{p:{'raw':[]} for p in P} for pt in path_type} for dv in dep_var}
 for v in dep_var[1:6]:
     for path in path_type:
