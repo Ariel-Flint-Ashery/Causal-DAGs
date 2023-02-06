@@ -65,7 +65,7 @@ def _fixed_lp_distance_connection(v, R, p):
     else:
         return False
     
-def lp_random_geometric_graph(X, R, p):
+def lp_random_geometric_graph(X, R, p, show_dist = True):
     """
     Creates a random geometric graph in L-p space with a specified density of points in a 
     generalised d-dimensional cube with 'volume' vol. Edges are connected under a fixed condition; 
@@ -87,7 +87,10 @@ def lp_random_geometric_graph(X, R, p):
                 break
             else:
                 continue
-        edge_trigger = {v: minkDist(X_prime[v],p) for v in range(u + 1, u_max) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
+        if show_dist == True:
+            edge_trigger = {v: minkDist(X_prime[v],p) for v in range(u + 1, u_max) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
+        else:
+            edge_trigger = {v: {} for v in range(u + 1, u_max) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
         new_edges = [(u,v) for v in edge_trigger]
         
         adjacency_list[u] = edge_trigger
