@@ -4,7 +4,9 @@ Created on Sun Jan 29 16:15:33 2023
 
 @author: kevin
 """
-
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 import DAG_Library.module_random_geometric_graphs as rgg
 import DAG_Library.module_path_algorithms as pa
 import matplotlib.pyplot as plt
@@ -12,7 +14,7 @@ import numpy as np
 import os
 import pickle
 
-fname = 'path_data_prelim_01'
+fname = 'path_data_prelim_03'
 #%%
 def file_id(name, pkl = True, directory = None):
     """
@@ -49,11 +51,11 @@ RHO = 1000
 V = 1
 D = 2
 K = 3
-M = 500
+M = 20 #500
 #%% Measurement variables
 dep_var = ['d', 'j1', 'j2', 'j3', 's1', 's2', 'l']
-path_type = ['sp', 'lp'] #, 'gp']
-optimizer = 'net' #or 'geo'
+path_type = ['spg', 'lpg', 'gp'] #['spn', 'lpn', 'gp']  #use __n for network optimization, __g for geometric optimization
+optimizer = 'geo' #'net' or 'geo'
 a = np.sqrt(2)
 P = list(np.round([1/a**4, 1/a**3, 1/a**2, 1/a, 1, a, a**2, a**3, a**4], decimals = 5))
 
@@ -69,6 +71,7 @@ for v in dep_var[1:4]:
         for p in P:
             dataframe[v][path][p]['sum'] = []
 
+dataframe['config'] = {'constants': [RHO, V, D, K, M], 'dep_var': dep_var, 'path_types': path_type, 'optimizer': optimizer}
 #%%
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
@@ -101,8 +104,8 @@ except:
             if optimizer == 'geo':
                 sp, lp = pa.getPaths(graph_dict, 'geo')
             #greey path works for network optimization only!
-            #gp = pa.greedy_path(graph_dict)
-            paths = [sp, lp] #, gp]
+            gp = pa.greedy_path(graph_dict)
+            paths = [sp, lp, gp] 
             paths = {path_type[i]: paths[i] for i in range(len(paths))}
 
             for path in path_type:

@@ -10,6 +10,7 @@ This module contains path searching algorithms.
 import matplotlib.pyplot as plt
 import numpy as np
 import copy 
+import math
 
 def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target = None):
     """
@@ -216,13 +217,13 @@ def greedy_path(graph_dict, source = None, target = None):
     if target == None:
         target = len(graph_dict) - 1
 
-    graph_dict = getInterval(graph_dict, s = source, t = target)
+    graph_dict, _ = getInterval(graph_dict, s = source, t = target)
  
     visited = [0]
     queue = [0]
     
     while queue:
-        print(queue)
+        #print(queue)
         children = graph_dict[queue[-1]]
         queue.pop()
         
@@ -249,7 +250,7 @@ def pathDist(graph_dict, path,p):
     distance = 0.0
     
     for i in range(len(path)-1):
-        distance += graph_dict[path[i]][path[i+1]].values() #[-1]
+        distance += graph_dict[path[i]][path[i+1]]#.values() #[-1]
 
     return distance, len(path) #geometric distance, network distance
 
@@ -425,12 +426,12 @@ def getShortestPath(graph_dict, optimizer = 'net', source = None, target = None)
         while u:
             shortestPath.append(u)
             u = shortest_dict[u]['bestParent']
-
+    shortestPath.append(0)
     shortestPath.reverse()
     shortestDist = shortest_dict[target]['dist']
     if optimizer == 'net':
-         shortestDist += 1
-    return shortestPath, shortest_dict[target]['dist']        
+        shortestDist += 1
+    return shortestPath, shortestDist        
 
 def findAllSources(graph_dict):
     """
@@ -580,11 +581,11 @@ def generateLongestNetworkPath(graph_dict, optimizer, source, target):
     Find the longest network path in a directed acylic graph. 
     """
     S = findAllSources(graph_dict)
-    print('sources found')
+    #print('sources found')
     #L = kahn_sort(graph_dict, S)
     interval_dict, incoming_dict = getInterval(graph_dict, source, target)
     L = kahn_sort(interval_dict, incoming_dict, S = [source])
-    print('Interval complete')
+    #print('Interval complete')
         
     #initialise dictionary
     longest_dict = dict.fromkeys(graph_dict.keys())
@@ -633,7 +634,7 @@ def getLongestPath(graph_dict, optimizer = 'net', source = None, target = None):
 def getPaths(graph_dict, optimizer, source = None, target=None):
     longestPath, longestDist = getLongestPath(graph_dict, optimizer, source, target)
     shortestPath, shortestDist = getShortestPath(graph_dict, optimizer, source, target)
-    return shortestPath, LongestPath #, shortestDist, LongestDist 
+    return shortestPath, longestPath#, shortestDist, longestDist 
 
 def convert_degree_to_radius(degree_array, rho, d, p):
     """
