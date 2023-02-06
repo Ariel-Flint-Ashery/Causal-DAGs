@@ -147,7 +147,6 @@ f = open(f'{file_id(fname)}', 'wb')
 pickle.dump(dataframe, f)
 f.close()
 
-
 #%%
 #calculate errors and new measures
 # for p in P:
@@ -223,6 +222,16 @@ for ang in angles:
 
 #%%
 # plot separation
+import scipy.optimize as op
+
+def PowerLaw(x, a, b):
+    return a*x**b
+def PowerLawFit(x, y, **kwargs):
+    params, cov = op.curve_fit(PowerLaw, x, y, **kwargs)
+    X = np.linspace(x[0], x[-1], 1000)
+    Y = PowerLaw(X, *params)
+    return X, Y, params, cov
+
 separation = ['s1', 's2']
 for s in separation:
     col = iter(_col)
@@ -231,10 +240,12 @@ for s in separation:
         x = P
         y = [np.average(dataframe[s][path][p]['mean']) for p in P]
         yerr = [np.average(dataframe[s][path][p]['err'])/np.sqrt(M) for p in P]
+        X, Y, params, cov = PowerLawFit(x, y, sigma = yerr)
+        plt.plot(X, Y, '--', color = colour)
         plt.errorbar(x, y, yerr = yerr, label = path, fmt = '.', ms = 20, capsize = 10, color = colour)
     plt.xlabel('p')
     plt.ylabel(s)
     plt.legend()
-    # plt.xscale('log')
-    # plt.yscale('log')
+    plt.xscale('log')
+    plt.yscale('log')
     plt.show()
