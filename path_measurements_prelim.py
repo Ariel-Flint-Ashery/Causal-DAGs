@@ -11,7 +11,6 @@ import DAG_Library.module_random_geometric_graphs as rgg
 import DAG_Library.module_path_algorithms as pa
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pickle
 
 fname = 'path_data_prelim_03'
@@ -19,7 +18,7 @@ fname = 'path_data_prelim_03'
 def file_id(name, pkl = True, directory = None):
     """
     Returns:
-        the file name for a given data set with parameters rho, v, d, p, iterations.
+        Returns the file name with all the relevant directories
     """
     if directory == None:
         dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -149,23 +148,6 @@ except:
 f = open(f'{file_id(fname)}', 'wb')
 pickle.dump(dataframe, f)
 f.close()
-
-#%%
-#calculate errors and new measures
-# for p in P:
-#     for path in path_type:
-#         dataframe['d_err'][path][p] = np.std(dataframe['d'][path][p], ddof = 1) #ddof = 1 since we are sampling from the inifinite graph ensemble
-#         dataframe['l_err'][path][p] = np.std(dataframe['l'][path][p], ddof = 1)
-#         std = np.average([np.std(angles, ddof = 1) for angles in dataframe['j1'][path][p]])
-#         dataframe['j1_err'][path][p] = np.std(dataframe['j1'][path][p], ddof = 1)/np.sqrt(M) #not correct! need to use std of each angle average
-#         std = np.average([np.std(angles, ddof = 1) for angles in dataframe['j2'][path][p]])
-#         dataframe['j2_err'][path][p] = np.std(dataframe['j2'][path][p], ddof = 1)/np.sqrt(M)
-#         std = np.average([np.std(angles, ddof = 1) for angles in dataframe['j3'][path][p]])
-#         dataframe['j3_err'][path][p] = np.std(dataframe['j3'][path][p], ddof = 1)/np.sqrt(M)
-#         dataframe['j1_sum'][path][p] = sum(dataframe['j1'][path][p])
-#         dataframe['j2_sum'][path][p] = sum(dataframe['j2'][path][p])
-#         dataframe['j3_sum'][path][p] = sum(dataframe['j3'][path][p])
-
 #%%
 # plot distance
 
