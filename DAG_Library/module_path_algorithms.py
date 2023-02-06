@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import copy 
 import math
+import random
 
 def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target = None):
     """
@@ -73,7 +74,10 @@ def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target
         if long_path_dist == 0:
             long_queue.append(0)
             break
-        parents = iter(inv_graph_dict[current])
+        # parents = iter(inv_graph_dict[current])
+        _parents = list(inv_graph_dict[current])
+        random.shuffle(_parents)
+        parents = iter(_parents)
         while parents:
             parent = next(parents, None)
             if long_path_dist in node_dist[parent]:
@@ -87,7 +91,10 @@ def short_long_paths(graph_dict, edge_list = None, inv_graph_dict = None, target
         if short_path_dist == 0:
             short_queue.append(0)
             break
-        parents = iter(inv_graph_dict[current])
+        # parents = iter(inv_graph_dict[current])
+        _parents = list(inv_graph_dict[current])
+        random.shuffle(_parents)
+        parents = iter(_parents)
         while parents:
             parent = next(parents, None)
             if short_path_dist in node_dist[parent]:
@@ -645,11 +652,11 @@ def convert_degree_to_radius(degree_array, rho, d, p):
     return np.round((R), decimals = 16)
 
 
-"""
+# """
 
-#LEGACY CODE
-# def getInterval(graph_dict):
-#     """
+# #LEGACY CODE
+# # def getInterval(graph_dict):
+# """
 #     Input:
 #         graph_dict
 
