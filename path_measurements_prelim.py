@@ -11,7 +11,6 @@ import DAG_Library.module_random_geometric_graphs as rgg
 import DAG_Library.module_path_algorithms as pa
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pickle
 
 fname = 'path_data_prelim_03'
