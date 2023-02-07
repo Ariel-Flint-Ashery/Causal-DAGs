@@ -59,6 +59,7 @@ a = np.sqrt(2)
 b = 1.025
 P = list(np.round([a**n for n in range(-4,5)], decimals = 5)) + list(np.round([b**n for n in range(-4,5)], decimals = 5))
 P = list(set(P))
+P.sort()
 #%%
 dataframe = {dv:{pt:{p:{'raw':[]} for p in P} for pt in path_type} for dv in dep_var}
 for v in dep_var[1:6]:
