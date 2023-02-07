@@ -19,7 +19,7 @@ def R_BinarySearchPercolation(X, p, epsilon, end, search):
         R: Critical percolation radius.
     """
     R = 1.0
-    RL, RH = 0.0, 1.0
+    RL, RH = 0.0, 1 #np.sqrt(2)
     n = 0
     if search == None:
         raise Exception('Traversal mode not specified')

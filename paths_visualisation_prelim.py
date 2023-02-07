@@ -39,7 +39,7 @@ def plt_edges(edge_list, pos, paths, labels = None, node_size = 0.5, show_nodes 
 
 R = 0.13
 
-pos = rgg._poisson_cube_sprinkling(2000, 1, 2)
+pos = rgg._poisson_cube_sprinkling(2000, 1, 2, fixed_N = True)
 edge_list, graph_dict = rgg.lp_random_geometric_graph(pos, R, 0.5)
 
 #%%
