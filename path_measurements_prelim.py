@@ -49,7 +49,7 @@ _col = ['green', 'blue', 'red']
 RHO = 1000
 V = 1
 D = 2
-K = 3
+K = 4
 M = 20 #20 #500
 #%% Measurement variables
 dep_var = ['d', 'j1', 'j2', 'j3', 's1', 's2', 'l']
@@ -58,7 +58,7 @@ optimizer = 'geo' #'net' or 'geo'
 a = np.sqrt(2)
 b = 1.025
 P = list(np.round([a**n for n in range(-4,5)], decimals = 5)) + list(np.round([b**n for n in range(-4,5)], decimals = 5))
-P.sort()
+P = list(set(P))
 #%%
 dataframe = {dv:{pt:{p:{'raw':[]} for p in P} for pt in path_type} for dv in dep_var}
 for v in dep_var[1:6]:
