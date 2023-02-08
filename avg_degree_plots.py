@@ -10,6 +10,7 @@ import DAG_Library.module_path_algorithms as pa
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize as op
+from scipy.special import factorial
 
 ### Changing the plotting parameters to get a nice visualisation
 params = {
@@ -28,10 +29,10 @@ try:
 except:
     initialise = 1
 #%% Parameters 
-D = [250, 500, 1000, 2000] # density
+D = [500, 1000, 2000] # density
 P = np.round([np.sqrt(2)**a for a in range(-2,3)], decimals = 3) # p values
-M = 1 # number of iterations 
-K = 3 # k_expected aka the theoretically expected value of the average degree
+M = 100 # number of iterations 
+K = 4 # k_expected aka the theoretically expected value of the average degree
 #%%
 if initialise == 1:
     degree_dict = {d:{p:[] for p in P} for d in D}
@@ -53,11 +54,12 @@ if initialise == 1:
 else:
     None
 #%% obtaining average degrees and population standard deviation from degree_dict
-avg_degree_dict = {d: {p:{'avg':None, 'std': None} for p in P} for d in D}
+avg_degree_dict = {d: {p:{'avg':None, 'var': None, 'std': None} for p in P} for d in D}
 for d in D:
     for p in P:
         avg_degree_dict[d][p]['avg'] = [np.average(deg) for deg in degree_dict[d][p]]
-        avg_degree_dict[d][p]['std'] = [np.std(deg) for deg in degree_dict[d][p]]
+        avg_degree_dict[d][p]['var'] = [np.var(deg, ddof = 1) for deg in degree_dict[d][p]]
+        avg_degree_dict[d][p]['std'] = [np.std(deg, ddof = 1) for deg in degree_dict[d][p]]
         
 #%% plotting
 colour = iter(['tab:blue', 'tab:orange', 'tab:green', 'tab:red'])
@@ -68,8 +70,9 @@ for d in D[:]:
     col = next(colour)
     x = P * (1 + np.log(d)/50)
     y = np.array([np.average(avg_degree_dict[d][p]['avg']) for p in P]) + 2 * K / np.sqrt(d) # correction term = 2K/root(d)
-    yerr = [np.average(avg_degree_dict[d][p]['std'])/np.sqrt(M) for p in P]
-    # yerr = [np.std(avg_degree_dict[d][p]['avg']) for p in P]
+    yerr = [np.sqrt(np.average(avg_degree_dict[d][p]['var']))/np.sqrt(M) for p in P]
+    # yerr = [(np.average(np.sqrt(avg_degree_dict[d][p]['var'])))/np.sqrt(M) for p in P]
+
     
     ### fitting the data to a straight line with 0 gradient
     params, cov = op.curve_fit(const, x, y, p0 = K, sigma = yerr)
@@ -84,11 +87,40 @@ for d in D[:]:
     plt.fill_between(xfit, yfit + 3*yfiterr, yfit - 3*yfiterr, alpha = 0.2, color = col, 
                      label = rf'$\rho = {d}$ {fit_legend}')
     
-plt.axhline(3, linestyle = 'dotted', color = 'black', label = r'$\langle k_{exp} \rangle$') # plot the expected value
+plt.axhline(4, linestyle = 'dotted', color = 'black', label = r'$\langle k_{exp} \rangle$') # plot the expected value
 plt.xscale('log') 
 plt.xlabel(r'$p$')
 plt.ylabel(r'$\langle k \rangle$')
 plt.legend(ncol = 2)
-plt.ylim(2.3)
+# plt.ylim(2.3)
 plt.title(r'measured $\langle k \rangle$ + $\frac{2 \langle k_{exp} \rangle}{\sqrt{\rho}}$') # labelling correction term
 plt.show()
+
+#%%
+def list_sum(lists):
+    L = []
+    for l in lists:
+        L = L + l
+    return L
+
+def poisson(x, mu):
+    return np.exp(-mu) * np.power(mu, x)/factorial(x)
+
+colour = iter(['tab:blue', 'tab:orange', 'tab:green', 'tab:red'])
+
+all_degree_dict = {}
+for d in D[:]:
+    all_degree_dict[d] = list_sum(degree_dict[d][p])
+    binh, bine, __ = plt.hist(all_degree_dict[d], bins = np.arange(0, 19, 0.5) - 0.5)
+    
+    k = np.linspace(bine[0] + 0.5, bine[-1] + 0.5, 1000)
+    plt.plot(k, np.sum(binh) * poisson(k, K), label = r'poisson(k, $\mu = k_{exp}$)')
+    plt.xlabel('k')
+    plt.ylabel('count')
+    plt.legend()
+    plt.show()
+    
+#%%
+for d in D:
+    print(np.sqrt(np.sum(avg_degree_dict[d][p]['var']) * 1/M))
+    print(np.average(avg_degree_dict[d][p]['std']))
