@@ -21,12 +21,16 @@ params = {
         }
 plt.rcParams.update(params)
 
-#%% Run this cell to generate new data, otherwise initialise = 0 
-initialise = 1
+#%% prevent file from re-generating the data; do not run the whole file, just run one cell at a time
+try:
+    type(initialise) # intentionally error, initialise will be defined due to except:
+    print('Already initialised')
+except:
+    initialise = 1
 #%% Parameters 
 D = [250, 500, 1000, 2000] # density
 P = np.round([np.sqrt(2)**a for a in range(-2,3)], decimals = 3) # p values
-M = 100 # number of iterations 
+M = 1 # number of iterations 
 K = 3 # k_expected aka the theoretically expected value of the average degree
 #%%
 if initialise == 1:
@@ -63,7 +67,7 @@ def const(x, A): # define the curve y(x) = A
 for d in D[:]:
     col = next(colour)
     x = P * (1 + np.log(d)/50)
-    y = np.array([np.average(avg_degree_dict[d][p]['avg']) for p in P]) #+ 2 * K / np.sqrt(d) # correction term = 2K/root(d)
+    y = np.array([np.average(avg_degree_dict[d][p]['avg']) for p in P]) + 2 * K / np.sqrt(d) # correction term = 2K/root(d)
     yerr = [np.average(avg_degree_dict[d][p]['std'])/np.sqrt(M) for p in P]
     # yerr = [np.std(avg_degree_dict[d][p]['avg']) for p in P]
     
@@ -86,5 +90,5 @@ plt.xlabel(r'$p$')
 plt.ylabel(r'$\langle k \rangle$')
 plt.legend(ncol = 2)
 plt.ylim(2.3)
-plt.title(r'measured $\langle k \rangle$') # + $\frac{2 \langle k_{exp} \rangle}{\sqrt{\rho}}$') # labelling correction term
+plt.title(r'measured $\langle k \rangle$ + $\frac{2 \langle k_{exp} \rangle}{\sqrt{\rho}}$') # labelling correction term
 plt.show()
