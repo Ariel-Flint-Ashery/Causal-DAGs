@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 
-fname = 'path_data_prelim_04'
+fname = 'path_data_prelim_04' #odd = kevin, even = ariel
 #%%
 def file_id(name, pkl = True, directory = None):
     """

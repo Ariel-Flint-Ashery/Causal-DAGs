@@ -4,7 +4,7 @@ Module for custom functions needed for algorithms that do not fit in any of the 
 """
 
 import numpy as np
-
+import os
 "Intersect functions, reproduced from https://github.com/sukhbinder/intersection"
 
 def _rect_inter_inner(x1, x2):
@@ -88,3 +88,23 @@ x,y=intersection(x1,y1,x2,y2)
     xy0 = T[2:, in_range]
     xy0 = xy0.T
     return xy0[:, 0], xy0[:, 1]
+
+def file_id(name, pkl = True, directory = None):
+    """
+    Returns:
+        Returns the file name with all the relevant directories
+    """
+    if directory == None:
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        # dir_path = os.getcwd()
+        directory = dir_path#os.path.dirname(dir_path)
+    else:
+        directory = directory
+    if pkl == True:
+        pkl = 'pkl'
+    else:
+        pkl = pkl
+    __file_name = f'{name}'
+    _file_name = str(__file_name).replace(' ', '-').replace(',', '').replace('[', '-').replace(']','-').replace('.','-')
+    file_name = os.path.join(directory, 'DAG_data_files\path_data', f'{_file_name}.pkl')
+    return file_name
