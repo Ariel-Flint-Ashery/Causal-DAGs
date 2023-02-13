@@ -252,7 +252,31 @@ def greedy_path(graph_dict, source = None, target = None):
             return visited
         else:
             continue
+
+def greedy_path_geo(graph_dict, source = None, target = None):
+    if source == None:
+        source = 0
+    if target == None:
+        target = len(graph_dict) - 1
+
+    graph_dict, _ = getInterval(graph_dict, s = source, t = target)
+    
+    visited = [0]
+    queue = [0]
+    travelled = 0.0
+    while queue:
+        children = graph_dict[queue[-1]]
+        queue.pop()
+
+        tempDist = {children[c]: c for c in children}
+        temp = tempDist[max(tempDist.keys())]
+        visited.append(temp)
+        queue.append(temp)
+
+        if temp == target:
+            return visited        
         
+
 def pathDist(graph_dict, path,p):
     distance = 0.0
     

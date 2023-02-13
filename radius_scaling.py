@@ -73,7 +73,7 @@ params = {
         }
 plt.rcParams.update(params)
 
-_col = ['green', 'blue']
+_col = ['green', 'blue', 'fireb']
 #%%
 dataframe = {p: {rho: [] for rho in RHO} for p in P}
 
@@ -101,7 +101,7 @@ col = iter(_col)
 for p in P:
     colour = next(col)
     plt.plot(RHO, dataframe[p]['rho_scale'], color = colour)
-    plt.errorbar(RHO, dataframe[p]['rho_scale'], yerr = dataframe[p]['rho_err'], label = p, fmt = '.', ms = 20, capsize = 10, color = colour)
+    plt.errorbar(RHO, dataframe[p]['rho_scale'], yerr = dataframe[p]['rho_err'], label = 'p=%s' % (p), fmt = '.', ms = 20, capsize = 10, color = colour)
 
 plt.xlabel('density')
 plt.ylabel('radius scaling')
