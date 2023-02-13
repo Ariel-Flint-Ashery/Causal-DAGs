@@ -4,6 +4,7 @@ os.chdir(dir_path)
 import DAG_Library.module_random_geometric_graphs as rgg
 import DAG_Library.module_path_algorithms as pa
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 from scipy.special import gamma
 from tqdm import tqdm
@@ -61,7 +62,8 @@ RHO = [250, 500, 1000, 1500]
 V = 1
 D = 2
 M = 20 #200
-P = [0.5, 2]
+a = np.sqrt(2)
+P = [a**n for n in range(-2, 5)]
 epsilon = 0.001
 #%% plotting params
 params = {
@@ -73,16 +75,15 @@ params = {
         }
 plt.rcParams.update(params)
 
-_col = ['green', 'blue', 'fireb']
 #%%
-dataframe = {p: {rho: [] for rho in RHO} for p in P}
+dataframe = {rho: {p: [] for p in P} for rho in RHO}
 
 #%%
 for i in tqdm(range(M)):
     for rho in RHO:
         X = rgg._poisson_cube_sprinkling(rho, V, D, fixed_N = True)
         for p in P:
-            dataframe[p][rho].append(radiusBinarySearch(X, p, epsilon))
+            dataframe[rho][p].append(radiusBinarySearch(X, p, epsilon))
 #%%
 import pickle
 f = open(f'radius_scaling_df.pkl', 'wb')
@@ -90,26 +91,27 @@ pickle.dump(dataframe, f)
 f.close()
 
 #%%
-
-error = epsilon/np.sqrt(M)
-for p in P:
-    dataframe[p]['rho_avg'] = {rho: np.average(dataframe[p][rho]) for rho in RHO}
-    dataframe[p]['rho_scale'] = [dataframe[p]['rho_avg'][rho]/analyticCritRadius(p, D, rho) for rho in RHO]
-    dataframe[p]['rho_err'] = [error/analyticCritRadius(p, D, rho) for rho in RHO]
+#calculate errors
+#error = epsilon/np.sqrt(M)
+for rho in RHO:
+    dataframe[rho]['rho_avg'] = {p: np.average(dataframe[rho][p]) for p in P}
+    dataframe[rho]['rho_scale'] = [dataframe[rho]['rho_avg'][p]/analyticCritRadius(p, D, rho) for p in P]
+    dataframe[rho]['rho_err'] = [np.sqrt(np.std(dataframe[rho][p], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P]
 #%%
-col = iter(_col)
-for p in P:
-    colour = next(col)
-    plt.plot(RHO, dataframe[p]['rho_scale'], color = colour)
-    plt.errorbar(RHO, dataframe[p]['rho_scale'], yerr = dataframe[p]['rho_err'], label = 'p=%s' % (p), fmt = '.', ms = 20, capsize = 10, color = colour)
+#plot
+normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
+for rho in RHO:
+    plt.plot(P, dataframe[rho]['rho_scale'], color = rho, cmap = 'viridis', norm = normalize)
+    plt.errorbar(P, dataframe[rho]['rho_scale'], yerr = dataframe[rho]['rho_err'], label = r'$\rho = %s$' % (rho), fmt = '.', ms = 20, capsize = 10, color = rho, cmap = 'viridis', norm = normalize)
 
 plt.xlabel('density')
 plt.ylabel('radius scaling')
 plt.legend()
-#plt.xscale('log')
-#plt.yscale('log')
+plt.colorbar()
+plt.xscale('log')
+plt.yscale('log')
 plt.show()
-#%%
+
 
 
 

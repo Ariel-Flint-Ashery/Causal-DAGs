@@ -125,18 +125,18 @@ params = {
         'mathtext.fontset': 'stix',
         }
 plt.rcParams.update(params)
-_col = ['green', 'blue']#, 'red']
+_col = ['green', 'blue', 'red']
 zoom_type = 'x'
 optimizer = dataframe['config']['optimizer'] #'G' or 'N'
-path_type = ['spg', 'lpg'] #'gp'
+path_type = ['sp', 'lp', 'gp']
 
 #variables
-# a = np.sqrt(2)
-# b = 1.025
-# P = list(np.round([a**n for n in range(-4,5)], decimals = 5)) + list(np.round([b**n for n in range(-4,5)], decimals = 5))
-# P.sort()
+a = np.sqrt(2)
+b = 1.025
+P = list(np.round([a**n for n in range(-4,5)], decimals = 5)) + list(np.round([b**n for n in range(-4,5)], decimals = 5))
+P.sort()
 M = dataframe['config']['constants'][-1]
-P = list(dataframe['d']['spg'].keys())
+#P = list(dataframe['d']['sp'].keys())
 #%%
 "PLOT DISTANCE"
 col = iter(_col)
