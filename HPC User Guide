@@ -1,0 +1,15 @@
+For a Windows machine, first download the PuTTY program.
+Throughout, remove '' when pasting.
+How to login:
+1. Using PuTTy, specify the host as 'login.hpc.imperial.ac.uk' and select 'open'.
+2. log in using your specified Imperial shortcode/username
+
+How to upload files (using scp):
+1. On your local machine, go to the file where the directory/file you want to copy exists, and enter the command prompt
+2a. If you want to copy a directory: 'scp -r 'dirname' shortcode@hpc.login.imperial.ac.uk:X', where X is the target directory. Use ~ for main directory.
+2b. To copy one file: 'scp 'filename' shortcode@hpc.login.imperial.ac.uk:X', where X is the target directory.
+
+Running code:
+Once you login onto the HPC, you will be in your main directory ~. You can access the list of all available directory by typing 'ls'. 
+To enter a directory, type 'cd dir'. Once you are in the designated directory, you can run your code by typing 'python3 filename.py' <-- Make sure you set up the conda environment first!
+
