@@ -32,7 +32,7 @@ except:
 D = [500, 1000, 2000] # density
 P = np.round([np.sqrt(2)**a for a in range(-2,3)], decimals = 3) # p values
 M = 100 # number of iterations 
-K = 4 # k_expected aka the theoretically expected value of the average degree
+K = 3 # k_expected aka the theoretically expected value of the average degree
 #%%
 if initialise == 1:
     degree_dict = {d:{p:[] for p in P} for d in D}
