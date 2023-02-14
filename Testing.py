@@ -11,7 +11,7 @@ import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 os.chdir(dir_path)
 from DAG_Library.module_random_geometric_graphs import _poisson_cube_sprinkling, lp_random_geometric_graph
-from DAG_Library.percolation_transition import R_BinarySearchPercolation, RadiusPercolation, AnalyticCritRadius, percolate_plot, AnalyticRTest, NumericalCritRadius, bastas
+from LEGACY_CODE.percolation_transition import R_BinarySearchPercolation, RadiusPercolation, AnalyticCritRadius, percolate_plot, AnalyticRTest, NumericalCritRadius, bastas
 from DAG_Library.module_path_algorithms import BFS_percolating, DFS_percolating
 import DAG_Library.module_percolation_generators as pg
 from tqdm import tqdm
