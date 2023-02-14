@@ -4,12 +4,31 @@ How to login:
 1. Using PuTTy, specify the host as 'login.hpc.imperial.ac.uk' and select 'open'.
 2. log in using your specified Imperial shortcode/username
 
-How to upload files (using scp):
-1. On your local machine, go to the file where the directory/file you want to copy exists, and enter the command prompt
-2a. If you want to copy a directory: 'scp -r 'dirname' shortcode@hpc.login.imperial.ac.uk:X', where X is the target directory. Use ~ for main directory.
-2b. To copy one file: 'scp 'filename' shortcode@hpc.login.imperial.ac.uk:X', where X is the target directory.
+Setting up Python environment: #do this every time you want to run Python code
+1. 'module load anaconda3/personal' #load anaconda
+2. 'conda create -n py39 python=3.9' #create python virtual environment. You only need to run this once!
+3. 'source activate py39' #activate virtual environment. 
 
 Running code:
-Once you login onto the HPC, you will be in your main directory ~. You can access the list of all available directory by typing 'ls'. 
+Once you login onto the HPC, you will be in your main directory, '$HOME' (will show up as '~'). You can access the list of all available directory by typing 'ls'. 
 To enter a directory, type 'cd dir'. Once you are in the designated directory, you can run your code by typing 'python3 filename.py' <-- Make sure you set up the conda environment first!
+
+How to upload files (using scp):
+1. On your local machine, go to the file where the directory/file you want to copy exists, and enter the command prompt
+2a. If you want to copy a directory: 'scp -r 'dirname' shortcode@login.hpc.imperial.ac.uk:X', where X is the target directory. Use '$HOME' or '~' for home directory.
+2b. To copy one file: 'scp 'filename' shortcode@login.hpc.imperial.ac.uk:X', where X is the target directory.
+
+Moving files from HPC to local machine:
+1. Open cmd in the directory where you want to save the file
+2. Type 'scp shortcode@login.hpc.imperial.ac.uk:X .' , where X is the filepath in the remote machine e.g. X = '$HOME\filename.txt'. '.' places the files in the current directory in the local machine.
+3. To move directories, use the same process as above, but use '-r'.
+
+Submitting jobs:
+Use the template testscript.sh to build the job script. 
+Output should be saved in the working directory, and an additional log file (jobscript.sh.oXXXXX) will be created (all prints will go in this file).
+1. To run: 'qsub jobscript.sh'
+2. To check status: 'qstat'
+
+
+
 
