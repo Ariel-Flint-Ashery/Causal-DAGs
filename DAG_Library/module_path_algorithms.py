@@ -397,7 +397,62 @@ def pathSeparation2(pos, path, p):
         
     return separation, np.average(separation), np.std(separation, ddof = 1)
 
-def getShortestPath(graph_dict, optimizer = 'net', source = None, target = None):
+def generateShortestPath(graph_dict, interval_dict, incoming_dict, optimizer = 'net', source = None, target = None):
+    """
+    Returns the shortest path by Dijkstra's algorithm. The optimizer option 'net'
+    minimizes the path based on network length, while 'geo' minimizes the path
+    based on geometric distance in the Lp space of the network. 
+        Input:
+            graph_dict: adjacency dictionary.
+            source: source node index.
+            target: target node index.
+            optimizer: path optimization method, 'net' or 'geo'. Default: 'net'.
+
+        Output:
+            1. Ordered list of nodes in a shortest path.
+            2. Length of shortest path.
+    """
+    if source == None:
+        source = 0
+    if target == None:
+        target = len(graph_dict) - 1
+    if interval_dict == None:
+        interval_dict, incoming_dict = getInterval(graph_dict, s = source, t = target)
+    V = kahn_sort(interval_dict, incoming_dict, S = [source])
+    d = [0] + [np.inf]*(len(V)-1)
+    p = [0]*len(V)
+    for u in V:
+        for v in interval_dict[u]:
+            if optimizer == 'net':
+                w = 1
+            if optimizer == 'geo':
+                w = graph_dict[u][v]
+            
+            if d[v] > d[u] + w:
+                d[v] = d[u] + w
+                p[v] = u
+
+    return p, d
+    
+def getShortestPath(graph_dict, interval_dict, incoming_dict, optimizer = 'net', source = None, target = None):
+    #recover the shortest path
+    p, d = generateShortestPath(graph_dict, interval_dict, incoming_dict, optimizer, source, target)
+    shortestPath = []
+    u = target
+    while u:
+        shortestPath.append(u)
+        u = p[u]
+    shortestPath.append(0)
+    shortestPath.reverse()
+    shortestDist = d[target]
+    if optimizer == 'net':
+        shortestDist += 1
+    
+    return shortestPath, shortestDist  
+
+
+
+def getDijkstraShortestPath(graph_dict, optimizer = 'net', source = None, target = None):
     """
     Returns the shortest path by Dijkstra's algorithm. The optimizer option 'net'
     minimizes the path based on network length, while 'geo' minimizes the path
@@ -607,14 +662,15 @@ def getIncomingDict(graph_dict, interval_dict = None):
 
     return incoming_dict
 
-def generateLongestNetworkPath(graph_dict, optimizer, source, target):
+def generateLongestPath(graph_dict, interval_dict, incoming_dict, optimizer, source, target):
     """
-    Find the longest network path in a directed acylic graph. 
+    Find the longest path in a directed acylic graph. 
     """
     S = findAllSources(graph_dict)
     #print('sources found')
     #L = kahn_sort(graph_dict, S)
-    interval_dict, incoming_dict = getInterval(graph_dict, source, target)
+    if interval_dict == None:
+        interval_dict, incoming_dict = getInterval(graph_dict, source, target)
     L = kahn_sort(interval_dict, incoming_dict, S = [source])
     #print('Interval complete')
         
@@ -643,12 +699,12 @@ def generateLongestNetworkPath(graph_dict, optimizer, source, target):
 
     return longest_dict
 
-def getLongestPath(graph_dict, optimizer = 'net', source = None, target = None):
+def getLongestPath(graph_dict, interval_dict, incoming_dict, optimizer = 'net', source = None, target = None):
     if source == None:
         source = 0
     if target == None:
         target = len(graph_dict) - 1
-    longest_dict = generateLongestNetworkPath(graph_dict, optimizer, source, target)
+    longest_dict = generateLongestPath(graph_dict, interval_dict, incoming_dict, optimizer, source, target)
     longestPath = []
     u = target
     if longest_dict[u]['bestParent'] != None or u == source:
@@ -663,8 +719,9 @@ def getLongestPath(graph_dict, optimizer = 'net', source = None, target = None):
     return longestPath, longestDist   
 
 def getPaths(graph_dict, optimizer, source = None, target=None):
-    longestPath, longestDist = getLongestPath(graph_dict, optimizer, source, target)
-    shortestPath, shortestDist = getShortestPath(graph_dict, optimizer, source, target)
+    interval_dict, incoming_dict = getInterval(graph_dict, source, target)
+    longestPath, longestDist = getLongestPath(graph_dict, interval_dict, incoming_dict, optimizer, source, target)
+    shortestPath, shortestDist = getShortestPath(graph_dict, interval_dict, incoming_dict, optimizer, source, target)
     return shortestPath, longestPath#, shortestDist, longestDist 
 
 def convert_degree_to_radius(degree_array, rho, d, p):
