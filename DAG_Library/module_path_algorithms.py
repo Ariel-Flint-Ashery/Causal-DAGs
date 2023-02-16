@@ -420,7 +420,13 @@ def generateShortestPath(graph_dict, interval_dict, incoming_dict, optimizer = '
         interval_dict, incoming_dict = getInterval(graph_dict, s = source, t = target)
     V = kahn_sort(interval_dict, incoming_dict, S = [source])
     d = [0] + [np.inf]*(len(V)-1)
-    p = [0]*len(V)
+    d = dict.fromkeys(interval_dict)
+    p = dict.fromkeys(interval_dict)
+    for key in d.keys():
+        d[key] = np.inf
+        p[key] = 0
+    d[0] = 0
+
     for u in V:
         for v in interval_dict[u]:
             if optimizer == 'net':
@@ -435,6 +441,10 @@ def generateShortestPath(graph_dict, interval_dict, incoming_dict, optimizer = '
     return p, d
     
 def getShortestPath(graph_dict, interval_dict, incoming_dict, optimizer = 'net', source = None, target = None):
+    if source == None:
+        source = 0
+    if target == None:
+        target = len(graph_dict) - 1
     #recover the shortest path
     p, d = generateShortestPath(graph_dict, interval_dict, incoming_dict, optimizer, source, target)
     shortestPath = []
