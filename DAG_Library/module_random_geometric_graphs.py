@@ -88,7 +88,7 @@ def lp_random_geometric_graph(X, R, p, show_dist = True):
             else:
                 continue
         if show_dist == True:
-            edge_trigger = {v: minkDist(X_prime[v],p) for v in range(u + 1, u_max) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
+            edge_trigger = {v: dist for v in range(u + 1, u_max) for dist in [minkDist(X_prime[v], p)] if dist < R and (X_prime[v]>0).all()}
         else:
             edge_trigger = {v: {} for v in range(u + 1, u_max) if _fixed_lp_distance_connection(X_prime[v], R, p) == True}
         new_edges = [(u,v) for v in edge_trigger]

@@ -50,17 +50,18 @@ def file_id(name, pkl = True, directory = None):
 print(file_id(fname))
 
 #%% Set up parameters of the simulation
-D = 2
+D = 1
 P = 2
 V = 1
-RHO = [250, 500, 1000, 2000]
-M = 1000
-K = np.array([(2+i/50) for i in range(-10,10)])
+RHO = [2**9, 2**10, 2**11, 2**12]
+M = 100
+# K = np.array([(2+i/50) for i in range(-10,10)])
+K = np.array([0.1,1,2,3,4,5,6,7,8,9])
 #%% Data generator; tries to retrieve existing data first 
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
 except:
-    dataframe = {k:{rho: {'r':pa.convert_degree_to_radius(k, rho, D, P), 'p':[]} for rho in RHO} for k in K}
+    dataframe = {k:{rho: {'r':pa.convert_degree_to_radius(k, rho, D, P), 'p':[], 'sc':[], 'gwcc':[]} for rho in RHO} for k in K}
     for i in range(M):
         print(f"""
               (⌐▨_▨)     BEGIN ITERATION: {i}""")
@@ -68,18 +69,25 @@ except:
             percolating = False
             pos = rgg._poisson_cube_sprinkling(rho, V, D, fixed_N = True)
             for k in K:
-                if percolating == False:
+                if percolating != 2:
                     r = dataframe[k][rho]['r']
                     edge_list, graph_dict = rgg.lp_random_geometric_graph(pos, r, P, show_dist = False)
                     percolating = pa.DFS_percolating(graph_dict)
                 else:
                     None
                 dataframe[k][rho]['p'].append(percolating)
+                print(len(edge_list)/rho)
 #%% Save file
 f = open(f'{file_id(fname)}', 'wb')
 pickle.dump(dataframe, f)
 f.close()
-#%% Plotting
+#%%
+y = [np.sum(dataframe[k][RHO[0]]['p'])/M for k in K]
+x = K
+
+plt.plot(x,y)
+
+#%% Plotting the Bastas plot
 colours = iter(['red', 'orange', 'gold', 'green', 'teal', 'dodgerblue', 'blue', 'purple', 'magenta'])
 def power_law(x, a, b):
     return a * x ** b
