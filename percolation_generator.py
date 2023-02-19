@@ -50,7 +50,7 @@ def file_id(name, pkl = True, directory = None):
 print(file_id(fname))
 
 #%% Set up parameters of the simulation
-D = 1
+D = [1,2,3,4,5,6,7,8,9]
 P = 2
 V = 1
 RHO = [2**9, 2**10, 2**11, 2**12]
@@ -61,31 +61,34 @@ K = np.array([0.1,1,2,3,4,5,6,7,8,9])
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
 except:
-    dataframe = {k:{rho: {'r':pa.convert_degree_to_radius(k, rho, D, P), 'p':[], 'sc':[], 'gwcc':[]} for rho in RHO} for k in K}
+    dataframe = {d:{k:{rho: {'r':pa.convert_degree_to_radius(k, rho, d, P), 'p':[], 'sc':[], 'gwcc':[]} for rho in RHO} for k in K} for d in D}
     for i in range(M):
         print(f"""
               (⌐▨_▨)     BEGIN ITERATION: {i}""")
-        for rho in RHO:
-            percolating = False
-            pos = rgg._poisson_cube_sprinkling(rho, V, D, fixed_N = True)
-            for k in K:
-                if percolating != 2:
-                    r = dataframe[k][rho]['r']
-                    edge_list, graph_dict = rgg.lp_random_geometric_graph(pos, r, P, show_dist = False)
-                    percolating = pa.DFS_percolating(graph_dict)
-                else:
-                    None
-                dataframe[k][rho]['p'].append(percolating)
-                print(len(edge_list)/rho)
+        for d in D:      
+            for rho in RHO:
+                percolating = False
+                pos = rgg._poisson_cube_sprinkling(rho, V, d, fixed_N = True)
+                for k in K:
+                    if percolating != 2:
+                        r = dataframe[d][k][rho]['r']
+                        edge_list, graph_dict = rgg.lp_random_geometric_graph(pos, r, P, show_dist = False)
+                        percolating = pa.DFS_percolating(graph_dict)
+                    else:
+                        None
+                    dataframe[d][k][rho]['p'].append(percolating)
+                    print(len(edge_list)/rho)
 #%% Save file
 f = open(f'{file_id(fname)}', 'wb')
 pickle.dump(dataframe, f)
 f.close()
 #%%
-y = [np.sum(dataframe[k][RHO[0]]['p'])/M for k in K]
+y = {d: [np.sum(dataframe[d][k][RHO[0]]['p'])/M for k in K] for d in D}
 x = K
+for d in D:
+    plt.plot(x,y[d], label = 'd = %s' % (d))
 
-plt.plot(x,y)
+plt.show()
 
 #%% Plotting the Bastas plot
 colours = iter(['red', 'orange', 'gold', 'green', 'teal', 'dodgerblue', 'blue', 'purple', 'magenta'])
@@ -98,22 +101,25 @@ def power_fit(x, y, **kwargs):
     
     v = power_law(u, *params)
     return u, v, params, cov
-
-for k in K[:]:
-    colour = next(colours)
-    y = [np.sum(dataframe[k][rho]['p'])/M for rho in RHO]
-    yerr = [np.sqrt(M*Y*(1-Y))/M for Y in y]
-    x = RHO
-    u, v, params, cov = power_fit(x, y, sigma = yerr)
-    
-    plt.errorbar(x, y, yerr, capsize = 10, fmt = 'x', color = colour)
-    plt.plot(u, v, color = colour, label = f'k = {k} $\pm$ {np.round(np.sqrt(cov[1][1]), 3)}')
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel(r'$\rho$')
-    plt.ylabel(r'$\Pi$')
-    plt.legend()
-    print(params)
+#%%
+for d in D:
+    for k in K[:]:
+        colour = next(colours)
+        y = [np.sum(dataframe[d][k][rho]['p'])/M for rho in RHO]
+        yerr = [np.sqrt(M*Y*(1-Y))/M for Y in y]
+        x = RHO
+        u, v, params, cov = power_fit(x, y, sigma = yerr)
+        
+        plt.errorbar(x, y, yerr, capsize = 10, fmt = 'x', color = colour)
+        plt.plot(u, v, color = colour, label = f'k = {k} $\pm$ {np.round(np.sqrt(cov[1][1]), 3)}')
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel(r'$\rho$')
+        plt.ylabel(r'$\Pi$')
+        plt.legend()
+        plt.title('D = %s' % (d)) #only needed for dimensional plots
+        print(params)
+    plt.show()
 
 #%% Record of preliminary data
 """
