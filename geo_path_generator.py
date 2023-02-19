@@ -6,8 +6,11 @@ import DAG_Library.module_path_algorithms as pa
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
+import time
 
-fname = 'path_data_prelim_04' #odd = kevin, even = ariel
+start = time.time()
+
+fname = 'HPC_geo_data_test' #odd = kevin, even = ariel
 #%%
 def file_id(name, pkl = True, directory = None):
     """
@@ -30,11 +33,11 @@ def file_id(name, pkl = True, directory = None):
     return file_name
 
 #%% Independent Variable
-RHO = 1000
+RHO = 4000
 V = 1
 D = 2
 K = 3
-M = 500
+M = 10
 #%% Measurement variables
 dep_var = ['d', 'j1', 'j2', 'j3', 's1', 's2', 'l']
 path_type = ['sp', 'lp', 'gp'] #['spg', 'lpg', 'gp'] or #['spn', 'lpn', 'gp']  #use __n for network optimization, __g for geometric optimization
@@ -77,11 +80,11 @@ except:
                     G[p]['graph_dict'] = graph_dict
                     G[p]['edge_list'] = edge_list
                     _P.pop(p)
-        print("""
-        -----------------------------
-            STARTING MEASUREMENTS
-        -----------------------------
-        """)
+        # print("""
+        # -----------------------------
+        #     STARTING MEASUREMENTS
+        # -----------------------------
+        # """)
         for p in P:
             # r = pa.convert_degree_to_radius(K, RHO, D, p)
             # edge_list, graph_dict = rgg.lp_random_geometric_graph(pos, r, p)
@@ -110,3 +113,6 @@ except:
 f = open(f'{file_id(fname)}', 'wb')
 pickle.dump(dataframe, f)
 f.close()
+
+end = time.time()
+print('Time elapsed: %s'% (end-start))
