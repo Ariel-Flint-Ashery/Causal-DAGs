@@ -128,13 +128,14 @@ plt.rcParams.update(params)
 _col = ['green', 'blue', 'red']
 zoom_type = 'x'
 optimizer = dataframe['config']['optimizer'] #'G' or 'N'
-path_type = ['sp', 'lp', 'gp']
+path_type = list(dataframe['d'].keys())
 
 #variables
 a = np.sqrt(2)
 b = 1.025
-P = list(np.round([a**n for n in range(-4,5)], decimals = 5)) + list(np.round([b**n for n in range(-4,5)], decimals = 5))
-P.sort()
+# P = list(np.round([a**n for n in range(-4,5)], decimals = 5)) + list(np.round([b**n for n in range(-4,5)], decimals = 5))
+# P.sort()
+P = list(dataframe['d'][path_type[0]].keys())
 M = dataframe['config']['constants'][-1]
 #P = list(dataframe['d']['sp'].keys())
 #%%
@@ -146,7 +147,7 @@ fig, (ax1, ax2) = plt.subplots(2,1)
 for path in path_type:
     colour = next(col)
     x = P
-    y = [np.average(dataframe['d'][path][p]['raw']) for p in P]
+    y = [np.average(dataframe['d'][path][p]['raw'])/(2**(1/p)) for p in P]
     yerr = [np.std(dataframe['d'][path][p]['raw']) for p in P]
     ax1.plot(x, y, color = colour)
     ax1.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
@@ -210,7 +211,7 @@ ax1.set_yscale('log')
 col = iter(_col)
 for path in path_type:
     colour = next(col)
-    x = P[4:7]
+    x = P[3:6]
     y = [np.average(dataframe['j3'][path][p]['mean']) for p in x]
     yerr = [np.average(dataframe['j3'][path][p]['err'])/np.sqrt(M) for p in x] 
     ax2.plot(x, y, color = colour)
