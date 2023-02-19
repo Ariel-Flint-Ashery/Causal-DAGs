@@ -100,8 +100,9 @@ for rho in RHO:
 #%%
 #plot
 normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
+cmap = mpl.cm.get_cmap('viridis')
 for rho in RHO:
-    plt.plot(P, dataframe[rho]['rho_scale'], color = rho, cmap = 'viridis', norm = normalize)
+    plt.plot(P, dataframe[rho]['rho_scale'], c = cmap(normalize(rho)))
     plt.errorbar(P, dataframe[rho]['rho_scale'], yerr = dataframe[rho]['rho_err'], label = r'$\rho = %s$' % (rho), fmt = '.', ms = 20, capsize = 10, color = rho, cmap = 'viridis', norm = normalize)
 
 plt.xlabel('density')

@@ -7,10 +7,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import time
+from tqdm import tqdm
+import copy 
 
-start = time.time()
 
-fname = 'HPC_geo_data_test' #odd = kevin, even = ariel
+fname = 'HPC_geo_2000_2000' #HPC_opt_data_rho_M
 #%%
 def file_id(name, pkl = True, directory = None):
     """
@@ -33,11 +34,11 @@ def file_id(name, pkl = True, directory = None):
     return file_name
 
 #%% Independent Variable
-RHO = 4000
+RHO = 2000
 V = 1
 D = 2
 K = 3
-M = 10
+M = 2000
 #%% Measurement variables
 dep_var = ['d', 'j1', 'j2', 'j3', 's1', 's2', 'l']
 path_type = ['sp', 'lp', 'gp'] #['spg', 'lpg', 'gp'] or #['spn', 'lpn', 'gp']  #use __n for network optimization, __g for geometric optimization
@@ -62,17 +63,20 @@ for v in dep_var[1:4]:
 
 dataframe['config'] = {'constants': [RHO, V, D, K, M], 'dep_var': dep_var, 'path_types': path_type, 'optimizer': optimizer}
 #%%
+start = time.perf_counter()
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
 except:
-    for i in range(M):
+    for i in tqdm(range(M)):
         _P = {p:{} for p in P}
-        print(f'Iteration {i}: Percolating...')
+        G = {p:{'graph_dict':{}, 'edge_list':{}} for p in P}
+        print(f' Iteration {i}: Percolating...')
         while _P:
             pos = rgg._poisson_cube_sprinkling(RHO, V, D, fixed_N = True)
-            _P = {p:{} for p in P}
-            G = {p:{'graph_dict':{}, 'edge_list':{}} for p in P}
-            for p in P:
+            #_P = {p:{} for p in P}
+            #G = {p:{'graph_dict':{}, 'edge_list':{}} for p in P}
+            _PK = copy.deepcopy(list(_P.keys()))
+            for p in _PK:
                 r = pa.convert_degree_to_radius(K, RHO, D, p)
                 edge_list, graph_dict = rgg.lp_random_geometric_graph(pos, r, p, show_dist = True)
                 percolating = pa.DFS_percolating(graph_dict)
@@ -114,5 +118,4 @@ f = open(f'{file_id(fname)}', 'wb')
 pickle.dump(dataframe, f)
 f.close()
 
-end = time.time()
-print('Time elapsed: %s'% (end-start))
+print('Time elapsed: %s'% (time.perf_counter()-start))
