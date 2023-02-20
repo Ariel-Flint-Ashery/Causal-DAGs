@@ -43,7 +43,7 @@ def unit_circle(rmin, rmax, N, p, R=1):
 N = 10000
 x = np.linspace(0,1, N)
 P = [0.5, 1, 2, 4, np.inf]
-L = 2.5
+L = 4
 
 #create figure
 fig, ax = plt.subplots(1,1, figsize = (15,15))
@@ -54,11 +54,11 @@ ax.spines[["top", "right"]].set_visible(False)
 ax.spines[["left", "bottom"]].set_linestyle('--')
 ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False, ms = 10)
 ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False, ms = 10)
-ax.plot(np.linspace(0,1.1, N), [0]*N, lw = 2.75, c = 'k')
-ax.plot([0]*N, np.linspace(0,1.1, N), lw = 2.75, c = 'k')
+ax.plot(np.linspace(0,1.1, N), [0]*N, lw = 4, c = 'k')
+ax.plot([0]*N, np.linspace(0,1.1, N), lw = 4, c = 'k')
 ax.set_xlim(left = -1.1 , right = 1.1)
 ax.set_ylim(bottom = -1.1, top = 1.1)
-ax.tick_params(axis='both', which='major', pad=15)
+ax.tick_params(axis='both', which='major', pad=15, labelsize = 14)
 #uncomment for only integer ticks
 # for axis in [ax.xaxis, ax.yaxis]:
 #     axis.set_major_locator(mpl.ticker.MaxNLocator(integer=True))
@@ -87,7 +87,7 @@ for p,col,l in zip(P, cols, ls):
         ax.plot(-1*x, -1*y, c = col, ls = l, lw = L)
         ax.plot(x, -1*y, c = col, ls = l, lw = L)
     
-    ax.annotate('p=%s' % (p), np.array(intersection(x,y,x,x))+0.01,c = col, fontsize = 20)
+    ax.annotate('p=%s' % (p), np.array(intersection(x,y,x,x)) + np.array([[-0.01],[0.03]]),c = col, fontsize = 28)
 #plt.axis('off')   
 
 plt.show()
@@ -106,8 +106,8 @@ plt.show()
 "PLOT CONNECTION KERNEL"
 
 #constants
-N = 12
-R = 0.5
+N = 8
+R = 0.8
 p = 2
 L = 2.5
 #%%
@@ -133,19 +133,19 @@ edge_temp, graph_temp = rgg.lp_random_geometric_graph(pos_temp, R, 2)
 #%%
 #create figure
 fig, ax = plt.subplots(1,1, figsize = (15,15))
-ax.set_xlim(left = -0.025 , right = 1.02)
-ax.set_ylim(bottom = -0.025, top = 1.02)
+ax.set_xlim(left = -0.025 , right = 1.03)
+ax.set_ylim(bottom = -0.025, top = 1.03)
 
 #draw connection kernel
-mrkr = 0.495
-ax.plot(mrkr, 0, ">r", transform=ax.get_yaxis_transform(), clip_on=False, ms = 10)
-ax.plot(0, mrkr, "^r", transform=ax.get_xaxis_transform(), clip_on=False, ms = 10)
-ax.plot(np.linspace(0,mrkr, 10000), [0]*10000, lw = 2.75, c = 'r', ls = '--')
-ax.plot([0]*10000, np.linspace(0,mrkr, 10000), lw = 2.75, c = 'r', ls = '--')
+mrkr = R - 0.02
+ax.plot(mrkr, 0, ">r", transform=ax.get_yaxis_transform(), clip_on=False, ms = 14)
+ax.plot(0, mrkr, "^r", transform=ax.get_xaxis_transform(), clip_on=False, ms = 14)
+ax.plot(np.linspace(0,mrkr, 10000), [0]*10000, lw = 4, c = 'r', ls = '--')
+ax.plot([0]*10000, np.linspace(0,mrkr, 10000), lw = 4, c = 'r', ls = '--')
 
 x = np.linspace(0,1, 10000)
 y = lp_circle(x, p, R)
-ax.plot(x,y, c = 'r', ls = '--', lw = L)
+ax.plot(x,y, c = 'r', ls = '--', lw = 4)
 
 #check if node lies in connection kernel
 ncolors = ['r']+['k']*(len(graph_temp)-1)
@@ -159,18 +159,18 @@ for n in graph_temp[0]:
 #draw graph
 G = nx.DiGraph(edge_temp)
 nx.draw_networkx(G, pos_temp, arrows = True, ax = ax, node_color = ['r']+['none']*(len(graph_temp)-1), 
-                 edgecolors = ncolors, edge_color = ecolors, width = 2,
-                 arrowstyle = 'fancy', node_size = 700, linewidths = 2,
-                 font_size = 20)
+                 edgecolors = ncolors, edge_color = ecolors, width = 1,
+                 arrowstyle = 'simple', arrowsize = 24, node_size = 1400, linewidths = 4,
+                 font_size = 28)
 
 
 ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-ax.tick_params(axis='both', which='major', pad=20)
+ax.tick_params(axis='both', which='major', pad=20, labelsize = 14)
 ax.spines[["left", "bottom"]].set_position(("data", 0))
 ax.spines[["top", "right"]].set_visible(False)
 ax.spines[["left", "bottom"]].set_alpha(0.7)
 ax.annotate("Connection Kernel (p=%s)" % (p),
-            (0.5, 0.2), c = 'r', fontsize = 28)
+            (0.35, 0.08), c = 'r', fontsize = 28)
 plt.show()
 
 #%%
