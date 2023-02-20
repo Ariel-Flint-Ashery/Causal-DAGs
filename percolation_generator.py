@@ -135,4 +135,13 @@ percolation_data_prelim_03:
     RHO = [2**9, 2**10, 2**11, 2**12]
     K = np.array([0.1,1,2,3,4,5])
     M = 1000
+
+For d=2:
+    >>> Searching for the phase transition
+    RHO = [2**9, 2**10, 2**11, 2**12]
+    K = np.array([(2+i/50) for i in range(0,15)])
+    
+    >>> Wide spanning search to see the entire behaviour
+    RHO = [2**9, 2**10, 2**11, 2**12]
+    K = np.array([(1 + i/10) for i in range(0,30)])
 """
