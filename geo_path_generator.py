@@ -11,7 +11,7 @@ from tqdm import tqdm
 import copy 
 
 
-fname = 'HPC_geo_2000_2000' #HPC_opt_data_rho_M
+fname = 'geo_1000_1000' #HPC_opt_data_rho_M
 #%%
 def file_id(name, pkl = True, directory = None):
     """
@@ -34,11 +34,11 @@ def file_id(name, pkl = True, directory = None):
     return file_name
 
 #%% Independent Variable
-RHO = 2000
+RHO = 1000
 V = 1
 D = 2
 K = 3
-M = 2000
+M = 1000
 #%% Measurement variables
 dep_var = ['d', 'j1', 'j2', 'j3', 's1', 's2', 'l']
 path_type = ['sp', 'lp', 'gp'] #['spg', 'lpg', 'gp'] or #['spn', 'lpn', 'gp']  #use __n for network optimization, __g for geometric optimization
