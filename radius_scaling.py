@@ -8,6 +8,7 @@ import matplotlib as mpl
 import numpy as np
 from scipy.special import gamma
 from tqdm import tqdm
+import pickle
 
 #%%
 def radiusBinarySearch(X, p, epsilon, end = np.inf):
@@ -58,19 +59,20 @@ def analyticCritRadius(p, d, density, deg = 1):
     return R
 
 #%% Independent Variable
-RHO = [250, 500, 1000, 1500]
+RHO = [1000, 1500, 2000, 3000, 4000]
+mrkrs = ['d', '*', '^', 's', '.']
 V = 1
 D = 2
-M = 20 #200
+M = 500 #200
 a = np.sqrt(2)
 P = [a**n for n in range(-2, 5)]
-epsilon = 0.001
+epsilon = 0.0001
 #%% plotting params
 params = {
         'axes.labelsize':28,
         'axes.titlesize':28,
         'font.size':28,
-        'figure.figsize': [11,11],
+        'figure.figsize': [18,12],
         'mathtext.fontset': 'stix',
         }
 plt.rcParams.update(params)
@@ -85,7 +87,6 @@ for i in tqdm(range(M)):
         for p in P:
             dataframe[rho][p].append(radiusBinarySearch(X, p, epsilon))
 #%%
-import pickle
 f = open(f'radius_scaling_df.pkl', 'wb')
 pickle.dump(dataframe, f)
 f.close()
@@ -101,16 +102,23 @@ for rho in RHO:
 #plot
 normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
 cmap = mpl.cm.get_cmap('viridis')
-for rho in RHO:
+
+#%%
+normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
+cmap = mpl.cm.get_cmap('rainbow')
+for rho, mrkr in zip(RHO, mrkrs):
     plt.plot(P, dataframe[rho]['rho_scale'], c = cmap(normalize(rho)))
-    plt.errorbar(P, dataframe[rho]['rho_scale'], yerr = dataframe[rho]['rho_err'], label = r'$\rho = %s$' % (rho), fmt = '.', ms = 20, capsize = 10, color = rho, cmap = 'viridis', norm = normalize)
+    plt.errorbar(P, dataframe[rho]['rho_scale'], yerr = dataframe[rho]['rho_err'],
+                 label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
+                 color = cmap(normalize(rho)))
 
 plt.xlabel('density')
 plt.ylabel('radius scaling')
 plt.legend()
-plt.colorbar()
+plt.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
 plt.xscale('log')
 plt.yscale('log')
+plt.tight_layout()
 plt.show()
 
 

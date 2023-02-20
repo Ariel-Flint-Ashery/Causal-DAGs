@@ -50,13 +50,13 @@ def file_id(name, pkl = True, directory = None):
 print(file_id(fname))
 
 #%% Set up parameters of the simulation
-D = [1,2,3,4,5,6,7,8,9]
+D = [1,2,3]
 P = 2
 V = 1
 RHO = [2**9, 2**10, 2**11, 2**12]
-M = 100
+M = 1000
 # K = np.array([(2+i/50) for i in range(-10,10)])
-K = np.array([0.1,1,2,3,4,5,6,7,8,9])
+K = np.array([0.1,1,2,3,4,5])
 #%% Data generator; tries to retrieve existing data first 
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
@@ -130,4 +130,9 @@ percolation_data_prelim_01:
 percolation_data_prelim_02:
     RHO = [250, 500, 1000, 2000]
     K = np.array([(2+i/50) for i in range(2,10)])
+
+percolation_data_prelim_03:
+    RHO = [2**9, 2**10, 2**11, 2**12]
+    K = np.array([0.1,1,2,3,4,5])
+    M = 1000
 """
