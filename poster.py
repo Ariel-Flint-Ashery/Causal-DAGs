@@ -15,6 +15,7 @@ import numpy as np
 import networkx as nx
 import DAG_Library.module_random_geometric_graphs as rgg
 import DAG_Library.module_path_algorithms as pa
+from DAG_Library.custom_functions import intersection
 import copy
 
 #%%
@@ -85,6 +86,8 @@ for p,col,l in zip(P, cols, ls):
         ax.plot(-1*x, y, c = col, ls = l, lw = L)
         ax.plot(-1*x, -1*y, c = col, ls = l, lw = L)
         ax.plot(x, -1*y, c = col, ls = l, lw = L)
+    
+    ax.annotate('p=%s' % (p), np.array(intersection(x,y,x,x))+0.01,c = col, fontsize = 20)
 #plt.axis('off')   
 
 plt.show()
