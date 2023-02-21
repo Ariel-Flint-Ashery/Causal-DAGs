@@ -9,7 +9,8 @@ import numpy as np
 from scipy.special import gamma
 from tqdm import tqdm
 import pickle
-
+import multiprocessing
+import time
 #%%
 def radiusBinarySearch(X, p, epsilon, end = np.inf):
     """
@@ -76,44 +77,81 @@ params = {
         'mathtext.fontset': 'stix',
         }
 plt.rcParams.update(params)
-
+#%% check if already initialised
+if os.path.isfile('radius_scaling_df.pkl'):
+        df = pickle.load(open(f'radius_scaling_df.pkl', 'rb'))
+        print("""
+                    -----------------------------------------
+                        WARNING: EXISTING DATAFRAME FOUND 
+                            
+                            PROCEED TO PLOTTING STAGE
+                    -----------------------------------------        
+                            """)
 #%%
-dataframe = {rho: {p: [] for p in P} for rho in RHO}
+def generateDataframe(M = None):
+    dataframe = {rho: {p: [] for p in P} for rho in RHO}
+    
+    if M != None:
+        dataframe['config'] = {'constants': f'RHO: {RHO}, V: {V}, D:{D} , P: {P}, M: {M}, epsilon: {epsilon}'}
 
-#%%
-for i in tqdm(range(M)):
+    return dataframe
+def scaling_generator():
+    dataframe = generateDataframe()
     for rho in RHO:
         X = rgg._poisson_cube_sprinkling(rho, V, D, fixed_N = True)
         for p in P:
             dataframe[rho][p].append(radiusBinarySearch(X, p, epsilon))
+
+    return dataframe
+
+#%% parallelise
+
+start = time.perf_counter()
+if __name__ == "__main__":
+    print("""
+          -----------------------------
+          
+              STARTING MULTIPROCESS
+          
+          -----------------------------
+          """)
+    pool = multiprocessing.Pool(2)
+    dfs = pool.starmap(scaling_generator, [() for _ in range(M)]) #uses all available processors
+    pool.close()
+    pool.join()
+
+#%% combine dataframes
+
+df = generateDataframe(M)
+for rho in RHO:
+    for p in P:
+        df[rho][p] = [d[rho][p] for d in dfs]
+
 #%%
 f = open(f'radius_scaling_df.pkl', 'wb')
-pickle.dump(dataframe, f)
+pickle.dump(df, f)
 f.close()
 
+print('Time elapsed: %s'% (time.perf_counter()-start))
 #%%
 #calculate errors
 #error = epsilon/np.sqrt(M)
 for rho in RHO:
-    dataframe[rho]['rho_avg'] = {p: np.average(dataframe[rho][p]) for p in P}
-    dataframe[rho]['rho_scale'] = [dataframe[rho]['rho_avg'][p]/analyticCritRadius(p, D, rho) for p in P]
-    dataframe[rho]['rho_err'] = [np.sqrt(np.std(dataframe[rho][p], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P]
+    df[rho]['rho_avg'] = {p: np.average(df[rho][p]) for p in P}
+    df[rho]['rho_scale'] = [df[rho]['rho_avg'][p]/analyticCritRadius(p, D, rho) for p in P]
+    df[rho]['rho_err'] = [np.sqrt(np.std(df[rho][p], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P]
 #%%
 #plot
 normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
-cmap = mpl.cm.get_cmap('viridis')
-
-#%%
-normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
 cmap = mpl.cm.get_cmap('rainbow')
 for rho, mrkr in zip(RHO, mrkrs):
-    plt.plot(P, dataframe[rho]['rho_scale'], c = cmap(normalize(rho)))
-    plt.errorbar(P, dataframe[rho]['rho_scale'], yerr = dataframe[rho]['rho_err'],
+    plt.plot(P, df[rho]['rho_scale'], c = cmap(normalize(rho)))
+    plt.errorbar(P, df[rho]['rho_scale'], yerr = df[rho]['rho_err'],
                  label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
                  color = cmap(normalize(rho)))
 
-plt.xlabel('density')
-plt.ylabel('radius scaling')
+plt.xlabel('Density')
+plt.ylabel('Critical Radius')
 plt.legend()
 plt.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
 plt.xscale('log')
