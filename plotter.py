@@ -110,6 +110,8 @@ def file_id(name, pkl = True, directory = None):
     return file_name
 #%%
 #load data
+
+#NOTE: MAKE SURE TO UNZIP HPC DATA!
 fname = 'path_data_prelim_03' #odd = kevin, even = ariel
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
@@ -177,7 +179,7 @@ if optimizer == 'G':
     ax2.set_ylabel('Geometric Distance')
 if optimizer == 'N':
     ax2.set_ylabel('Network Distance')
-ax2.legend()
+#ax2.legend()
 ax2.set_xscale('log')
 ax2.set_yscale('log')
 
@@ -219,7 +221,7 @@ for path in path_type:
 
 ax2.set_xlabel('p')
 ax2.set_ylabel('j3 average')
-ax2.legend()
+#ax2.legend()
 ax2.set_xscale('log')
 ax2.set_yscale('log')
 
