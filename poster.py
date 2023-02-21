@@ -182,10 +182,11 @@ def path_node_to_edges(path_list_in_nodes):
 def plt_edges(edge_list, pos, paths, ax, labels = None, node_size = 50, show_nodes = False, **edge_kwargs):
     G = nx.DiGraph(edge_list)
     
-    colors = iter(mpl.colors.TABLEAU_COLORS)
+    colors = iter(['#00CD6C', '#AF58BA'])#iter(mpl.colors.TABLEAU_COLORS)
     labels = iter(labels)
     lines = iter(['--', '-.', ':'])
-    ax.plot(np.linspace(0,1, 100),np.linspace(0,1, 100), ls = '-', color = 'k', label = 'pseudo-geodesic')
+    ax.plot(np.linspace(0,1, 100),np.linspace(0,1, 100), ls = '-', alpha = 0.7,
+                        color = 'k', label = 'pseudo-geodesic', linewidth = 2.5)
     for path in paths:
         color = next(colors, 'black')
         label = next(labels)
@@ -194,8 +195,11 @@ def plt_edges(edge_list, pos, paths, ax, labels = None, node_size = 50, show_nod
         nx.draw_networkx_edges(G, pos, path, arrows = False, label = label, edge_color = color, style = ls, ax = ax, **edge_kwargs)
         #ax.legend()
     if show_nodes == True:    
-        nx.draw_networkx_nodes(G, pos, node_size = node_size, ax = ax, node_color = 'k', edgecolors = None)
-    ax.axis('off')
+        nx.draw_networkx_nodes(G, pos, node_size = node_size, ax = ax, node_color = 'r', edgecolors = None)
+    #ax.axis('off')
+    # ax.set_xticks([], fontsize = 5)
+    # ax.set_yticks([], fontsize = 5)
+    ax.set_frame_on(False)
     
 #%%
 #constants
@@ -242,13 +246,24 @@ fig, (ax1, ax2) = plt.subplots(1,2, figsize = (18,12))
 #plot
 for p, ax in zip(P, (ax1, ax2)) :    
     shortest_path, longest_path = pa.getPaths(G[p]['graph_dict'], 'geo')
-    greedy_path = pa.greedy_path_geo(G[p]['graph_dict'])
-    paths = [shortest_path, longest_path, greedy_path]
-    plt_edges(G[p]['edge_list'], pos, paths, labels = labels, show_nodes = True, ax = ax, width = 2)
-
-ax2.legend(loc = 'lower right')
-
-
-
-
+    gnx = nx.DiGraph(G[p]['edge_list'])
+    nx.draw_networkx(gnx, pos, arrows = False, ax = ax, node_color = 'r', 
+                      edge_color = 'k', width = 1, alpha = 0.3, with_labels = False,
+                      node_size = 50, style = '--')
+    #greedy_path = pa.greedy_path_geo(G[p]['graph_dict'])
+    paths = [shortest_path, longest_path]#, greedy_path]
+    plt_edges(G[p]['edge_list'], pos, paths, labels = labels, show_nodes = True, ax = ax, width = 4)
+    rect = mpl.patches.Rectangle((0, 0), 1, 1, linewidth=1, edgecolor='k', facecolor='none')
+    ax.add_patch(rect)
+    
+    ax.annotate(f'p = {p}', (0.5, -0.07), fontsize = 28, ha = 'center')
+    #ax.set_xlabel(f'p = {p}', fontsize = 28)
+    ax.annotate('S', (-0.01,-0.03), ha = 'right')
+    ax.annotate('T', (1.01,1.01), ha = 'left')
+    
+#ax2.legend(loc = 'lower right')
+handles, labels = ax.get_legend_handles_labels()
+fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.06), fontsize = 28)
+plt.tight_layout()
+plt.show()
 

@@ -72,9 +72,12 @@ def perc_generator():
             percolating = False
             pos = rgg._poisson_cube_sprinkling(rho, V, d, fixed_N = True)
             for k in K:
-                r = dataframe[d][k][rho]['r']
-                _, graph_dict = rgg.lp_random_geometric_graph(pos, r, P, show_dist = False)
-                percolating = pa.DFS_percolating(graph_dict)
+                if percolating == False:
+                    r = dataframe[d][k][rho]['r']
+                    _, graph_dict = rgg.lp_random_geometric_graph(pos, r, P, show_dist = False)
+                    percolating = pa.DFS_percolating(graph_dict)
+                else:
+                    None
                 dataframe[d][k][rho]['p'] = percolating
 
     return dataframe

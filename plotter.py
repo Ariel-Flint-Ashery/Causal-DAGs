@@ -168,7 +168,7 @@ ax1.set_yscale('log')
 col = iter(_col)
 for path in path_type:
     colour = next(col)
-    x = P[4:7]
+    x = P[7:11]
     y = [np.average(dataframe['d'][path][p]['raw']) for p in x]
     yerr = [np.std(dataframe['d'][path][p]['raw']) for p in x]
     ax2.plot(x, y, color = colour)
@@ -213,7 +213,7 @@ ax1.set_yscale('log')
 col = iter(_col)
 for path in path_type:
     colour = next(col)
-    x = P[3:6]
+    x = P[7:11]
     y = [np.average(dataframe['j3'][path][p]['mean']) for p in x]
     yerr = [np.average(dataframe['j3'][path][p]['err'])/np.sqrt(M) for p in x] 
     ax2.plot(x, y, color = colour)
