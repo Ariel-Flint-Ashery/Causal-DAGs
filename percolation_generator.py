@@ -61,6 +61,7 @@ K = np.array([0.1,1,2,3,4,5])
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
 except:
+    print('NO DATAFRAME FOUND. STARTING PERCOLATION')
     dataframe = {d:{k:{rho: {'r':pa.convert_degree_to_radius(k, rho, d, P), 'p': 0.0, 'sc':[], 'gwcc':[]} for rho in RHO} for k in K} for d in D}
     for i in range(M):
         print(f"""
@@ -79,22 +80,9 @@ except:
                     dataframe[d][k][rho]['p'] += percolating
                     #print(len(edge_list)/rho)
 
-    # for d in D:
-    #     for rho in RHO:
-    #         for k in K:
-    #             dataframe[d][k][rho]['p'] /= M
-#%% Save file
-f = open(f'{file_id(fname)}', 'wb')
-pickle.dump(dataframe, f)
-f.close()
-#%%
-# y = {d: [np.sum(dataframe[d][k][RHO[0]]['p'])/M for k in K] for d in D}
-# x = K
-# for d in D:
-#     plt.plot(x,y[d], label = 'd = %s' % (d))
-
-# plt.show()
-
+    f = open(f'{file_id(fname)}', 'wb')
+    pickle.dump(dataframe, f)
+    f.close()
 #%% Plotting the Bastas plot
 colours = iter(['red', 'orange', 'gold', 'green', 'teal', 'dodgerblue', 'blue', 'purple', 'magenta'])
 def power_law(x, a, b):

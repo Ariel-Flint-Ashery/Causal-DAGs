@@ -4,7 +4,9 @@ Created on Mon Nov 14 23:04:34 2022
 
 @author: kevin
 """
-
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 import DAG_Library.module_random_geometric_graphs as mod_rgg
 import DAG_Library.module_path_algorithms as mod_paths
 import pickle
@@ -238,7 +240,7 @@ def _degree_percolating_data_generator(N, vol, d, p, K_range, iterations = 200):
 
 
     
-def num_percolating(density, vol, d, p, Range, iterations, dtype):
+def num_percolating(density, vol, d, p, Range, iterations, dtype = 'k'):
     """
     For a given set of parameters: density, vol, d, p, R_Range, iterations:
         Count the number of percolating graphs over the range R_range for M iterations.

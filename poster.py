@@ -204,7 +204,7 @@ def plt_edges(edge_list, pos, paths, ax, labels = None, node_size = 50, show_nod
 #%%
 #constants
 
-labels = ['short', 'long', 'greedy']
+labels = ['short', 'long']
 P = [0.5, 2]
 V = 1
 D = 2
@@ -261,7 +261,7 @@ for p, ax in zip(P, (ax1, ax2)) :
     ax.annotate('S', (-0.01,-0.03), ha = 'right')
     ax.annotate('T', (1.01,1.01), ha = 'left')
     
-#ax2.legend(loc = 'lower right')
+#ax.legend(loc = 'lower right')
 handles, labels = ax.get_legend_handles_labels()
 fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.06), fontsize = 28)
 plt.tight_layout()

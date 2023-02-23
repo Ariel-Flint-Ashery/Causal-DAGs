@@ -40,6 +40,9 @@ def radiusBinarySearch(X, p, epsilon, end = np.inf):
     #print(n)
     return R #returns critical R value
 
+def gamma_factor(p,d):
+    return (gamma(1 + 1/p)**d)/gamma(1 + d/p)
+
 def analyticCritRadius(p, d, density, deg = 1):
     """
     Calculate the anayltic solution for the critical radius for 
@@ -56,11 +59,12 @@ def analyticCritRadius(p, d, density, deg = 1):
         p-Minkowski volume.
     """
 
-    R = (deg/gamma(1+(1/p)))*(gamma(1+(d/p))/density)**(1/d)
+    gamma_factor = 1/gamma_factor(p,d)
+    R = (deg * gamma_factor / rho)**(1/d)
     return R
 
 #%% Independent Variable
-RHO = [1000, 1500, 2000, 3000, 4000]
+RHO = [2**9, 2**10, 2**11, 2**12]
 mrkrs = ['d', '*', '^', 's', '.']
 V = 1
 D = 2
@@ -79,14 +83,14 @@ params = {
 plt.rcParams.update(params)
 #%% check if already initialised
 if os.path.isfile('radius_scaling_df.pkl'):
-        df = pickle.load(open(f'radius_scaling_df.pkl', 'rb'))
-        print("""
-                    -----------------------------------------
-                        WARNING: EXISTING DATAFRAME FOUND 
-                            
-                            PROCEED TO PLOTTING STAGE
-                    -----------------------------------------        
-                            """)
+    df = pickle.load(open(f'radius_scaling_df.pkl', 'rb'))
+    print("""
+                -----------------------------------------
+                    WARNING: EXISTING DATAFRAME FOUND 
+                        
+                        PROCEED TO PLOTTING STAGE
+                -----------------------------------------        
+                        """)
 #%%
 def generateDataframe(M = None):
     dataframe = {rho: {p: [] for p in P} for rho in RHO}
@@ -115,8 +119,8 @@ if __name__ == "__main__":
           
           -----------------------------
           """)
-    pool = multiprocessing.Pool(2)
-    dfs = pool.starmap(scaling_generator, [() for _ in range(M)]) #uses all available processors
+    pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1) #multiprocessing.cpu_count() - 1 <-- uses all available processors
+    dfs = pool.starmap(scaling_generator, [() for _ in range(M)])
     pool.close()
     pool.join()
 
@@ -134,12 +138,20 @@ f.close()
 
 print('Time elapsed: %s'% (time.perf_counter()-start))
 #%%
+"""
+---------------------------
+    BEGIN PLOTTING HERE
+---------------------------
+
+"""
+
 #calculate errors
 #error = epsilon/np.sqrt(M)
 for rho in RHO:
     df[rho]['rho_avg'] = {p: np.average(df[rho][p]) for p in P}
-    df[rho]['rho_scale'] = [df[rho]['rho_avg'][p]/analyticCritRadius(p, D, rho) for p in P]
-    df[rho]['rho_err'] = [np.sqrt(np.std(df[rho][p], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P]
+    df[rho]['rho_scale'] = [(df[rho]['rho_avg'][p]**D)*rho*gamma_factor(p,D) for p in P] #/analyticCritRadius(p, D, rho)
+    df[rho]['rho_err'] = [np.sqrt(np.std(df['rho_scale'], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P] #df[rho][p], ddof = 1)**2
+    
 #%%
 #plot
 normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))

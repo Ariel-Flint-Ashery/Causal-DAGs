@@ -4,7 +4,9 @@ Created on Sun Dec 11 22:27:22 2022
 
 @author: kevin
 """
-
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 import math
 import numpy as np
 import DAG_Library.module_percolation_generators as pg

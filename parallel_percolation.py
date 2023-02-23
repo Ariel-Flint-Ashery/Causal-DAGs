@@ -81,7 +81,7 @@ def perc_generator():
                 dataframe[d][k][rho]['p'] = percolating
 
     return dataframe
-#%%
+#%% PARALLELISE
 start = time.perf_counter()
 if __name__ == "__main__":
     print("""
