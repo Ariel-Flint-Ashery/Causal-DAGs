@@ -40,7 +40,7 @@ def unit_circle(rmin, rmax, N, p, R=1):
     y = lp_circle(x, p ,R)
 #%%
 #constants
-N = 10000
+N = 1000
 x = np.linspace(0,1, N)
 P = [0.5, 1, 2, 4, np.inf]
 L = 4
@@ -89,7 +89,8 @@ for p,col,l in zip(P, cols, ls):
     
     ax.annotate('p=%s' % (p), np.array(intersection(x,y,x,x)) + np.array([[-0.01],[0.03]]),c = col, fontsize = 28)
 #plt.axis('off')   
-
+fig.set_facecolor('#D4F4FF')
+ax.set_facecolor('#D4F4FF')
 plt.show()
 #%%
 # ax.plot(x, y)
