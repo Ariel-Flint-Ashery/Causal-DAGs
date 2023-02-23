@@ -42,7 +42,7 @@ M = 2000
 #%% Measurement variables
 dep_var = ['d', 'l','j3']
 path_type = ['sp', 'lp', 'gp'] #['spg', 'lpg', 'gp'] or #['spn', 'lpn', 'gp']  #use __n for network optimization, __g for geometric optimization
-optimizer = 'G'
+optimizer = 'geo' #or 'net'
 a = np.sqrt(2)
 b = 1.025
 P = list(np.round([a**n for n in range(-4,5)], decimals = 5)) + list(np.round([b**n for n in range(-4,5)], decimals = 5))
@@ -88,8 +88,8 @@ def geo_generator():
         edge_list = G[p]['edge_list']
         graph_dict = G[p]['graph_dict']
 
-        sp, lp = pa.getPaths(graph_dict, 'geo')
-        gp = pa.greedy_path_geo(graph_dict)
+        sp, lp = pa.getPaths(graph_dict, optimizer)
+        gp = pa.greedy_path(graph_dict, optimizer)
         paths = [sp, lp, gp] 
         paths = {path_type[i]: paths[i] for i in range(len(paths))}
 

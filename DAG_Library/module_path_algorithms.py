@@ -218,7 +218,7 @@ def DFS(graph_dict, source=0):
     return visited
                 
 
-def greedy_path(graph_dict, source = None, target = None):
+def greedy_path_net(graph_dict, source = None, target = None):
     if source == None:
         source = 0
     if target == None:
@@ -275,7 +275,15 @@ def greedy_path_geo(graph_dict, source = None, target = None):
 
         if temp == target:
             return visited        
-        
+
+def greedy_path(graph_dict, optimizer, source = None, target = None):
+    if optimizer == 'net':
+        path = greedy_path_net(graph_dict, source, target)
+    elif optimizer == 'geo':
+        path = greedy_path_geo(graph_dict, source, target)
+    else:
+        raise ValueError('OPTIMIZER NOT FOUND')
+    return path
 
 def pathDist(graph_dict, path,p):
     distance = 0.0
