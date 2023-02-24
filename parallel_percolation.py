@@ -102,7 +102,7 @@ if __name__ == "__main__":
           
           -----------------------------
           """)
-    pool = multiprocessing.Pool(3 - 1) #uses all available processors multiprocessing.cpu_count()
+    pool = multiprocessing.Pool(multiprocessing.cpu_count()- 1) #uses all available processors 
     dfs = pool.starmap(perc_generator, [() for _ in range(M)]) 
     pool.close()
     pool.join()
