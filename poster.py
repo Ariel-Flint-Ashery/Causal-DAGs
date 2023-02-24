@@ -58,7 +58,7 @@ ax.plot(np.linspace(0,1.1, N), [0]*N, lw = 4, c = 'k')
 ax.plot([0]*N, np.linspace(0,1.1, N), lw = 4, c = 'k')
 ax.set_xlim(left = -1.1 , right = 1.1)
 ax.set_ylim(bottom = -1.1, top = 1.1)
-ax.tick_params(axis='both', which='major', pad=15, labelsize = 14)
+ax.tick_params(axis='both', which='major', labelbottom = False, labelleft = False)#pad=15, labelsize = 14)
 #uncomment for only integer ticks
 # for axis in [ax.xaxis, ax.yaxis]:
 #     axis.set_major_locator(mpl.ticker.MaxNLocator(integer=True))
@@ -69,7 +69,10 @@ cols = ['darkorchid', 'royalblue', 'forestgreen', 'chocolate', 'orangered']
 ls = ['dotted', 'dashed', 'solid', 'dashdot', 'densely dashdotdotted']
 # normalize = mpl.colors.Normalize(vmin=min(P), vmax=max(P))
 # cmap = mpl.cm.get_cmap('rainbow')
-
+ax.annotate('1', (-0.05, 1.03), fontsize = 22)
+ax.annotate('-1', (-0.06, -1.05), fontsize = 22)
+ax.annotate('-1', (-1.06, -.05), fontsize = 22)
+ax.annotate('1', (1.01, -.05), fontsize = 22)
 #plot
 for p,col,l in zip(P, cols, ls):    
     y = lp_circle(x, p)
@@ -92,17 +95,6 @@ for p,col,l in zip(P, cols, ls):
 fig.set_facecolor('#D4F4FF')
 ax.set_facecolor('#D4F4FF')
 plt.show()
-#%%
-# ax.plot(x, y)
-# ax.spines['left'].set_position('zero')
-# ax.spines['right'].set_color('none')
-# ax.spines['bottom'].set_position('zero')
-# ax.spines['top'].set_color('none')
-
-# # remove the ticks from the top and right edges
-# ax.xaxis.set_ticks_position('bottom')
-# ax.yaxis.set_ticks_position('left')
-
 #%%
 "PLOT CONNECTION KERNEL"
 
@@ -267,4 +259,3 @@ handles, labels = ax.get_legend_handles_labels()
 fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.06), fontsize = 28)
 plt.tight_layout()
 plt.show()
-

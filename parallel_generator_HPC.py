@@ -11,7 +11,7 @@ from tqdm import tqdm
 import copy 
 import multiprocessing
 
-fname = 'para_geo_500_5' #HPC_opt_data_rho_M
+fname = 'para_geo_500_10' #HPC_opt_data_rho_M
 #%%
 def file_id(name, pkl = True, directory = None):
     """
@@ -38,11 +38,11 @@ RHO = 500
 V = 1
 D = 2
 K = 3
-M = 5
+M = 10
 #%% Measurement variables
 dep_var = ['d', 'l','j3']
 path_type = ['sp', 'lp', 'gp'] #['spg', 'lpg', 'gp'] or #['spn', 'lpn', 'gp']  #use __n for network optimization, __g for geometric optimization
-optimizer = 'geo' #or 'net'
+optimizer = 'G'
 a = np.sqrt(2)
 b = 1.025
 P = list(np.round([a**n for n in range(-4,5)], decimals = 5)) + list(np.round([b**n for n in range(-4,5)], decimals = 5))
@@ -88,7 +88,7 @@ def geo_generator():
         edge_list = G[p]['edge_list']
         graph_dict = G[p]['graph_dict']
 
-        sp, lp = pa.getPaths(graph_dict, optimizer)
+        sp, lp = pa.getPaths(graph_dict, 'geo')
         gp = pa.greedy_path_geo(graph_dict)
         paths = [sp, lp, gp] 
         paths = {path_type[i]: paths[i] for i in range(len(paths))}
@@ -107,10 +107,14 @@ def geo_generator():
             dataframe['j3'][path][p]['err'] = _J3[3]
 
     return dataframe
-#%%
-df = geo_generator()
+
 
 #%% parallelise
+df = geo_generator()
+#%%
+def f():  # no argument
+    return 1
+#%%
 start = time.perf_counter()
 if __name__ == "__main__":
     print("""
@@ -121,7 +125,7 @@ if __name__ == "__main__":
           -----------------------------
           """)
     pool = multiprocessing.Pool(2)
-    dfs = pool.starmap(geo_generator, [() for _ in range(M)]) #uses all available processors
+    dfs = pool.starmap(f, [() for _ in range(M)]) #uses all available processors
     pool.close()
     pool.join()
 

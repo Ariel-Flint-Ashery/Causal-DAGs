@@ -59,8 +59,8 @@ def analyticCritRadius(p, d, density, deg = 1):
         p-Minkowski volume.
     """
 
-    gamma_factor = 1/gamma_factor(p,d)
-    R = (deg * gamma_factor / rho)**(1/d)
+    g = 1/gamma_factor(p,d)
+    R = (deg * g / rho)**(1/d)
     return R
 
 #%% Independent Variable
@@ -68,7 +68,7 @@ RHO = [2**9, 2**10, 2**11, 2**12]
 mrkrs = ['d', '*', '^', 's', '.']
 V = 1
 D = 2
-M = 500 #200
+M = 5 #200
 a = np.sqrt(2)
 P = [a**n for n in range(-2, 5)]
 epsilon = 0.0001
@@ -119,7 +119,7 @@ if __name__ == "__main__":
           
           -----------------------------
           """)
-    pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1) #multiprocessing.cpu_count() - 1 <-- uses all available processors
+    pool = multiprocessing.Pool(2) #multiprocessing.cpu_count() - 1 <-- uses all available processors
     dfs = pool.starmap(scaling_generator, [() for _ in range(M)])
     pool.close()
     pool.join()
