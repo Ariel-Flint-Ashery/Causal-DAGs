@@ -46,18 +46,27 @@ def file_id(name, pkl = True, directory = None):
     file_name = os.path.join(directory, 'DAG_data_files/percolation_data', f'{_file_name}.pkl')
     return file_name
 
-#%%
 #%% Set up parameters of the simulation
-D = [1,2,3]
-P = 2 #only implemented for Euclidean geometry
+D = [2] # Only look at dimension = 2; structure allows for further investigation in higher dimension if needed
+P = [1, 2] 
 V = 1
-RHO = [2**9, 2**10, 2**11, 2**12]
+RHO = [2**10, 2**11, 2**12]
 M = 1000
-# K = np.array([(2+i/50) for i in range(-10,10)])
-K = np.array([0.1,1,2,3,4,5])
+K_micro = [np.round(k,2) for k in np.arange(1.8, 2.4, 0.02)]
+K_macro = [np.round(k,2) for k in np.arange(0.25, 6.25, 0.25)]
+K = list(set(K_micro + K_macro))
+K.sort()
 #%%
 def generateDataframe(M = None):
-    dataframe = {d:{k:{rho: {'r':pa.convert_degree_to_radius(k, rho, d, P), 'p':[], 'sc':[], 'gwcc':[]} for rho in RHO} for k in K} for d in D}
+    dataframe = {d:
+                 {p:
+                  {k:
+                   {rho: 
+                    {'r':pa.convert_degree_to_radius(k, rho, d, p), 'p':0}
+                        for rho in RHO}
+                           for k in K}
+                              for p in P}
+                                  for d in D}
 
     if M != None:
         dataframe['config'] = {'constants': [RHO, V, D, K, M, P]}
@@ -67,18 +76,20 @@ def generateDataframe(M = None):
 
 def perc_generator():
     dataframe = generateDataframe()
-    for d in D:      
-        for rho in RHO:
-            percolating = False
-            pos = rgg._poisson_cube_sprinkling(rho, V, d, fixed_N = True)
-            for k in K:
-                if percolating == False:
-                    r = dataframe[d][k][rho]['r']
-                    _, graph_dict = rgg.lp_random_geometric_graph(pos, r, P, show_dist = False)
-                    percolating = pa.DFS_percolating(graph_dict)
-                else:
-                    None
-                dataframe[d][k][rho]['p'] = percolating
+    for d in D:
+        for p in P:
+            for rho in RHO:
+                percolating = False
+                pos = rgg._poisson_cube_sprinkling(rho, V, d, fixed_N = True)
+                for k in K:
+                    if percolating == False:
+                        r = dataframe[d][p][k][rho]['r']
+                        _, graph_dict = rgg.lp_random_geometric_graph(pos, r, p, show_dist = False)
+                        percolating = pa.DFS_percolating(graph_dict)
+                    else:
+                        None
+                    dataframe[d][p][k][rho]['p'] += percolating
+                    print(percolating)
 
     return dataframe
 #%% PARALLELISE
@@ -91,17 +102,18 @@ if __name__ == "__main__":
           
           -----------------------------
           """)
-    pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1) #uses all available processors
+    pool = multiprocessing.Pool(multiprocessing.cpu_count()- 1) #uses all available processors 
     dfs = pool.starmap(perc_generator, [() for _ in range(M)]) 
     pool.close()
     pool.join()
-
+    
 #%%
 df = generateDataframe(M)
 for d in D:
+  for p in P:
     for rho in RHO:
         for k in K:
-            df[d][k][rho]['p'] = np.sum([frame[d][k][rho] for frame in dfs])
+            df[d][p][k][rho]['p'] = np.sum([frame[d][p][k][rho]['p'] for frame in dfs])
 
 f = open(f'{file_id(fname)}', 'wb')
 pickle.dump(df, f)
