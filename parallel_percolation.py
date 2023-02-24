@@ -12,7 +12,6 @@ import scipy.optimize as op
 from tqdm import tqdm
 import copy 
 import multiprocessing
-
 #%%
 params = {
         'axes.labelsize':28,
@@ -22,10 +21,8 @@ params = {
         'mathtext.fontset': 'stix',
         }
 plt.rcParams.update(params)
-
 #%% Naming the file to save 
 fname = 'percolation_data_prelim_03'
-
 def file_id(name, pkl = True, directory = None):
     """
     Returns:
@@ -45,7 +42,6 @@ def file_id(name, pkl = True, directory = None):
     _file_name = str(__file_name).replace(' ', '-').replace(',', '').replace('[', '-').replace(']','-').replace('.','-')
     file_name = os.path.join(directory, 'DAG_data_files/percolation_data', f'{_file_name}.pkl')
     return file_name
-
 #%% Set up parameters of the simulation
 D = [2] # Only look at dimension = 2; structure allows for further investigation in higher dimension if needed
 P = [1, 2] 
@@ -67,13 +63,10 @@ def generateDataframe(M = None):
                            for k in K}
                               for p in P}
                                   for d in D}
-
     if M != None:
         dataframe['config'] = {'constants': [RHO, V, D, K, M, P]}
     
     return dataframe
-
-
 def perc_generator():
     dataframe = generateDataframe()
     for d in D:
@@ -90,7 +83,6 @@ def perc_generator():
                         None
                     dataframe[d][p][k][rho]['p'] += percolating
                     print(percolating)
-
     return dataframe
 #%% PARALLELISE
 start = time.perf_counter()
@@ -102,6 +94,7 @@ if __name__ == "__main__":
           
           -----------------------------
           """)
+    #pool = multiprocessing.Pool(3 - 1) #uses all available processors multiprocessing.cpu_count()
     pool = multiprocessing.Pool(multiprocessing.cpu_count()- 1) #uses all available processors 
     dfs = pool.starmap(perc_generator, [() for _ in range(M)]) 
     pool.close()
@@ -114,9 +107,7 @@ for d in D:
     for rho in RHO:
         for k in K:
             df[d][p][k][rho]['p'] = np.sum([frame[d][p][k][rho]['p'] for frame in dfs])
-
 f = open(f'{file_id(fname)}', 'wb')
 pickle.dump(df, f)
 f.close()
-
 print('Time elapsed: %s'% (time.perf_counter()-start))
