@@ -197,12 +197,12 @@ def plt_edges(edge_list, pos, paths, ax, labels = None, node_size = 50, show_nod
 #%%
 #constants
 
-labels = ['short', 'long']
+labels = ['short', 'long', 'pseudo-geodesic']
 P = [0.5, 2]
 V = 1
 D = 2
 RHO = 200
-K = 3
+K = 5
 _P = {p:{} for p in P}
 while _P:
     pos = rgg._poisson_cube_sprinkling(RHO, V, D, fixed_N = True)
@@ -225,7 +225,7 @@ fig, (ax1, ax2) = plt.subplots(1,2, figsize = (18,12))
 #plot
 for p, ax in zip(P, (ax1, ax2)) :    
     shortest_path, longest_path = pa.short_long_paths(G[p]['graph_dict'], edge_list = G[p]['edge_list'])
-    greedy_path = pa.greedy_path(G[p]['graph_dict'])
+    greedy_path = pa.greedy_path(G[p]['graph_dict'], 'geo')
     paths = [shortest_path, longest_path, greedy_path]
     plt_edges(G[p]['edge_list'], pos, paths, labels = labels, show_nodes = True, ax = ax, width = 2)
 
@@ -234,14 +234,14 @@ ax2.legend(loc = 'lower right')
 #%%
 #find geometric paths
 
-fig, (ax1, ax2) = plt.subplots(1,2, figsize = (18,12))
+fig, (ax1, ax2) = plt.subplots(1,2, figsize = (18,9))
 
 #plot
 for p, ax in zip(P, (ax1, ax2)) :    
     shortest_path, longest_path = pa.getPaths(G[p]['graph_dict'], 'geo')
     gnx = nx.DiGraph(G[p]['edge_list'])
-    nx.draw_networkx(gnx, pos, arrows = False, ax = ax, node_color = 'r', 
-                      edge_color = 'k', width = 1, alpha = 0.3, with_labels = False,
+    nx.draw_networkx(gnx, pos, arrows = False, ax = ax, node_color = 'g', 
+                      edge_color = 'k', width = 1, alpha = 0.2, with_labels = False,
                       node_size = 50, style = '--')
     #greedy_path = pa.greedy_path_geo(G[p]['graph_dict'])
     paths = [shortest_path, longest_path]#, greedy_path]
@@ -251,11 +251,11 @@ for p, ax in zip(P, (ax1, ax2)) :
     
     ax.annotate(f'p = {p}', (0.5, -0.07), fontsize = 28, ha = 'center')
     #ax.set_xlabel(f'p = {p}', fontsize = 28)
-    ax.annotate('S', (-0.01,-0.03), ha = 'right')
-    ax.annotate('T', (1.01,1.01), ha = 'left')
+    ax.annotate('S', (-0.01,-0.03), ha = 'right', fontsize = 24)
+    ax.annotate('T', (1.01,1.01), ha = 'left', fontsize = 24)
     
 #ax.legend(loc = 'lower right')
 handles, labels = ax.get_legend_handles_labels()
-fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.06), fontsize = 28)
+fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28)
 plt.tight_layout()
 plt.show()
