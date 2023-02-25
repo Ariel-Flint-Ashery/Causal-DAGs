@@ -202,7 +202,7 @@ P = [0.5, 2]
 V = 1
 D = 2
 RHO = 200
-K = 3
+K = 5
 _P = {p:{} for p in P}
 while _P:
     pos = rgg._poisson_cube_sprinkling(RHO, V, D, fixed_N = True)
@@ -225,7 +225,7 @@ fig, (ax1, ax2) = plt.subplots(1,2, figsize = (18,12))
 #plot
 for p, ax in zip(P, (ax1, ax2)) :    
     shortest_path, longest_path = pa.short_long_paths(G[p]['graph_dict'], edge_list = G[p]['edge_list'])
-    greedy_path = pa.greedy_path(G[p]['graph_dict'])
+    greedy_path = pa.greedy_path(G[p]['graph_dict'], 'geo')
     paths = [shortest_path, longest_path, greedy_path]
     plt_edges(G[p]['edge_list'], pos, paths, labels = labels, show_nodes = True, ax = ax, width = 2)
 
