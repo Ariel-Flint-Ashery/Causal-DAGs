@@ -27,6 +27,8 @@ params = {
         'mathtext.fontset': 'stix',
         }
 plt.rcParams.update(params)
+
+background = '#ebecf0'
 #%%
 mpl.rcParams.update(mpl.rcParamsDefault)
 #%%
@@ -46,7 +48,7 @@ P = [0.5, 1, 2, 4, np.inf]
 L = 4
 
 #create figure
-fig, ax = plt.subplots(1,1, figsize = (15,15))
+fig, ax = plt.subplots(1,1, figsize = (21, 21))
 #add centred spline
 ax.spines[["left", "bottom"]].set_position(("data", 0))
 # Hide the top and right spines.
@@ -69,31 +71,35 @@ cols = ['darkorchid', 'royalblue', 'forestgreen', 'chocolate', 'orangered']
 ls = ['dotted', 'dashed', 'solid', 'dashdot', 'densely dashdotdotted']
 # normalize = mpl.colors.Normalize(vmin=min(P), vmax=max(P))
 # cmap = mpl.cm.get_cmap('rainbow')
-ax.annotate('1', (-0.05, 1.03), fontsize = 22)
-ax.annotate('-1', (-0.06, -1.05), fontsize = 22)
-ax.annotate('-1', (-1.06, -.05), fontsize = 22)
-ax.annotate('1', (1.01, -.05), fontsize = 22)
+ax.annotate('1', (-0.05, 1.03), fontsize = 34)
+ax.annotate('-1', (-0.06, -1.06), fontsize = 34)
+ax.annotate('-1', (-1.06, -.06), fontsize = 34)
+ax.annotate('1', (1.01, -.06), fontsize = 34)
 #plot
 for p,col,l in zip(P, cols, ls):    
     y = lp_circle(x, p)
     if p == np.inf:
-        ax.plot(x,y, c = col, dashes = [8, 4, 2, 4, 2, 4], lw = L)#cmap(normalize(p)))
+        ax.plot(x,y, c = col, dashes = [8, 4, 2, 4, 2, 4], lw = L) #cmap(normalize(p)))
         ax.plot(-1*x,y, c = col, dashes = [8, 4, 2, 4, 2, 4], lw = L)
         ax.plot(-1*x,-1*y, c = col, dashes = [8, 4, 2, 4, 2, 4], lw = L)
         ax.plot(x,-1*y, c = col, dashes = [8, 4, 2, 4, 2, 4], lw = L)
         ax.plot([-1]*N, np.linspace(-1,1, N), c = col, dashes = [8, 4, 2, 4, 2, 4], lw = L)
-        ax.plot([1]*N, np.linspace(-1,1, N), c = col, dashes = [8, 4, 2, 4, 2, 4], lw = L) 
+        ax.plot([1]*N, np.linspace(-1,1, N), c = col, dashes = [8, 4, 2, 4, 2, 4], lw = L)
         #ax.plot(-1*x,y, c = col, dashes = [8, 4, 2, 4, 2, 4])
     else: 
         ax.plot(x,y, c = col, ls = l, lw = L)
         ax.plot(-1*x, y, c = col, ls = l, lw = L)
         ax.plot(-1*x, -1*y, c = col, ls = l, lw = L)
         ax.plot(x, -1*y, c = col, ls = l, lw = L)
-    
-    ax.annotate('p=%s' % (p), np.array(intersection(x,y,x,x)) + np.array([[-0.01],[0.03]]),c = col, fontsize = 28)
-#plt.axis('off')   
-fig.set_facecolor('#D4F4FF')
-ax.set_facecolor('#D4F4FF')
+        
+    if p == np.inf:
+        p = r'$\infty$'
+        
+    ax.annotate('p=%s' % (p), np.array(intersection(x,y,x,x)) + np.array([[-0.01],[0.03]]),c = col, fontsize = 38)
+#plt.axis('off)
+fig.set_facecolor(background)
+ax.set_facecolor(background)
+# plt.savefig('poster_figs/lp-unit-circle.png', dpi = 1000, bbox_inches = 'tight', pad_inches = 0)
 plt.show()
 #%%
 "PLOT CONNECTION KERNEL"
@@ -120,12 +126,11 @@ for n in graph_dict.keys():
     if n in interval_dict.keys():
         pos_temp.append(pos[n])
         
-
+pos_temp = [np.array(i) for i in [[0,0], [0.15, 0.5], [0.6, 0.1], [0.5, 0.4], [0.55, 0.8], [0.8, 0.45], [1,1]]]
 edge_temp, graph_temp = rgg.lp_random_geometric_graph(pos_temp, R, 2)
 
-#%%
 #create figure
-fig, ax = plt.subplots(1,1, figsize = (15,15))
+fig, ax = plt.subplots(1,1, figsize = (21,21))
 ax.set_xlim(left = -0.025 , right = 1.03)
 ax.set_ylim(bottom = -0.025, top = 1.03)
 
@@ -148,22 +153,29 @@ for n in graph_temp[0]:
     ncolors[n] = 'r'
     ecolors[edge_temp.index((0,n))] = 'r'
 
-
-#draw graph
-G = nx.DiGraph(edge_temp)
+arrow = mpl.patches.ArrowStyle.Simple(head_length = 1.2, head_width = 1.2, tail_width = 0.2)
+# draw graph
+G = nx.DiGraph()
+G.add_nodes_from([n for n in graph_temp])
+G.add_edges_from(edge_temp)
 nx.draw_networkx(G, pos_temp, arrows = True, ax = ax, node_color = ['r']+['none']*(len(graph_temp)-1), 
                  edgecolors = ncolors, edge_color = ecolors, width = 1,
-                 arrowstyle = 'simple', arrowsize = 24, node_size = 1400, linewidths = 4,
-                 font_size = 28)
+                 arrowstyle = arrow, arrowsize = 20, node_size = 2400, linewidths = 4, font_size = 40)
 
-
-ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-ax.tick_params(axis='both', which='major', pad=20, labelsize = 14)
+ax.tick_params(left=True, bottom=True, labelleft=False, labelbottom=False)
+ax.tick_params(axis='both', which='major', pad=25, labelsize = 44)
 ax.spines[["left", "bottom"]].set_position(("data", 0))
 ax.spines[["top", "right"]].set_visible(False)
 ax.spines[["left", "bottom"]].set_alpha(0.7)
 ax.annotate("Connection Kernel (p=%s)" % (p),
-            (0.35, 0.08), c = 'r', fontsize = 28)
+            (0.05, 0.82), c = 'r', fontsize = 40)
+ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.04), c = 'r', fontsize = 40)
+ax.annotate("R", xy = (0,0), xytext = (-0.035, R - 0.013), c = 'r', fontsize = 40)
+ax.set_xticks(np.arange(0,2,1))
+ax.set_yticks(np.arange(0,2,1))
+fig.set_facecolor(background)
+ax.set_facecolor(background)
+# plt.savefig('poster_figs/connection-kernel.png', dpi = 1000, bbox_inches = 'tight', pad_inches = 0)
 plt.show()
 
 #%%
@@ -254,8 +266,11 @@ for p, ax in zip(P, (ax1, ax2)) :
     ax.annotate('S', (-0.01,-0.03), ha = 'right', fontsize = 24)
     ax.annotate('T', (1.01,1.01), ha = 'left', fontsize = 24)
     
-#ax.legend(loc = 'lower right')
+# ax.legend(loc = 'lower right')
 handles, labels = ax.get_legend_handles_labels()
-fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28)
+fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28, facecolor = background, edgecolor = background)
 plt.tight_layout()
+fig.set_facecolor(background)
+ax.set_facecolor(background)
+plt.savefig('poster_figs/path-fig.png', dpi = 1000, bbox_inches = 'tight', pad_inches = 0)
 plt.show()
