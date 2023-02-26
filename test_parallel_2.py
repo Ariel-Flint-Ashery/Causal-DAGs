@@ -118,5 +118,5 @@ if __name__ == "__main__":
     pool.join()
     
 #%%
-with open('DAG_data_files\percolation_data\percolation_data_HPC_TEST.pkl', 'rb') as handle:
+with open('DAG_data_files\percolation_data\percolation_data_1000.pkl', 'rb') as handle:
     b = pickle.load(handle)
