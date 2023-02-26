@@ -40,7 +40,7 @@ def lp_circle(x, p, R=1):
 def unit_circle(rmin, rmax, N, p, R=1):
     x,y = np.linspace(0,rmax, N), np.linspace(0,rmax, N)
     y = lp_circle(x, p ,R)
-#%%
+#%% LP UNIT CIRCLE
 #constants
 N = 1000
 x = np.linspace(0,1, N)
@@ -48,7 +48,7 @@ P = [0.5, 1, 2, 4, np.inf]
 L = 4
 
 #create figure
-fig, ax = plt.subplots(1,1, figsize = (21, 21))
+fig, ax = plt.subplots(1,1, figsize = (18.5, 18.5))
 #add centred spline
 ax.spines[["left", "bottom"]].set_position(("data", 0))
 # Hide the top and right spines.
@@ -71,10 +71,10 @@ cols = ['darkorchid', 'royalblue', 'forestgreen', 'chocolate', 'orangered']
 ls = ['dotted', 'dashed', 'solid', 'dashdot', 'densely dashdotdotted']
 # normalize = mpl.colors.Normalize(vmin=min(P), vmax=max(P))
 # cmap = mpl.cm.get_cmap('rainbow')
-ax.annotate('1', (-0.05, 1.03), fontsize = 34)
-ax.annotate('-1', (-0.06, -1.06), fontsize = 34)
-ax.annotate('-1', (-1.06, -.06), fontsize = 34)
-ax.annotate('1', (1.01, -.06), fontsize = 34)
+ax.annotate('1', (-0.055, 1.03), fontsize = 34)
+ax.annotate('-1', (-0.07, -1.07), fontsize = 34)
+ax.annotate('-1', (-1.08, -.07), fontsize = 34)
+ax.annotate('1', (1.01, -.07), fontsize = 34)
 #plot
 for p,col,l in zip(P, cols, ls):    
     y = lp_circle(x, p)
@@ -99,7 +99,7 @@ for p,col,l in zip(P, cols, ls):
 #plt.axis('off)
 fig.set_facecolor(background)
 ax.set_facecolor(background)
-# plt.savefig('poster_figs/lp-unit-circle.png', dpi = 1000, bbox_inches = 'tight', pad_inches = 0)
+plt.savefig('poster_figs/lp-unit-circle.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
 plt.show()
 #%%
 "PLOT CONNECTION KERNEL"
@@ -109,7 +109,7 @@ N = 8
 R = 0.8
 p = 2
 L = 2.5
-#%%
+#%% CONNECTION KERNEL
 #create graph
 percolating = False
 while percolating == False:
@@ -126,7 +126,7 @@ for n in graph_dict.keys():
     if n in interval_dict.keys():
         pos_temp.append(pos[n])
         
-pos_temp = [np.array(i) for i in [[0,0], [0.15, 0.5], [0.6, 0.1], [0.5, 0.4], [0.55, 0.8], [0.8, 0.45], [1,1]]]
+pos_temp = [np.array(i) for i in [[0,0], [0.15, 0.5], [0.6, 0.1], [0.5, 0.4], [0.55, 0.8], [0.9, 0.45], [1,1]]]
 edge_temp, graph_temp = rgg.lp_random_geometric_graph(pos_temp, R, 2)
 
 #create figure
@@ -160,7 +160,7 @@ G.add_nodes_from([n for n in graph_temp])
 G.add_edges_from(edge_temp)
 nx.draw_networkx(G, pos_temp, arrows = True, ax = ax, node_color = ['r']+['none']*(len(graph_temp)-1), 
                  edgecolors = ncolors, edge_color = ecolors, width = 1,
-                 arrowstyle = arrow, arrowsize = 20, node_size = 2400, linewidths = 4, font_size = 40)
+                 arrowstyle = arrow, arrowsize = 20, node_size = 2500, linewidths = 4, font_size = 44)
 
 ax.tick_params(left=True, bottom=True, labelleft=False, labelbottom=False)
 ax.tick_params(axis='both', which='major', pad=25, labelsize = 44)
@@ -168,14 +168,14 @@ ax.spines[["left", "bottom"]].set_position(("data", 0))
 ax.spines[["top", "right"]].set_visible(False)
 ax.spines[["left", "bottom"]].set_alpha(0.7)
 ax.annotate("Connection Kernel (p=%s)" % (p),
-            (0.05, 0.82), c = 'r', fontsize = 40)
-ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.04), c = 'r', fontsize = 40)
-ax.annotate("R", xy = (0,0), xytext = (-0.035, R - 0.013), c = 'r', fontsize = 40)
+            (0.04, 0.84), c = 'r', fontsize = 52)
+ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.045), c = 'r', fontsize = 52)
+ax.annotate("R", xy = (0,0), xytext = (-0.04, R - 0.013), c = 'r', fontsize = 52)
 ax.set_xticks(np.arange(0,2,1))
 ax.set_yticks(np.arange(0,2,1))
 fig.set_facecolor(background)
 ax.set_facecolor(background)
-# plt.savefig('poster_figs/connection-kernel.png', dpi = 1000, bbox_inches = 'tight', pad_inches = 0)
+plt.savefig('poster_figs/connection-kernel.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
 plt.show()
 
 #%%
@@ -243,7 +243,7 @@ for p, ax in zip(P, (ax1, ax2)) :
 
 ax2.legend(loc = 'lower right')
 
-#%%
+# PATHS
 #find geometric paths
 
 fig, (ax1, ax2) = plt.subplots(1,2, figsize = (18,9))
@@ -272,5 +272,5 @@ fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(
 plt.tight_layout()
 fig.set_facecolor(background)
 ax.set_facecolor(background)
-plt.savefig('poster_figs/path-fig.png', dpi = 1000, bbox_inches = 'tight', pad_inches = 0)
+plt.savefig('poster_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
 plt.show()
