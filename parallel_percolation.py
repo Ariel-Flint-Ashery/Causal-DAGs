@@ -44,10 +44,10 @@ def file_id(name, pkl = True, directory = None):
     return file_name
 #%% Set up parameters of the simulation
 D = [2] # Only look at dimension = 2; structure allows for further investigation in higher dimension if needed
-P = [1, 2] 
+P = [1, 2] # [0.5, 1, 2] 
 V = 1
-RHO = [2**10, 2**11, 2**12]
-M = 1000
+RHO = [2**9] #[2**10, 2**11, 2**12]
+M = 20
 K_micro = [np.round(k,2) for k in np.arange(1.8, 2.4, 0.02)]
 K_macro = [np.round(k,2) for k in np.arange(0.25, 6.25, 0.25)]
 K = list(set(K_micro + K_macro))
@@ -70,10 +70,10 @@ def generateDataframe(M = None):
 def perc_generator():
     dataframe = generateDataframe()
     for d in D:
-        for p in P:
-            for rho in RHO:
+        for rho in RHO:
+            pos = rgg._poisson_cube_sprinkling(rho, V, d, fixed_N = True)
+            for p in P:
                 percolating = False
-                pos = rgg._poisson_cube_sprinkling(rho, V, d, fixed_N = True)
                 for k in K:
                     if percolating == False:
                         r = dataframe[d][p][k][rho]['r']
