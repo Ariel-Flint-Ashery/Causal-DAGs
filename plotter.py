@@ -181,7 +181,7 @@ for path in path_type:
     ax2.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = 10, color = colour,
                  markerfacecolor = 'none', markeredgewidth = 1)
 
-dffit = ff.crossfit(dataframe, measure = 'd')
+dffit = ff.swapdata(dataframe, measure = 'd')
 col = iter(['darkmagenta', 'teal'])
 linestyle = iter(['dashed', 'dotted'])
 for l in dffit:
@@ -191,7 +191,7 @@ for l in dffit:
     y = dffit[l]['d']
     yerr = dffit[l]['d_err']
     u, v, params, cov = ff.Dfit(x, y, sigma = yerr, absolute_sigma = True)
-    uu = [uu for uu in u if uu < P[-5] and uu > P[4]]
+    uu = np.array([uu for uu in u if uu < P[-5] and uu > P[4]])
     vv = ff.Dfunc(uu, *params)
     ax1.plot(u, v, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
     ax2.plot(uu, vv, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
@@ -213,7 +213,7 @@ plt.show()
 #%% 
 " PLOT DISTANCE FRACTIONAL ERRORS FOR LONGEST AND SHORTEST PATH"
 
-dffit = ff.crossfit(dataframe, measure = 'd')
+dffit = ff.swapdata(dataframe, measure = 'd')
 col = iter(['darkmagenta', 'teal'])
 linestyle = iter(['dashed', 'dotted'])
 L = list(dffit.keys())

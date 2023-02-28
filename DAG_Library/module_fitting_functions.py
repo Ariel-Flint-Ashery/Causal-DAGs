@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import scipy.optimize as op
 
 def Dfunc(x, a, b):
-    return 2 ** (1 - b + b*x**(-a))
+    return 2 ** (1 - b**(-a) + (b*x)**(-a))
 
 def Dfit(x, y, **kwargs):
     u = np.linspace(x[0], x[-1], 10000, endpoint = True)
@@ -18,7 +18,7 @@ def Dfit(x, y, **kwargs):
     v = Dfunc(u, *params)
     return u, v, params, cov
 
-def swapfit(dataframe, measure = 'd'):
+def swapdata(dataframe, measure = 'd'):
     path_type = list(dataframe['d'].keys())
     for path in path_type:
         if 'sp' in path:

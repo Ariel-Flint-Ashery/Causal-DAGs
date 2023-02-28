@@ -41,7 +41,7 @@ def file_id(name, pathfolder = None, pkl = True, directory = None):
     return file_name
 
 #%% RETRIEVE FILE
-fname2 = 'percolation_data_HPC_TEST'
+fname2 = 'percolation_data_prelim_03'
 pathfolder = 'percolation_data'
 try: 
     dataframe = pickle.load(open(f'{file_id(fname2, pathfolder = pathfolder)}', 'rb'))
@@ -59,11 +59,25 @@ M = config[4]
 P = config[5]
 
 #%% PRINT PERCOLATION PLOT
-
 for d in D:
     for p in P:
         for rho in RHO:
             x = [k for k in K]
-            y = [df[d][p][k][rho]['p'] for k in K]
+            y = [dataframe[d][p][k][rho]['p'] for k in K]
             plt.plot(x, y, label = f'p={p}, rho = {rho}')
 plt.legend()
+#%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
+for d in D:
+    for p in P:
+        for rho in RHO:
+            x = [k for k in K]
+            y = [dataframe[d][p][k][rho]['p'] for k in K]
+            dx = [x[i+1] - x[i] for i in range(len(x)-1)]
+            dy = [y[i+1] - y[i] for i in range(len(y)-1)]
+            dydx = [dy[i]/dx[i] for i in range(len(dx))]
+            x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
+            plt.plot(x_p, dydx)
+#%%
+plt.plot(x_p, [1 for i in x_p], 'x')
+plt.plot(x_p, dy)
+plt.plot(x_p, dydx)
