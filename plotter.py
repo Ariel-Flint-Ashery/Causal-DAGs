@@ -14,6 +14,7 @@ from mpl_toolkits.axes_grid1.inset_locator import BboxPatch, BboxConnector,\
 from DAG_Library.custom_functions import file_id
 import matplotlib.pyplot as plt
 import numpy as np
+import DAG_Library.module_fitting_functions as ff
 #%%
 
 def connect_bbox(bbox1, bbox2,
@@ -74,7 +75,7 @@ def zoom_effect(ax1, ax2, zoom_type = 'xy', **kwargs):
     prop_patches = kwargs.copy()
     prop_patches["ec"] = "none"
     prop_patches["alpha"] = 0.2
-    prop_patches["color"] = 'red'
+    prop_patches["color"] = 'lightblue'
 
     c1, c2, bbox_patch1, bbox_patch2, p = \
         connect_bbox(mybbox1, mybbox2,
@@ -112,7 +113,7 @@ def file_id(name, pkl = True, directory = None):
 #load data
 
 #NOTE: MAKE SURE TO UNZIP HPC DATA!
-fname = 'path_data_prelim_03' #odd = kevin, even = ariel
+fname = 'HPC_data\HPC_geo_data_test_2000_2000' #odd = kevin, even = ariel
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
 except:
@@ -142,17 +143,20 @@ M = dataframe['config']['constants'][-1]
 #P = list(dataframe['d']['sp'].keys())
 #%%
 "PLOT DISTANCE"
-col = iter(_col)
 fig, (ax1, ax2) = plt.subplots(2,1)
 
 #plot ax1
+col = iter(_col)
+shape = iter(['^', 's', 'd'])
 for path in path_type:
     colour = next(col)
-    x = P
-    y = [np.average(dataframe['d'][path][p]['raw'])/(2**(1/p)) for p in P]
-    yerr = [np.std(dataframe['d'][path][p]['raw']) for p in P]
-    ax1.plot(x, y, color = colour)
-    ax1.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
+    fmt = next(shape)
+    x = [p for p in P if p <= 0.91 or p >= 1.1 or p == 1]
+    y = [np.average(dataframe['d'][path][p]['raw']) for p in x]
+    yerr = [np.std(dataframe['d'][path][p]['raw']) for p in x]
+    # ax1.plot(x, y, color = colour)
+    ax1.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = None, color = colour,
+                 markerfacecolor = 'none', markeredgewidth = 1)
 
 ax1.set_xlabel('p')
 if optimizer == 'G':
@@ -160,33 +164,97 @@ if optimizer == 'G':
 if optimizer == 'N':
     ax1.set_ylabel('Network Distance')
 ax1.legend()
-ax1.set_xscale('log')
-ax1.set_yscale('log')
+ax1.set_xscale('log', base = 2)
+ax1.set_yscale('log', base = 2)
 
 #plot ax2
 # our desire P range is [4:13]
 col = iter(_col)
+shape = iter(['^', 's', 'd'])
 for path in path_type:
     colour = next(col)
-    x = P[7:11]
+    fmt = next(shape)
+    x = [p for p in P if p >= 0.9 and p <=1.2]
     y = [np.average(dataframe['d'][path][p]['raw']) for p in x]
     yerr = [np.std(dataframe['d'][path][p]['raw']) for p in x]
-    ax2.plot(x, y, color = colour)
-    ax2.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
+    # ax2.plot(x, y, color = colour)
+    ax2.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = 10, color = colour,
+                 markerfacecolor = 'none', markeredgewidth = 1)
+
+dffit = ff.crossfit(dataframe, measure = 'd')
+col = iter(['darkmagenta', 'teal'])
+linestyle = iter(['dashed', 'dotted'])
+for l in dffit:
+    colour = next(col)
+    ls = next(linestyle)
+    x = dffit[l]['p']
+    y = dffit[l]['d']
+    yerr = dffit[l]['d_err']
+    u, v, params, cov = ff.Dfit(x, y, sigma = yerr, absolute_sigma = True)
+    uu = [uu for uu in u if uu < P[-5] and uu > P[4]]
+    vv = ff.Dfunc(uu, *params)
+    ax1.plot(u, v, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
+    ax2.plot(uu, vv, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
 
 ax2.set_xlabel('p')
 if optimizer == 'G':
     ax2.set_ylabel('Geometric Distance')
 if optimizer == 'N':
     ax2.set_ylabel('Network Distance')
-#ax2.legend()
-ax2.set_xscale('log')
-ax2.set_yscale('log')
+ax2.legend(ncol = 2)
+# ax2.set_xscale('log', base = 2)
+# ax2.set_yscale('log', base = 2)
 
 #plot zoom in effect
 zoom_effect(ax2, ax1, zoom_type)
 plt.tight_layout()
 plt.show()
+
+#%% 
+" PLOT DISTANCE FRACTIONAL ERRORS FOR LONGEST AND SHORTEST PATH"
+
+dffit = ff.crossfit(dataframe, measure = 'd')
+col = iter(['darkmagenta', 'teal'])
+linestyle = iter(['dashed', 'dotted'])
+L = list(dffit.keys())
+for i in range(len(L)):
+    fig, (ax1, ax2) = plt.subplots(2,1)
+    col = iter(['darkmagenta', 'teal'])
+    ls = next(linestyle)
+    x = dffit[L[i]]['p']
+    y = dffit[L[i]]['d']
+    yerr = dffit[l]['d_err']
+    u, v, params, cov = ff.Dfit(x, y, sigma = yerr, absolute_sigma = True)
+    for path in path_type[:2]:
+        colour = next(col)
+        x = [p for p in P if p <= 0.91 or p >= 1.1 or p == 1]
+        y = [np.average(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
+        yerr = [np.std(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
+        ax1.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = 'x', ms = 5, capsize = None, color = colour,
+                     markerfacecolor = 'none', markeredgewidth = 1)
+        
+        x = [p for p in P if p >= 0.9 and p <= 1.1]
+        y = [np.average(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
+        yerr = [np.std(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
+        ax2.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = 'x', ms = 5, capsize = None, color = colour,
+                     markerfacecolor = 'none', markeredgewidth = 1)
+    ax1.legend()
+    ax1.axhline(1, linestyle = 'dotted')
+    ax1.set_xscale('log', base = 2)
+    ax1.set_ylim(0.94, 1.06)
+    if optimizer == 'G':
+        ax1.set_ylabel(r'$D_{geo}$' + '/' + r'$Fit_{%s}$' % (L[i]))
+        ax2.set_ylabel(r'$D_{geo}$' + '/' + r'$Fit_{%s}$' % (L[i]))
+    if optimizer == 'N':
+        ax1.set_ylabel(r'$D_{net}$' + '/' + r'$Fit_{%s}$' % (L[i]))
+        ax2.set_ylabel(r'$D_{net}$' + '/' + r'$Fit_{%s}$' % (L[i]))
+    
+    ax2.axhline(1, linestyle = 'dotted')
+    ax2.set_ylim(0.99, 1.01)
+    
+    zoom_effect(ax2, ax1, zoom_type)
+    plt.tight_layout()
+    plt.show()
 #%%
 "PLOT ANGLES"
 
