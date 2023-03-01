@@ -65,7 +65,11 @@ for d in D:
             x = [k for k in K]
             y = [dataframe[d][p][k][rho]['p'] for k in K]
             plt.plot(x, y, label = f'p={p}, rho = {rho}')
+# plt.xscale('log')
+# plt.yscale('log')
+# plt.xlim(2.0, 2.3)
 plt.legend()
+plt.show()
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
 for d in D:
     for p in P:
@@ -77,8 +81,6 @@ for d in D:
             dydx = [dy[i]/dx[i] for i in range(len(dx))]
             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
             plt.plot(x_p, dydx)
+            # plt.xscale('log')
+            # plt.yscale('log')
             plt.show()
-#%%
-plt.plot(x_p, [1 for i in x_p], 'x')
-plt.plot(x_p, dy)
-plt.plot(x_p, dydx)

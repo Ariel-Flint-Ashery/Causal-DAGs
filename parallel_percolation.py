@@ -35,12 +35,12 @@ def file_id(name, pkl = True, directory = None):
     return file_name
 #%% Set up parameters of the simulation
 D = [2] # Only look at dimension = 2; structure allows for further investigation in higher dimension if needed
-P = [0.5, 1, 2] # [1, 2]  
+P = [0.5, 1, 2] # 3 values; one p<1, one p=1, one p>1
 V = 1
-RHO = [2**10] #, 2**10] #, 2**11] #, 2**12]
-M = 1000
-K_micro = [np.round(k,2) for k in np.arange(1.5, 2.5, 0.02)]
-K_macro = [np.round(k,2) for k in np.arange(0.25, 6.25, 0.25)]
+RHO = [2**9, 2**10, 2**11, 2**12] # ideally 4 or more different values of RHO to see if there is any trend
+M = 10000 # ideally 1000 or more, so we have a higher "resolution" when it comes to looking at derivatives
+K_micro = [np.round(k,2) for k in np.arange(1, 4, 0.02)] # searches in small region around the supposed critical point
+K_macro = [np.round(k,2) for k in np.arange(0.25, 6.25, 0.25)] # wide sweep to see the entire critical behaviour
 K = list(set(K_micro + K_macro))
 K.sort()
 #%%
@@ -58,17 +58,24 @@ def generateDataframe(M = None):
         dataframe['config'] = {'constants': [RHO, V, D, K, M, P]}
     
     return dataframe
+
 def perc_generator():
     dataframe = generateDataframe()
     for d in D:
         for rho in RHO:
             pos = rgg._poisson_cube_sprinkling(rho, V, d, fixed_N = True)
             for p in P:
-                percolating = False
-                for k in K:
-                    if percolating == False:
+                percolating = True
+                K.sort(reverse = True)
+                k_max = K[0]
+                r = dataframe[d][p][k_max][rho]['r']
+                _, graph_dict = rgg.lp_random_geometric_graph(pos, r, p, show_dist = True)
+                percolating = pa.DFS_percolating(graph_dict)
+                dataframe[d][p][k_max][rho]['p'] += percolating
+                for k in K[1:]:
+                    if percolating == True:
                         r = dataframe[d][p][k][rho]['r']
-                        _, graph_dict = rgg.lp_random_geometric_graph(pos, r, p, show_dist = False)
+                        graph_dict = rgg.reduce_graph(graph_dict, r)
                         percolating = pa.DFS_percolating(graph_dict)
                     else:
                         None

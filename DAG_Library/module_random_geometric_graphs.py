@@ -99,3 +99,20 @@ def lp_random_geometric_graph(X, R, p, show_dist = True):
         for i in new_edges:
             edge_list.append(i)
     return edge_list, adjacency_list
+
+def reduce_graph(graph_dict, r):
+    """
+    Removes edges from graph_dict that have geometric length > r.
+    CAUTION: Ensure this is only done for graph_dict for constant p values.
+    
+    Inputs:
+        graph_dict: dict object representing the graph adjacency list created from lp_random_geometric_graph(show_dist = True)
+        r: new threshold radius
+    Outputs:
+        graph_dict: dict object representing the new graph adjacency list 
+    """
+    remove = [(k, c) for k, v in graph_dict.items() for c, d in v.items() if d > r]
+    while remove:
+        _n, _c = remove.pop(0)
+        del graph_dict[_n][_c]
+    return graph_dict
