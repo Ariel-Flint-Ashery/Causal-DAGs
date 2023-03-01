@@ -77,6 +77,7 @@ for d in D:
             dydx = [dy[i]/dx[i] for i in range(len(dx))]
             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
             plt.plot(x_p, dydx)
+            plt.show()
 #%%
 plt.plot(x_p, [1 for i in x_p], 'x')
 plt.plot(x_p, dy)

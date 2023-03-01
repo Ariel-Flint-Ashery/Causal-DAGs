@@ -42,7 +42,8 @@ def minkDist(v,p):
     """
     Recover the Minkowski distance between a vertex vector and the origin.
     """
-    distance = np.power(np.sum([np.abs(v[i])**p for i in range(len(v))]), 1/p)
+    # distance = np.power(np.sum([np.abs(v[i])**p for i in range(len(v))]), 1/p)
+    distance = (sum([abs(v[i])**p for i in range(len(v))]))**(1/p)
     return distance    
 
 def _fixed_lp_distance_connection(v, R, p):
@@ -59,7 +60,8 @@ def _fixed_lp_distance_connection(v, R, p):
         True: if v is less than a distane R away from the origin.
         False: if v is greater than a distance R away from the origin.
     """
-    distance = np.power(np.sum([np.abs(v[i])**p for i in range(len(v))]), 1/p)
+    # distance = np.power(np.sum([np.abs(v[i])**p for i in range(len(v))]), 1/p)
+    distance = (sum([abs(v[i])**p for i in range(len(v))]))**(1/p)
     if distance < R and (v>0).all():
         return True
     else:

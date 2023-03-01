@@ -12,15 +12,6 @@ import scipy.optimize as op
 from tqdm import tqdm
 import copy 
 import multiprocessing
-#%%
-params = {
-        'axes.labelsize':28,
-        'axes.titlesize':28,
-        'font.size':28,
-        'figure.figsize': [15,15],
-        'mathtext.fontset': 'stix',
-        }
-plt.rcParams.update(params)
 #%% Naming the file to save 
 fname = 'percolation_data_prelim_03'
 def file_id(name, pkl = True, directory = None):
@@ -46,9 +37,9 @@ def file_id(name, pkl = True, directory = None):
 D = [2] # Only look at dimension = 2; structure allows for further investigation in higher dimension if needed
 P = [0.5, 1, 2] # [1, 2]  
 V = 1
-RHO = [2**9, 2**10] #, 2**11, 2**12]
-M = 100
-K_micro = [np.round(k,2) for k in np.arange(1., 2.4, 0.02)]
+RHO = [2**10] #, 2**10] #, 2**11] #, 2**12]
+M = 1000
+K_micro = [np.round(k,2) for k in np.arange(1.5, 2.5, 0.02)]
 K_macro = [np.round(k,2) for k in np.arange(0.25, 6.25, 0.25)]
 K = list(set(K_micro + K_macro))
 K.sort()
@@ -95,8 +86,8 @@ if __name__ == "__main__":
           
           -----------------------------
           """)
-    pool = multiprocessing.Pool(cpus + 1) # uses half + 1 of available processors
-    # pool = multiprocessing.Pool(multiprocessing.cpu_count()- 1) #uses all available processors 
+    # pool = multiprocessing.Pool(cpus + 1) # uses half + 1 of available processors
+    pool = multiprocessing.Pool(multiprocessing.cpu_count()- 1) #uses all available processors 
     dfs = pool.starmap(perc_generator, [() for _ in range(M)])
     pool.close()
     pool.join()
