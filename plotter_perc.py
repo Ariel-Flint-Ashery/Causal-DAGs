@@ -41,7 +41,7 @@ def file_id(name, pathfolder = None, pkl = True, directory = None):
     return file_name
 
 #%% RETRIEVE FILE
-fname2 = 'percolation_data_prelim_03'
+fname2 = 'percolation_data_prelim_06'
 pathfolder = 'percolation_data'
 try: 
     dataframe = pickle.load(open(f'{file_id(fname2, pathfolder = pathfolder)}', 'rb'))
@@ -49,7 +49,7 @@ except:
     raise ValueError('NO DATAFILE FOUND:')
 
 #%% GET KEYS
-_, datakeys = dataframe.keys()
+datakeys = list(dataframe.keys())[-1]
 config = dataframe[datakeys]['constants']
 RHO = config[0]
 V = config[1]
@@ -63,7 +63,7 @@ for d in D:
     for p in P:
         for rho in RHO:
             x = [k for k in K]
-            y = [dataframe[d][p][k][rho]['p'] for k in K]
+            y = [dataframe[d][p][k][rho]['p']/M for k in K]
             plt.plot(x, y, label = f'p={p}, rho = {rho}')
 # plt.xscale('log')
 # plt.yscale('log')
@@ -83,4 +83,60 @@ for d in D:
             plt.plot(x_p, dydx)
             # plt.xscale('log')
             # plt.yscale('log')
+            # plt.xlim(0, 5)
             plt.show()
+
+#%% PRINT BASTAS PLOT
+X = {rho:{k:[] for k in K} for rho in RHO}
+for d in D:
+    for p in P:
+        for rho in RHO:
+            for k in K:
+                X[rho][k] = dataframe[d][p][k][rho]['p']/M
+            # plt.plot(x, y, label = f'p={p}, rho = {rho}')
+
+def Y(rho, k, x):
+    Y = X[rho][k] * rho ** x
+    return Y
+
+def H(rho, k, x):
+    H = Y(rho, k, x) + 1/Y(rho, k, x)
+    return H
+
+def cost(k, x):
+    gamma = 0
+    for i in RHO:
+        for j in RHO:
+            if i != j:
+                gamma += (H(i, k, x) - H(j, k, x))**2
+    return gamma
+
+def mincost(dataframe, x0 = 0.33):
+    kappa = [k for k in K if k > 2 and k < 2.5]
+    X = {rho: {k: [] for k in K if k > 2 and k < 2.5} for rho in RHO}
+    for d in D:
+        for p in P:
+            for rho in RHO:
+                for k in kappa:
+                    X[rho][k] = dataframe[d][p][k][rho]['p']/M
+    
+    x = x0
+    dx = 0.1 * x0
+    dc = np.inf
+    while abs(dc) > 0.00000000001:
+        c = min([cost(k, x) for k in kappa])
+        dc = min([cost(k, (x+dx)) for k in kappa])  - c
+        if dc <0:
+            x = x + dx 
+            dx = dx/2
+        if dc >0:
+            dx = -dx/2
+        print(dx)
+    cost_min = min([cost(k, x) for k in kappa])
+    k_c = kappa[[cost(k,x) for k in kappa].index(cost_min)]
+    return k_c, x
+
+k_c, x = mincost(dataframe)
+print(k_c, x)
+for rho in RHO:
+    plt.plot([k for k in K if k >2 and k < 2.4], [H(rho, k, x) for k in K if k >2 and k < 2.4], 'x')
