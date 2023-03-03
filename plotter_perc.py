@@ -64,10 +64,9 @@ for d in D:
         for rho in RHO:
             x = [k for k in K]
             y = [dataframe[d][p][k][rho]['p']/M for k in K]
-            plt.plot(x, y, label = f'p={p}, rho = {rho}')
-# plt.xscale('log')
-# plt.yscale('log')
-# plt.xlim(2.0, 2.3)
+            plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
+plt.ylabel(r'$\Pi(\langle k \rangle)$')
+plt.xlabel(r'$\langle k \rangle $')
 plt.legend()
 plt.show()
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
@@ -81,9 +80,6 @@ for d in D:
             dydx = [dy[i]/dx[i] for i in range(len(dx))]
             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
             plt.plot(x_p, dydx)
-            # plt.xscale('log')
-            # plt.yscale('log')
-            # plt.xlim(0, 5)
             plt.show()
 
 #%% PRINT BASTAS PLOT
