@@ -68,6 +68,7 @@ for d in D:
 plt.ylabel(r'$\Pi(\langle k \rangle)$')
 plt.xlabel(r'$\langle k \rangle $')
 plt.legend()
+plt.xlim(1.5, 3)
 plt.show()
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
 for d in D:
@@ -81,7 +82,22 @@ for d in D:
             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
             plt.plot(x_p, dydx)
             plt.show()
-
+#%% PRINT 2ND DERIVATIVE OF PERCOLATION PLOT
+for d in D:
+    for p in P:
+        for rho in RHO:
+            x = [k for k in K]
+            y = [dataframe[d][p][k][rho]['p'] for k in K]
+            dx = [x[i+1] - x[i] for i in range(len(x)-1)]
+            dy = [y[i+1] - y[i] for i in range(len(y)-1)]
+            dydx = [dy[i]/dx[i] for i in range(len(dx))]
+            x = [x[i] + dx[i]/2 for i in range(len(dx))]
+            d2ydx = [dydx[i+1] - dydx[i] for i in range(len(dydx)-1)]
+            dx = [x[i+1] - x[i] for i in range(len(x)-1)]
+            d2ydx2 = [d2ydx[i]/dx[i] for i in range(len(d2ydx))]
+            x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
+            plt.plot(x_p, d2ydx2)
+            plt.show()
 #%% PRINT BASTAS PLOT
 X = {rho:{k:[] for k in K} for rho in RHO}
 for d in D:
@@ -108,8 +124,8 @@ def cost(k, x):
     return gamma
 
 def mincost(dataframe, x0 = 0.33):
-    kappa = [k for k in K if k > 2 and k < 2.5]
-    X = {rho: {k: [] for k in K if k > 2 and k < 2.5} for rho in RHO}
+    kappa = [k for k in K if k > 2 and k < 4]
+    X = {rho: {k: [] for k in K if k > 2 and k < 4} for rho in RHO}
     for d in D:
         for p in P:
             for rho in RHO:
@@ -132,7 +148,55 @@ def mincost(dataframe, x0 = 0.33):
     k_c = kappa[[cost(k,x) for k in kappa].index(cost_min)]
     return k_c, x
 
+def mincost2(dataframe, x_range = None):
+    if x_range == None:
+        x_range = np.arange(0.2, 0.4, 0.01)
+    kappa = np.array([k for k in K if k>2 and k <2.5])
+    
+    
+    
+
 k_c, x = mincost(dataframe)
 print(k_c, x)
 for rho in RHO:
-    plt.plot([k for k in K if k >2 and k < 2.4], [H(rho, k, x) for k in K if k >2 and k < 2.4], 'x')
+    plt.plot([k for k in K if k >2 and k < 2.5], [H(rho, k, x) for k in K if k >2 and k < 2.5], 'x')
+    # plt.plot([k for k in K if k >2 and k < 2.5], [Y(rho, k, x) for k in K if k >2 and k < 2.5], 'x')
+
+    
+#%% PRINT 3D PLOT WRT K, X
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator
+import numpy as np
+
+kappa = [k for k in K if k > 2.18 and k < 2.33]
+x_range = np.arange(0.28, 0.32, 0.002)
+
+def Cost(K, x):
+    costs = []
+    for k in K:
+        costs.append(cost(k, x))
+    return np.array(costs)
+C = Cost(kappa, x_range)
+
+x_range, kappa = np.meshgrid(x_range, kappa)
+
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+
+# Plot the surface.
+surf = ax.plot_surface(x_range, kappa, C, cmap=cm.coolwarm,
+                        linewidth=0, antialiased=False)
+
+# # Customize the z axis.
+# ax.set_zlim(1, 4)
+# ax.zaxis.set_major_locator(LinearLocator(10))
+# # A StrMethodFormatter is used automatically
+ax.zaxis.set_major_formatter('{x:.02f}')
+ax.view_init(30, -30)
+
+# # Add a color bar which maps values to colors.
+# fig.colorbar(surf, shrink=0.5, aspect=5)
+
+plt.show()
+
