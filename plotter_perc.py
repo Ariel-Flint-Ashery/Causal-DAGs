@@ -72,7 +72,7 @@ for d in D:
     for p in P:
         for rho in RHO:
             x = [k for k in K]
-            y = [dataframe[d][p][k][rho]['p']/M for k in K]
+            y = [(dataframe[d][p][k][rho]['p']/M) for k in K]
             plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
 plt.ylabel(r'$\Pi(\langle k \rangle)$')
 plt.xlabel(r'$\langle k \rangle $')
@@ -158,24 +158,24 @@ def cost2(k ,x, ye):
     for rho in RHO:
         sigma += (He(rho, k, x, ye)-2)
     return (sigma)
-   
-ye = Ye(1024, 2.2, 0.36)
-he = He(2048, 2.2, 0.31, ye)
-c = cost2(2.2, 0.36, ye)
-x = 0.33
-print(he, c)
-kappa= [k for k in K if k > 2.0 and k < 2.5]
-cs = [cost2(kap, x, Ye(2048, 2.3, 0.34)) for kap in kappa]
-plt.plot(kappa, cs)
-# print(min(cs))
-# plt.yscale('log')
+
+kappa = [k for k in K if k >2 and k < 2.5]
+for x in np.arange(0.2, 0.34, 0.01):
+    plt.plot(kappa, [cost(kap, x) for kap in kappa], label = np.round(x,3))
+    plt.legend()
+    plt.yscale('log')
+    # print(x, min([cost2(kap, x, Ye(2048, kap, x)) for kap in kappa]))
+plt.ylabel('Bastas Cost')
+plt.xlabel('k')
 plt.show()
 
-for x in np.arange(0.28, 0.34, 0.005):
+for x in np.arange(0.15, 0.34, 0.01):
     plt.plot(kappa, [cost2(kap, x, Ye(2048, kap, x)) for kap in kappa], label = np.round(x,3))
     plt.legend()
     plt.yscale('log')
     # print(x, min([cost2(kap, x, Ye(2048, kap, x)) for kap in kappa]))
+plt.ylabel('(H-2) Cost Function')
+plt.xlabel('k')
 plt.show()
      
 #%%        
