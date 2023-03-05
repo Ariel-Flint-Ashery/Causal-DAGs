@@ -50,7 +50,7 @@ def file_id(name, pathfolder = None, pkl = True, directory = None):
     return file_name
 
 #%% RETRIEVE FILE
-fname2 = 'percolation_data_40000_2-3'
+fname2 = 'percolation_data_40000_2-3'#percolation_data_prelim_06 #percolation_data_40000_2-3
 pathfolder = 'percolation_data'
 try: 
     dataframe = pickle.load(open(f'{file_id(fname2, pathfolder = pathfolder)}', 'rb'))
@@ -72,12 +72,12 @@ for d in D:
     for p in P:
         for rho in RHO:
             x = [k for k in K]
-            y = [dataframe[d][p][k][rho]['p']/M for k in K]
+            y = [(dataframe[d][p][k][rho]['p']/M) for k in K]
             plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
 plt.ylabel(r'$\Pi(\langle k \rangle)$')
 plt.xlabel(r'$\langle k \rangle $')
 plt.legend()
-plt.xlim(1.5, 3)
+# plt.xlim()
 plt.show()
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
 for d in D:
@@ -91,6 +91,8 @@ for d in D:
             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
             plt.plot(x_p, dydx)
             plt.show()
+            plt.ylabel(r'$\frac{d}{d\langle k \rangle} \Pi(\langle k \rangle)$')
+            plt.xlabel(r'$\langle k \rangle$')
             print(x_p[dydx.index(max(dydx))])
 #%% PRINT BASTAS PLOT
 
@@ -156,26 +158,28 @@ def He(rho, k, x, ye):
 def cost2(k ,x, ye):
     sigma = 0
     for rho in RHO:
-        sigma += (He(rho, k, x, ye))#-2)
+        sigma += (He(rho, k, x, ye) - 2)
     return (sigma)
-   
-ye = Ye(1024, 2.2, 0.36)
-he = He(2048, 2.2, 0.31, ye)
-c = cost2(2.2, 0.36, ye)
-x = 0.33
-print(he, c)
-kappa= [k for k in K if k > 2.2 and k < 2.7]
-cs = [cost2(kap, x, Ye(2048, 2.3, 0.34)) for kap in kappa]
-# plt.plot(kappa, cs)
-# # print(min(cs))
-# # plt.yscale('log')
-# plt.show()
 
-for x in np.arange(0.12, 0.18, 0.005):
-    plt.plot(kappa, [cost(kap, x) for kap in kappa], label = 'x = %s' % (np.round(x,3)))
+kappa = [k for k in K if k >2 and k < 2.7]
+for x in np.arange(0.10, 0.25, 0.01):
+    plt.plot(kappa, [cost(kap, x) for kap in kappa], label = np.round(x,3))
     plt.legend()
     plt.yscale('log')
     # print(x, min([cost2(kap, x, Ye(2048, kap, x)) for kap in kappa]))
+plt.ylabel('Bastas Cost')
+plt.xlabel('k')
+plt.show()
+
+
+kappa = [k for k in K if k >2.3 and k < 2.5]
+for x in np.arange(0.1, 0.2, 0.005):
+    plt.plot(kappa, [cost2(kap, x, Ye(RHO[-1], kap, x)) for kap in kappa], label = 'x = %s' % (np.round(x,3)))
+    plt.legend()
+    plt.yscale('log')
+    # print(x, min([cost2(kap, x, Ye(2048, kap, x)) for kap in kappa]))
+plt.ylabel('(H-2) Cost Function')
+plt.xlabel('k')
 plt.show()
      
 #%%        
@@ -195,15 +199,15 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 import numpy as np
 
-kappa = [k for k in K if k > 2.2 and k < 2.5]
-x_range = np.arange(0.12, 0.4, 0.005)
+kappa = [k for k in K if k > 2.18 and k < 2.52]
+x_range = np.arange(0.15, 0.3, 0.002)
 
 def Cost(K, x):
     costs = []
     for k in K:
         costs.append(cost(k, x))
     return np.array(costs)
-C = Cost(kappa, x_range)
+C = np.log(Cost(kappa, x_range))
 
 x_range, kappa = np.meshgrid(x_range, kappa)
 
@@ -219,7 +223,7 @@ surf = ax.plot_surface(x_range, kappa, C, cmap=cm.coolwarm,
 # ax.zaxis.set_major_locator(LinearLocator(10))
 # # A StrMethodFormatter is used automatically
 ax.zaxis.set_major_formatter('{x:.02f}')
-ax.view_init(30, -30)
+ax.view_init(10, 60)
 
 # # Add a color bar which maps values to colors.
 # fig.colorbar(surf, shrink=0.5, aspect=5)
