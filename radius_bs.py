@@ -144,13 +144,16 @@ print('Time elapsed: %s'% (time.perf_counter()-start))
 ---------------------------
 
 """
-
+with open('radius_scaling_df.pkl', 'rb') as f:
+    df = pickle.load(f)
+#%%
 #calculate errors
 #error = epsilon/np.sqrt(M)
 for rho in RHO:
     df[rho]['rho_avg'] = {p: np.average(df[rho][p]) for p in P}
-    df[rho]['rho_scale'] = [(df[rho]['rho_avg'][p]**D)*rho*gamma_factor(p,D) for p in P] #/analyticCritRadius(p, D, rho)
-    df[rho]['rho_err'] = [np.sqrt(np.std(df['rho_scale'], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P] #df[rho][p], ddof = 1)**2
+    df[rho]['rho_scale'] = [(df[rho]['rho_avg'][p])/analyticCritRadius(p, D, rho) for p in P] #/analyticCritRadius(p, D, rho) #**D)*rho*gamma_factor(p,D)
+    df[rho]['rho_err'] = [np.sqrt(np.std(df[rho]['rho_scale'], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P] #df[rho][p], ddof = 1)**2
+    df[rho]['avg_err'] = [np.sqrt(np.std(df[rho][p], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P]
     
 #%%
 #plot
@@ -162,7 +165,7 @@ for rho, mrkr in zip(RHO, mrkrs):
                  label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
                  color = cmap(normalize(rho)))
 
-plt.xlabel('Density')
+plt.xlabel('p')
 plt.ylabel('Critical Radius')
 plt.legend()
 plt.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
