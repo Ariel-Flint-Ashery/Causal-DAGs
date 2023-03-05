@@ -15,6 +15,15 @@ from DAG_Library.custom_functions import file_id
 import matplotlib.pyplot as plt
 import numpy as np
 
+params = {
+        'axes.labelsize':16,
+        'axes.titlesize':28,
+        'font.size':20,
+        'figure.figsize': [11,11],
+        'mathtext.fontset': 'stix',
+        }
+plt.rcParams.update(params)
+
 #%% DEFINE FILE ID
 def file_id(name, pathfolder = None, pkl = True, directory = None):
     """
@@ -82,23 +91,9 @@ for d in D:
             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
             plt.plot(x_p, dydx)
             plt.show()
-#%% PRINT 2ND DERIVATIVE OF PERCOLATION PLOT
-for d in D:
-    for p in P:
-        for rho in RHO:
-            x = [k for k in K]
-            y = [dataframe[d][p][k][rho]['p'] for k in K]
-            dx = [x[i+1] - x[i] for i in range(len(x)-1)]
-            dy = [y[i+1] - y[i] for i in range(len(y)-1)]
-            dydx = [dy[i]/dx[i] for i in range(len(dx))]
-            x = [x[i] + dx[i]/2 for i in range(len(dx))]
-            d2ydx = [dydx[i+1] - dydx[i] for i in range(len(dydx)-1)]
-            dx = [x[i+1] - x[i] for i in range(len(x)-1)]
-            d2ydx2 = [d2ydx[i]/dx[i] for i in range(len(d2ydx))]
-            x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
-            plt.plot(x_p, d2ydx2)
-            plt.show()
+            print(x_p[dydx.index(max(dydx))])
 #%% PRINT BASTAS PLOT
+
 X = {rho:{k:[] for k in K} for rho in RHO}
 for d in D:
     for p in P:
@@ -116,12 +111,12 @@ def H(rho, k, x):
     return H
 
 def cost(k, x):
-    gamma = 0
+    sigma = 0
     for i in RHO:
         for j in RHO:
             if i != j:
-                gamma += (H(i, k, x) - H(j, k, x))**2
-    return gamma
+                sigma += (H(i, k, x) - H(j, k, x))**2
+    return sigma
 
 def mincost(dataframe, x0 = 0.33):
     kappa = [k for k in K if k > 2 and k < 4]
@@ -148,19 +143,50 @@ def mincost(dataframe, x0 = 0.33):
     k_c = kappa[[cost(k,x) for k in kappa].index(cost_min)]
     return k_c, x
 
-def mincost2(dataframe, x_range = None):
-    if x_range == None:
-        x_range = np.arange(0.2, 0.4, 0.01)
-    kappa = np.array([k for k in K if k>2 and k <2.5])
-    
-    
-    
+def Ye(rho, k, x):
+    return Y(rho, k, x)
+
+def gamma(rho, k, x, ye):
+    return Y(rho, k, x)/ye
+
+def He(rho, k, x, ye):
+    He = gamma(rho, k, x, ye) + 1/gamma(rho, k, x, ye)
+    return He    
+
+def cost2(k ,x, ye):
+    sigma = 0
+    for rho in RHO:
+        sigma += (He(rho, k, x, ye)-2)
+    return (sigma)
+   
+ye = Ye(1024, 2.2, 0.36)
+he = He(2048, 2.2, 0.31, ye)
+c = cost2(2.2, 0.36, ye)
+x = 0.33
+print(he, c)
+kappa= [k for k in K if k > 2.0 and k < 2.5]
+cs = [cost2(kap, x, Ye(2048, 2.3, 0.34)) for kap in kappa]
+plt.plot(kappa, cs)
+# print(min(cs))
+# plt.yscale('log')
+plt.show()
+
+for x in np.arange(0.28, 0.34, 0.005):
+    plt.plot(kappa, [cost2(kap, x, Ye(2048, kap, x)) for kap in kappa], label = np.round(x,3))
+    plt.legend()
+    plt.yscale('log')
+    # print(x, min([cost2(kap, x, Ye(2048, kap, x)) for kap in kappa]))
+plt.show()
+     
+#%%        
 
 k_c, x = mincost(dataframe)
-print(k_c, x)
+print(k_c, x, cost(k_c, x), cost(2.3, 0.29))
 for rho in RHO:
     plt.plot([k for k in K if k >2 and k < 2.5], [H(rho, k, x) for k in K if k >2 and k < 2.5], 'x')
     # plt.plot([k for k in K if k >2 and k < 2.5], [Y(rho, k, x) for k in K if k >2 and k < 2.5], 'x')
+cost(2.28, 0.27)
+# cost(2.28, x)
 
     
 #%% PRINT 3D PLOT WRT K, X
