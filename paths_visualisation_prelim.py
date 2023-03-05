@@ -58,7 +58,9 @@ ariel_paths = pa.getPaths(graph_dict, 'geo')
 #%%
 dijkstra_path = pa.getDijkstraShortestPath(graph_dict, 'geo')
 #%%
-greedy_geo_path = pa.greedy_path_geo(graph_dict)
+greedy_geo_path = pa.greedy_path_geo(graph_dict, type = 'short')
+#%%
+rwalk = pa.random_walk(graph_dict)
 #%%
 #path distances:
 ariel_shortest_path_dist = pa.pathDist(graph_dict, ariel_paths[0], 0.5)

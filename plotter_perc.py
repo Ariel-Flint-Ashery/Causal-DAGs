@@ -180,7 +180,7 @@ plt.show()
      
 #%%        
 
-k_c, x = mincost(dataframe, x0 = 0.15)
+k_c, x = mincost(dataframe, x0 = 0.33)
 print(k_c, x, cost(k_c, x))#, cost(2.3, 0.29))
 for rho in RHO:
     plt.plot([k for k in K if k >2 and k < 2.5], [H(rho, k, x) for k in K if k >2 and k < 2.5], 'x')
@@ -195,8 +195,8 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 import numpy as np
 
-kappa = [k for k in K if k > 2.18 and k < 2.33]
-x_range = np.arange(0.28, 0.32, 0.002)
+kappa = [k for k in K if k > 2.2 and k < 2.5]
+x_range = np.arange(0.12, 0.4, 0.005)
 
 def Cost(K, x):
     costs = []
@@ -225,4 +225,18 @@ ax.view_init(30, -30)
 # fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
+#%%
+kappa = [k for k in K if k > 2.25 and k < 2.48]
+x_range = np.arange(0.12, 0.37, 0.005)
 
+def Cost(K, x):
+    costs = []
+    for k in K:
+        costs.append(cost(k, x))
+    return np.array(costs)
+C = Cost(kappa, x_range)
+
+x_range, kappa = np.meshgrid(x_range, kappa)
+c = plt.pcolormesh(kappa, x_range, np.log(C), cmap ='viridis')
+plt.colorbar(c)
+plt.show()
