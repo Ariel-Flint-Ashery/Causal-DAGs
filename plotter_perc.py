@@ -50,7 +50,7 @@ def file_id(name, pathfolder = None, pkl = True, directory = None):
     return file_name
 
 #%% RETRIEVE FILE
-fname2 = 'percolation_data_prelim_06'
+fname2 = 'percolation_data_40000_2-3'
 pathfolder = 'percolation_data'
 try: 
     dataframe = pickle.load(open(f'{file_id(fname2, pathfolder = pathfolder)}', 'rb'))
@@ -62,7 +62,7 @@ datakeys = list(dataframe.keys())[-1]
 config = dataframe[datakeys]['constants']
 RHO = config[0]
 V = config[1]
-D = config[2]
+D = [2] #config[2]
 K = config[3]
 M = config[4]
 P = config[5]
@@ -156,7 +156,7 @@ def He(rho, k, x, ye):
 def cost2(k ,x, ye):
     sigma = 0
     for rho in RHO:
-        sigma += (He(rho, k, x, ye)-2)
+        sigma += (He(rho, k, x, ye))#-2)
     return (sigma)
    
 ye = Ye(1024, 2.2, 0.36)
@@ -164,15 +164,15 @@ he = He(2048, 2.2, 0.31, ye)
 c = cost2(2.2, 0.36, ye)
 x = 0.33
 print(he, c)
-kappa= [k for k in K if k > 2.0 and k < 2.5]
+kappa= [k for k in K if k > 2.2 and k < 2.7]
 cs = [cost2(kap, x, Ye(2048, 2.3, 0.34)) for kap in kappa]
-plt.plot(kappa, cs)
-# print(min(cs))
-# plt.yscale('log')
-plt.show()
+# plt.plot(kappa, cs)
+# # print(min(cs))
+# # plt.yscale('log')
+# plt.show()
 
-for x in np.arange(0.28, 0.34, 0.005):
-    plt.plot(kappa, [cost2(kap, x, Ye(2048, kap, x)) for kap in kappa], label = np.round(x,3))
+for x in np.arange(0.12, 0.18, 0.005):
+    plt.plot(kappa, [cost(kap, x) for kap in kappa], label = 'x = %s' % (np.round(x,3)))
     plt.legend()
     plt.yscale('log')
     # print(x, min([cost2(kap, x, Ye(2048, kap, x)) for kap in kappa]))
@@ -180,12 +180,12 @@ plt.show()
      
 #%%        
 
-k_c, x = mincost(dataframe)
-print(k_c, x, cost(k_c, x), cost(2.3, 0.29))
+k_c, x = mincost(dataframe, x0 = 0.15)
+print(k_c, x, cost(k_c, x))#, cost(2.3, 0.29))
 for rho in RHO:
     plt.plot([k for k in K if k >2 and k < 2.5], [H(rho, k, x) for k in K if k >2 and k < 2.5], 'x')
     # plt.plot([k for k in K if k >2 and k < 2.5], [Y(rho, k, x) for k in K if k >2 and k < 2.5], 'x')
-cost(2.28, 0.27)
+#cost(2.28, 0.27)
 # cost(2.28, x)
 
     
