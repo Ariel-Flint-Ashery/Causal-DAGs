@@ -50,7 +50,7 @@ def file_id(name, pathfolder = None, pkl = True, directory = None):
     return file_name
 
 #%% RETRIEVE FILE
-fname2 = 'percolation_data_40000_2-3'#percolation_data_prelim_06 #percolation_data_40000_2-3
+fname2 = 'percolation_data_prelim_06'#percolation_data_prelim_06 #percolation_data_40000_2-3
 pathfolder = 'percolation_data'
 try: 
     dataframe = pickle.load(open(f'{file_id(fname2, pathfolder = pathfolder)}', 'rb'))
@@ -68,12 +68,15 @@ M = config[4]
 P = config[5]
 
 #%% PRINT PERCOLATION PLOT
+shapes = iter(['.', '.', '.'])
 for d in D:
     for p in P:
         for rho in RHO:
             x = [k for k in K]
             y = [(dataframe[d][p][k][rho]['p']/M) for k in K]
-            plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
+            yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+            # plt.plot(x, y, next(shapes), label = rf'p={p}, $\rho$ = {rho}')
+            plt.errorbar(x, y, yerr = yerr, fmt = '.', capsize = 3, ms = 1, label = rf'p={p}, $\rho$ = {rho}')
 plt.ylabel(r'$\Pi(\langle k \rangle)$')
 plt.xlabel(r'$\langle k \rangle $')
 plt.legend()
@@ -89,11 +92,15 @@ for d in D:
             dy = [y[i+1] - y[i] for i in range(len(y)-1)]
             dydx = [dy[i]/dx[i] for i in range(len(dx))]
             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
-            plt.plot(x_p, dydx)
-            plt.show()
+            dydxerr = [d/np.sqrt(M) for d in dydx]
+            plt.plot(x_p, dydx, label = rf'p={p}, $\rho$ = {rho}')
+            # plt.errorbar(x_p, dydx, dydxerr, fmt = '.', capsize = 3, label = rf'p={p}, $\rho$ = {rho}')
+            # plt.show()
+            plt.legend()
             plt.ylabel(r'$\frac{d}{d\langle k \rangle} \Pi(\langle k \rangle)$')
             plt.xlabel(r'$\langle k \rangle$')
             print(x_p[dydx.index(max(dydx))])
+plt.show()
 #%% PRINT BASTAS PLOT
 
 X = {rho:{k:[] for k in K} for rho in RHO}
@@ -230,7 +237,7 @@ ax.view_init(10, 60)
 
 plt.show()
 #%%
-kappa = [k for k in K if k > 2.25 and k < 2.48]
+kappa = [k for k in K if k > 2.25 and k < 2.53]
 x_range = np.arange(0.12, 0.37, 0.005)
 
 def Cost(K, x):
@@ -242,5 +249,7 @@ C = Cost(kappa, x_range)
 
 x_range, kappa = np.meshgrid(x_range, kappa)
 c = plt.pcolormesh(kappa, x_range, np.log(C), cmap ='viridis')
-plt.colorbar(c)
+plt.colorbar(c, label = 'Bastas Cost')
+plt.xlabel(r'$\langle k \rangle$')
+plt.ylabel(r'$\beta/\nu$')
 plt.show()
