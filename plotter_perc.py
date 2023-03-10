@@ -14,6 +14,7 @@ from mpl_toolkits.axes_grid1.inset_locator import BboxPatch, BboxConnector,\
 from DAG_Library.custom_functions import file_id
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.optimize as op
 
 params = {
         'axes.labelsize':16,
@@ -50,7 +51,7 @@ def file_id(name, pathfolder = None, pkl = True, directory = None):
     return file_name
 
 #%% RETRIEVE FILE
-fname2 = 'percolation_data_5000_test'#percolation_data_prelim_06 #percolation_data_40000_2-3
+fname2 = 'percolation_data_prelim_07'#percolation_data_prelim_06 #percolation_data_40000_2-3
 pathfolder = 'percolation_data'
 try: 
     dataframe = pickle.load(open(f'{file_id(fname2, pathfolder = pathfolder)}', 'rb'))
@@ -68,20 +69,61 @@ M = config[4]
 P = config[5]
 
 #%% PRINT PERCOLATION PLOT
+def empirical_derivative(x, y):
+    dydx = []
+    x_bar = []
+    for i in range(len(x)-1):
+        dx = x[i+1] - x[i]
+        dy = y[i+1] - y[i]
+        dydx.append(dy/dx)
+        x_bar.append((x[i+1] + x[i])/2)
+    return np.array(x_bar), np.array(dydx)
+def pareto(x, xm, alpha):
+    return (1 - (xm/x)**alpha)
+def pareto2(x, xm, alpha):
+    return np.exp(-(xm/x)**alpha)
+def dpareto2(x, xm, alpha):
+    y = pareto2(x, xm, alpha)
+    return empirical_derivative(x, y)
+
+def funcfit(func, xdata, ydata, x = None, **kwargs):
+    params, cov = op.curve_fit(func, xdata, ydata, **kwargs)
+    if x == None:
+        x = np.linspace(xdata[0], xdata[-1], 500)
+        y = pareto(x, *params)
+    else:
+        y = pareto(x, *params)
+    return x, y, params, cov
+
+shapes = iter(['.', '.', '.'])
 for d in D:
-    for p in P:
+    for p in P[:1]:
         for rho in RHO:
             x = [k for k in K]
-            y = [(dataframe[d][p][k][rho]['p']/M) for k in K]
-            plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
-plt.ylabel(r'$\Pi(\langle k \rangle)$')
-plt.xlabel(r'$\langle k \rangle $')
-plt.legend()
-# plt.xlim()
-plt.show()
+            y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+            Y = y * rho ** 0.16
+            yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+            w, z, params, cov = funcfit(pareto, x[35:], y[35:])
+            # plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
+            print(params)
+            plt.plot(w, z)
+            plt.errorbar(x, y, yerr = yerr, fmt = '.', capsize = 3, ms = 1, label = rf'p={p}, $\rho$ = {rho}')
+            plt.ylabel(r'$\Pi(\langle k \rangle)$')
+            plt.xlabel(r'$\langle k \rangle $')
+            plt.yscale('log')
+            plt.xscale('log')
+            plt.ylim(10e-2, 1)
+            plt.xlim(1.5,6)
+            plt.legend()
+            plt.show()
+# plt.ylabel(r'$\Pi(\langle k \rangle)$')
+# plt.xlabel(r'$\langle k \rangle $')
+# plt.legend()
+# # plt.xlim(1.1, 3)
+# plt.show()
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
 for d in D:
-    for p in P:
+    for p in P[-1:]:
         for rho in RHO:
             x = [k for k in K]
             y = [dataframe[d][p][k][rho]['p'] for k in K]
@@ -89,109 +131,109 @@ for d in D:
             dy = [y[i+1] - y[i] for i in range(len(y)-1)]
             dydx = [dy[i]/dx[i] for i in range(len(dx))]
             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
-            plt.plot(x_p, dydx)
-            plt.show()
+            dydxerr = [d/np.sqrt(M) for d in dydx]
+            # plt.plot(x_p, dydx, label = rf'p={p}, $\rho$ = {rho}')
+            plt.errorbar(x_p, dydx, dydxerr, fmt = '.', capsize = 3, label = rf'p={p}, $\rho$ = {rho}')
+            # plt.show()
+            plt.legend()
             plt.ylabel(r'$\frac{d}{d\langle k \rangle} \Pi(\langle k \rangle)$')
             plt.xlabel(r'$\langle k \rangle$')
-            print(x_p[dydx.index(max(dydx))])
+            # print(x_p[dydx.index(max(dydx))])
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.xlim(1)
+            plt.show()
+        # plt.xscale('log')
+        # plt.yscale('log')
+        # plt.show()
 #%% PRINT BASTAS PLOT
 
-X = {rho:{k:[] for k in K} for rho in RHO}
+X = {d: {p:{rho:{k:[] for k in K} for rho in RHO} for p in P}for d in D}
 for d in D:
     for p in P:
         for rho in RHO:
             for k in K:
-                X[rho][k] = dataframe[d][p][k][rho]['p']/M
+                X[d][p][rho][k] = dataframe[d][p][k][rho]['p']/M
             # plt.plot(x, y, label = f'p={p}, rho = {rho}')
 
-def Y(rho, k, x):
-    Y = X[rho][k] * rho ** x
+def Y(rho, k, x, d = 2, p = 2):
+    Y = X[d][p][rho][k] * rho ** x
     return Y
 
-def H(rho, k, x):
-    H = Y(rho, k, x) + 1/Y(rho, k, x)
+def H(rho, k, x, d = 2, p = 2):
+    H = Y(rho, k, x, d, p) + 1/Y(rho, k, x, d, p)
     return H
 
-def cost(k, x):
+def cost(k, x, d = 2, p = 2):
     sigma = 0
     for i in RHO:
         for j in RHO:
             if i != j:
-                sigma += (H(i, k, x) - H(j, k, x))**2
+                sigma += 0.5 * (H(i, k, x, d, p) - H(j, k, x, d, p))**2
     return sigma
 
-def mincost(dataframe, x0 = 0.33):
-    kappa = [k for k in K if k > 2 and k < 4]
-    X = {rho: {k: [] for k in K if k > 2 and k < 4} for rho in RHO}
-    for d in D:
-        for p in P:
-            for rho in RHO:
-                for k in kappa:
-                    X[rho][k] = dataframe[d][p][k][rho]['p']/M
+# def mincost(dataframe, x0 = 0.33):
+#     kappa = [k for k in K if k > 2 and k < 4]
+#     X = {rho: {k: [] for k in K if k > 2 and k < 4} for rho in RHO}
+#     for d in D:
+#         for p in P:
+#             for rho in RHO:
+#                 for k in kappa:
+#                     X[rho][k] = dataframe[d][p][k][rho]['p']/M
     
-    x = x0
-    dx = 0.1 * x0
-    dc = np.inf
-    while abs(dc) > 0.00000000001:
-        c = min([cost(k, x) for k in kappa])
-        dc = min([cost(k, (x+dx)) for k in kappa])  - c
-        if dc <0:
-            x = x + dx 
-            dx = dx/2
-        if dc >0:
-            dx = -dx/2
-        print(dx)
-    cost_min = min([cost(k, x) for k in kappa])
-    k_c = kappa[[cost(k,x) for k in kappa].index(cost_min)]
-    return k_c, x
+#     x = x0
+#     dx = 0.1 * x0
+#     dc = np.inf
+#     while abs(dc) > 0.00000000001:
+#         c = min([cost(k, x) for k in kappa])
+#         dc = min([cost(k, (x+dx)) for k in kappa])  - c
+#         if dc <0:
+#             x = x + dx 
+#             dx = dx/2
+#         if dc >0:
+#             dx = -dx/2
+#         print(dx)
+#     cost_min = min([cost(k, x) for k in kappa])
+#     k_c = kappa[[cost(k,x) for k in kappa].index(cost_min)]
+#     return k_c, x
 
-def Ye(rho, k, x):
-    return Y(rho, k, x)
+def Ye(rho, k, x, d = 2, p = 2):
+    return Y(rho, k, x, d, p)
 
-def gamma(rho, k, x, ye):
-    return Y(rho, k, x)/ye
+def gamma(rho, k, x, ye, d = 2, p = 2):
+    return Y(rho, k, x, d, p)/ye
 
-def He(rho, k, x, ye):
-    He = gamma(rho, k, x, ye) + 1/gamma(rho, k, x, ye)
+def He(rho, k, x, ye, d = 2, p = 2):
+    He = gamma(rho, k, x, ye, d, p) + 1/gamma(rho, k, x, ye, d, p)
     return He    
 
-def cost2(k ,x, ye):
+def cost2(k ,x, d = 2, p = 2):     
+    Yps = [Ye(rho, k, x, d, p) for rho in RHO]
     sigma = 0
-    for rho in RHO:
-        sigma += (He(rho, k, x, ye) - 2)
+    for ye in Yps:
+        for rho in RHO:
+            sigma += (He(rho, k, x, ye, d, p) - 2)
     return (sigma)
 
 kappa = [k for k in K if k >2 and k < 2.7]
 for x in np.arange(0.10, 0.25, 0.01):
-    plt.plot(kappa, [cost(kap, x) for kap in kappa], label = np.round(x,3))
+    plt.plot(kappa, [cost(kap, x, d = 2, p = 0.5) for kap in kappa], label = np.round(x,3))
     plt.legend()
     plt.yscale('log')
-    # print(x, min([cost2(kap, x, Ye(2048, kap, x)) for kap in kappa]))
 plt.ylabel('Bastas Cost')
 plt.xlabel('k')
 plt.show()
 
 
-kappa = [k for k in K if k >2.3 and k < 2.5]
+kappa = [k for k in K if k >2 and k < 3]
 for x in np.arange(0.1, 0.2, 0.005):
-    plt.plot(kappa, [cost2(kap, x, Ye(RHO[-1], kap, x)) for kap in kappa], label = 'x = %s' % (np.round(x,3)))
+    plt.plot(kappa, [cost2(kap, x, p = 1) for kap in kappa], label = 'x = %s' % (np.round(x,3)))
+    # plt.plot(kappa, [He(RHO[0], kap, x, Ye(RHO[4], kap, x, p = 2)) for kap in kappa])
     plt.legend()
     plt.yscale('log')
-    # print(x, min([cost2(kap, x, Ye(2048, kap, x)) for kap in kappa]))
 plt.ylabel('(H-2) Cost Function')
 plt.xlabel('k')
 plt.show()
-     
-#%%        
-
-k_c, x = mincost(dataframe, x0 = 0.33)
-print(k_c, x, cost(k_c, x))#, cost(2.3, 0.29))
-for rho in RHO:
-    plt.plot([k for k in K if k >2 and k < 2.5], [H(rho, k, x) for k in K if k >2 and k < 2.5], 'x')
-    # plt.plot([k for k in K if k >2 and k < 2.5], [Y(rho, k, x) for k in K if k >2 and k < 2.5], 'x')
-#cost(2.28, 0.27)
-# cost(2.28, x)
-
     
 #%% PRINT 3D PLOT WRT K, X
 import matplotlib.pyplot as plt
@@ -200,14 +242,14 @@ from matplotlib.ticker import LinearLocator
 import numpy as np
 
 kappa = [k for k in K if k > 2.18 and k < 2.52]
-x_range = np.arange(0.15, 0.3, 0.002)
+x_range = np.arange(0.1, 0.3, 0.002)
 
-def Cost(K, x):
+def Cost(K, x, d = 2, p = 2):
     costs = []
     for k in K:
-        costs.append(cost(k, x))
+        costs.append(cost(k, x, d=d, p=p))
     return np.array(costs)
-C = np.log(Cost(kappa, x_range))
+C = -np.log(Cost(kappa, x_range, p = 2))
 
 x_range, kappa = np.meshgrid(x_range, kappa)
 
@@ -229,32 +271,17 @@ ax.view_init(10, 60)
 # fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
-#%%
-kappa = [k for k in K if k > 2.25 and k < 2.48]
-x_range = np.arange(0.12, 0.37, 0.005)
-
-def Cost(K, x):
-    costs = []
-    for k in K:
-        costs.append(cost(k, x))
-    return np.array(costs)
-C = Cost(kappa, x_range)
-
-x_range, kappa = np.meshgrid(x_range, kappa)
-c = plt.pcolormesh(kappa, x_range, np.log(C), cmap ='viridis')
-plt.colorbar(c)
-plt.show()
-
-#%%
-# k_c = mincost(dataframe, x0 = 0.15)[0]
-# for d in D:
-#     for p in P:
-#         for rho in RHO:
-#             x = [k-k_c for k in K]
-#             y = [((dataframe[d][p][k][rho]['p'])/M) for k in K]
-#             plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
-# plt.ylabel(r'$\Pi(\langle k \rangle)$')
-# plt.xlabel(r'$\langle k \rangle $')
-# plt.legend()
-# # plt.xlim()
-# plt.show()
+#%% PRINT HEATMAP OF BASTAS COST
+for p in P:
+    kappa = [k for k in K if k > 1.7 and k < 3]
+    x_range = np.arange(0.1, 0.37, 0.005)
+    lp = p
+    C = -np.log(Cost(kappa, x_range, p = lp))
+    
+    x_range, kappa = np.meshgrid(x_range, kappa)
+    c = plt.pcolormesh(kappa, x_range, C, cmap ='magma', shading = 'auto')
+    plt.colorbar(c, label = 'Bastas Cost')
+    plt.xlabel(r'$\langle k \rangle$')
+    plt.ylabel(r'$\beta/\nu$')
+    plt.title(f'Bastas Cost Colormap for p={lp}')
+    plt.show()
