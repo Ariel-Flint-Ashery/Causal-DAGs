@@ -97,30 +97,30 @@ def funcfit(func, xdata, ydata, x = None, **kwargs):
 
 shapes = iter(['.', '.', '.'])
 for d in D:
-    for p in P[:1]:
-        for rho in RHO:
+    for p in P[:]:
+        for rho in RHO[-2:]:
             x = [k for k in K]
             y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
             Y = y * rho ** 0.16
             yerr = [np.sqrt(M*y*(1-y))/M for y in y]
-            w, z, params, cov = funcfit(pareto, x[35:], y[35:])
+            # w, z, params, cov = funcfit(pareto, x[35:], y[35:])
             # plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
-            print(params)
-            plt.plot(w, z)
+            # print(params)
+            # plt.plot(w, z)
             plt.errorbar(x, y, yerr = yerr, fmt = '.', capsize = 3, ms = 1, label = rf'p={p}, $\rho$ = {rho}')
-            plt.ylabel(r'$\Pi(\langle k \rangle)$')
-            plt.xlabel(r'$\langle k \rangle $')
-            plt.yscale('log')
-            plt.xscale('log')
-            plt.ylim(10e-2, 1)
-            plt.xlim(1.5,6)
-            plt.legend()
-            plt.show()
-# plt.ylabel(r'$\Pi(\langle k \rangle)$')
-# plt.xlabel(r'$\langle k \rangle $')
-# plt.legend()
-# # plt.xlim(1.1, 3)
-# plt.show()
+            # plt.ylabel(r'$\Pi(\langle k \rangle)$')
+            # plt.xlabel(r'$\langle k \rangle $')
+            # plt.yscale('log')
+            # plt.xscale('log')
+            # plt.ylim(10e-2, 1)
+            # plt.xlim(1.5,6)
+            # plt.legend()
+            # plt.show()
+plt.ylabel(r'$\Pi(\langle k \rangle)$')
+plt.xlabel(r'$\langle k \rangle $')
+plt.legend()
+# plt.xlim(1.1, 3)
+plt.show()
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
 for d in D:
     for p in P[-1:]:
