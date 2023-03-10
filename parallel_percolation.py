@@ -13,7 +13,7 @@ from tqdm import tqdm
 import copy 
 import multiprocessing
 #%% Naming the file to save 
-fname = 'percolation_data_prelim_03'
+fname = 'percolation_data_5000_test'
 def file_id(name, pkl = True, directory = None):
     """
     Returns:
@@ -31,13 +31,13 @@ def file_id(name, pkl = True, directory = None):
         pkl = pkl
     __file_name = f'{name}'
     _file_name = str(__file_name).replace(' ', '-').replace(',', '').replace('[', '-').replace(']','-').replace('.','-')
-    file_name = os.path.join(directory, 'DAG_data_files/percolation_data', f'{_file_name}.pkl')
+    file_name = os.path.join(directory, 'DAG_data_files\percolation_data', f'{_file_name}.pkl')
     return file_name
 #%% Set up parameters of the simulation
 D = [2] # Only look at dimension = 2; structure allows for further investigation in higher dimension if needed
 P = [0.5, 1, 2] # 3 values; one p<1, one p=1, one p>1
 V = 1
-RHO = [2**10, 2**11, 2**12, 2**13] # ideally 4 or more different values of RHO to see if there is any trend
+RHO = [2**10, 2**11, 2**12] # ideally 4 or more different values of RHO to see if there is any trend
 M = 5000 # ideally 1000 or more, so we have a higher "resolution" when it comes to looking at derivatives
 K_micro = [np.round(k,2) for k in np.arange(1, 4, 0.02)] # searches in small region around the supposed critical point
 K_macro = [np.round(k,2) for k in np.arange(0.25, 6.25, 0.25)] # wide sweep to see the entire critical behaviour
@@ -93,8 +93,8 @@ if __name__ == "__main__":
           
           -----------------------------
           """)
-    # pool = multiprocessing.Pool(cpus + 1) # uses half + 1 of available processors
-    pool = multiprocessing.Pool(multiprocessing.cpu_count()- 1) #uses all available processors 
+    pool = multiprocessing.Pool(cpus+1) # uses half + 1 of available processors
+    #pool = multiprocessing.Pool(multiprocessing.cpu_count()- 1) #uses all available processors 
     dfs = pool.starmap(perc_generator, [() for _ in range(M)])
     pool.close()
     pool.join()

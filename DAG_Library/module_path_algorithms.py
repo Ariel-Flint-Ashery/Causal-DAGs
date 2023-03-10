@@ -380,9 +380,11 @@ def pathJaggy3(pos, path):
     """
     theta = []
     for i in range(len(path)-2):
-        u = pos[path[i]] + np.ones(len(pos[0]))
-        v = pos[path[i+1]] - pos[path[i]]
-        theta.append(np.abs(np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u)))))
+        x = pos[path[i]] - pos[path[i+1]]
+        theta.append(np.abs(np.arccos(x/(np.linalg.norm(x)*np.sqrt(2)))))
+        # u = pos[path[i]] + np.ones(len(pos[0]))
+        # v = pos[path[i+1]] - pos[path[i]]
+        # theta.append(np.abs(np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u)))))
     
     return theta, sum(theta), np.average(theta), np.std(theta, ddof = 1)
 

@@ -50,7 +50,7 @@ def file_id(name, pathfolder = None, pkl = True, directory = None):
     return file_name
 
 #%% RETRIEVE FILE
-fname2 = 'percolation_data_40000_2-3'#percolation_data_prelim_06 #percolation_data_40000_2-3
+fname2 = 'percolation_data_5000_test'#percolation_data_prelim_06 #percolation_data_40000_2-3
 pathfolder = 'percolation_data'
 try: 
     dataframe = pickle.load(open(f'{file_id(fname2, pathfolder = pathfolder)}', 'rb'))
@@ -62,7 +62,7 @@ datakeys = list(dataframe.keys())[-1]
 config = dataframe[datakeys]['constants']
 RHO = config[0]
 V = config[1]
-D = [2] #config[2]
+D = config[2] #[2]
 K = config[3]
 M = config[4]
 P = config[5]
@@ -244,3 +244,17 @@ x_range, kappa = np.meshgrid(x_range, kappa)
 c = plt.pcolormesh(kappa, x_range, np.log(C), cmap ='viridis')
 plt.colorbar(c)
 plt.show()
+
+#%%
+# k_c = mincost(dataframe, x0 = 0.15)[0]
+# for d in D:
+#     for p in P:
+#         for rho in RHO:
+#             x = [k-k_c for k in K]
+#             y = [((dataframe[d][p][k][rho]['p'])/M) for k in K]
+#             plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
+# plt.ylabel(r'$\Pi(\langle k \rangle)$')
+# plt.xlabel(r'$\langle k \rangle $')
+# plt.legend()
+# # plt.xlim()
+# plt.show()
