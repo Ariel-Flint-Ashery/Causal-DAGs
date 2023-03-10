@@ -113,7 +113,7 @@ def file_id(name, pkl = True, directory = None):
 #load data
 
 #NOTE: MAKE SURE TO UNZIP HPC DATA!
-fname = 'HPC_data\HPC_geo_data_test_2000_2000' #odd = kevin, even = ariel
+fname = 'para_geo_4000_5000_cst' #odd = kevin, even = ariel
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
 except:
@@ -128,7 +128,10 @@ params = {
         'mathtext.fontset': 'stix',
         }
 plt.rcParams.update(params)
-_col = ['green', 'blue', 'red']
+col = iter(['green', 'blue', 'red', 'm', 'c'])
+shape = iter(['^', 's', 'd', '*', '.'])
+# col = iter(['green', 'blue', 'red'])#, 'm', 'c'])
+# shape = iter(['^', 's', 'd'])#, '*', '.'])
 zoom_type = 'x'
 optimizer = dataframe['config']['optimizer'] #'G' or 'N'
 path_type = list(dataframe['d'].keys())
@@ -144,10 +147,9 @@ M = dataframe['config']['constants'][-1]
 #%%
 "PLOT DISTANCE"
 fig, (ax1, ax2) = plt.subplots(2,1)
-
+col = iter(['green', 'blue', 'red', 'm', 'c'])
+shape = iter(['^', 's', 'd', '*', '.'])
 #plot ax1
-col = iter(_col)
-shape = iter(['^', 's', 'd'])
 for path in path_type:
     colour = next(col)
     fmt = next(shape)
@@ -155,7 +157,7 @@ for path in path_type:
     y = [np.average(dataframe['d'][path][p]['raw']) for p in x]
     yerr = [np.std(dataframe['d'][path][p]['raw']) for p in x]
     # ax1.plot(x, y, color = colour)
-    ax1.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = None, color = colour,
+    ax1.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = None, color = colour,
                  markerfacecolor = 'none', markeredgewidth = 1)
 
 ax1.set_xlabel('p')
@@ -169,8 +171,8 @@ ax1.set_yscale('log', base = 2)
 
 #plot ax2
 # our desire P range is [4:13]
-col = iter(_col)
-shape = iter(['^', 's', 'd'])
+col = iter(['green', 'blue', 'red', 'm', 'c'])
+shape = iter(['^', 's', 'd', '*', '.'])
 for path in path_type:
     colour = next(col)
     fmt = next(shape)
@@ -178,23 +180,23 @@ for path in path_type:
     y = [np.average(dataframe['d'][path][p]['raw']) for p in x]
     yerr = [np.std(dataframe['d'][path][p]['raw']) for p in x]
     # ax2.plot(x, y, color = colour)
-    ax2.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = 10, color = colour,
+    ax2.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = 10, color = colour,
                  markerfacecolor = 'none', markeredgewidth = 1)
 
-dffit = ff.swapdata(dataframe, measure = 'd')
-col = iter(['darkmagenta', 'teal'])
-linestyle = iter(['dashed', 'dotted'])
-for l in dffit:
-    colour = next(col)
-    ls = next(linestyle)
-    x = dffit[l]['p']
-    y = dffit[l]['d']
-    yerr = dffit[l]['d_err']
-    u, v, params, cov = ff.Dfit(x, y, sigma = yerr, absolute_sigma = True)
-    uu = np.array([uu for uu in u if uu < P[-5] and uu > P[4]])
-    vv = ff.Dfunc(uu, *params)
-    ax1.plot(u, v, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
-    ax2.plot(uu, vv, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
+# dffit = ff.swapdata(dataframe, measure = 'd')
+# col = iter(['darkmagenta', 'teal'])
+# linestyle = iter(['dashed', 'dotted'])
+# for l in dffit:
+#     colour = next(col)
+#     ls = next(linestyle)
+#     x = dffit[l]['p']
+#     y = dffit[l]['d']
+#     yerr = dffit[l]['d_err']
+#     u, v, params, cov = ff.Dfit(x, y, sigma = yerr, absolute_sigma = True)
+#     uu = np.array([uu for uu in u if uu < P[-5] and uu > P[4]])
+#     vv = ff.Dfunc(uu, *params)
+#     ax1.plot(u, v, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
+#     ax2.plot(uu, vv, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
 
 ax2.set_xlabel('p')
 if optimizer == 'G':
@@ -258,7 +260,8 @@ for i in range(len(L)):
 #%%
 "PLOT ANGLES"
 
-col = iter(_col)
+col = iter(['green', 'blue', 'red', 'm', 'c'])
+shape = iter(['^', 's', 'd', '*', '.'])
 fig, (ax1, ax2) = plt.subplots(2,1)
 
 #plot ax1
@@ -268,7 +271,7 @@ for path in path_type:
     y = [np.average(dataframe['j3'][path][p]['mean']) for p in P]
     yerr = [np.average(dataframe['j3'][path][p]['err'])/np.sqrt(M) for p in P] 
     ax1.plot(x, y, color = colour)
-    ax1.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
+    ax1.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
 
 ax1.set_xlabel('p')
 ax1.set_ylabel('j3 average')
@@ -278,20 +281,21 @@ ax1.set_yscale('log')
 
 #plot ax2
 # our desire P range is [4:13]
-col = iter(_col)
+col = iter(['green', 'blue', 'red', 'm', 'c'])
+shape = iter(['^', 's', 'd', '*', '.'])
 for path in path_type:
     colour = next(col)
-    x = P[7:11]
+    x = [p for p in P if p >= 0.91 and p <= 1.1]
     y = [np.average(dataframe['j3'][path][p]['mean']) for p in x]
     yerr = [np.average(dataframe['j3'][path][p]['err'])/np.sqrt(M) for p in x] 
     ax2.plot(x, y, color = colour)
-    ax2.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
+    ax2.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
 
 ax2.set_xlabel('p')
 ax2.set_ylabel('j3 average')
 #ax2.legend()
-ax2.set_xscale('log')
-ax2.set_yscale('log')
+# ax2.set_xscale('log')
+# ax2.set_yscale('log')
 
 #plot zoom in effect
 zoom_effect(ax2, ax1, zoom_type)
