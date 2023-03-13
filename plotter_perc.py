@@ -15,6 +15,8 @@ from DAG_Library.custom_functions import file_id
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as op
+import scipy.special as sps
+import scipy.integrate as integrate
 
 params = {
         'axes.labelsize':16,
@@ -51,7 +53,7 @@ def file_id(name, pathfolder = None, pkl = True, directory = None):
     return file_name
 
 #%% RETRIEVE FILE
-fname2 = 'percolation_data_prelim_07'#percolation_data_prelim_06 #percolation_data_40000_2-3
+fname2 = 'percolation_data_prelim_08' #percolation_data_prelim_06 #percolation_data_40000_2-3
 pathfolder = 'percolation_data'
 try: 
     dataframe = pickle.load(open(f'{file_id(fname2, pathfolder = pathfolder)}', 'rb'))
@@ -69,83 +71,87 @@ M = config[4]
 P = config[5]
 
 #%% PRINT PERCOLATION PLOT
-def empirical_derivative(x, y):
-    dydx = []
-    x_bar = []
-    for i in range(len(x)-1):
-        dx = x[i+1] - x[i]
-        dy = y[i+1] - y[i]
-        dydx.append(dy/dx)
-        x_bar.append((x[i+1] + x[i])/2)
-    return np.array(x_bar), np.array(dydx)
-def pareto(x, xm, alpha):
-    return (1 - (xm/x)**alpha)
-def pareto2(x, xm, alpha):
+def func(x, xm, alpha):
     return np.exp(-(xm/x)**alpha)
-def dpareto2(x, xm, alpha):
-    y = pareto2(x, xm, alpha)
-    return empirical_derivative(x, y)
 
 def funcfit(func, xdata, ydata, x = None, **kwargs):
     params, cov = op.curve_fit(func, xdata, ydata, **kwargs)
     if x == None:
         x = np.linspace(xdata[0], xdata[-1], 500)
-        y = pareto(x, *params)
+        y = func(x, *params)
     else:
-        y = pareto(x, *params)
+        y = func(x, *params)
     return x, y, params, cov
 
 shapes = iter(['.', '.', '.'])
 for d in D:
     for p in P[:]:
-        for rho in RHO[-2:]:
-            x = [k for k in K]
+        for rho in RHO[:]:
+            x = np.array([k for k in K])
             y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
             Y = y * rho ** 0.16
             yerr = [np.sqrt(M*y*(1-y))/M for y in y]
-            # w, z, params, cov = funcfit(pareto, x[35:], y[35:])
+            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] != 0]))
+            w, z, params, cov = funcfit(func, x[x_min:], y[x_min:], p0 = [2, 8], sigma = yerr[x_min:], absolute_sigma = True)
+            z0, z1 = params
+            x_p = z0/((1/z1 + 1)**(1/z1))
             # plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
-            # print(params)
-            # plt.plot(w, z)
-            plt.errorbar(x, y, yerr = yerr, fmt = '.', capsize = 3, ms = 1, label = rf'p={p}, $\rho$ = {rho}')
-            # plt.ylabel(r'$\Pi(\langle k \rangle)$')
-            # plt.xlabel(r'$\langle k \rangle $')
+            print(params)
+            plt.ylabel(r'$\Pi(\langle k \rangle)$')
+            plt.xlabel(r'$\langle k \rangle $')
             # plt.yscale('log')
             # plt.xscale('log')
             # plt.ylim(10e-2, 1)
             # plt.xlim(1.5,6)
-            # plt.legend()
-            # plt.show()
-plt.ylabel(r'$\Pi(\langle k \rangle)$')
-plt.xlabel(r'$\langle k \rangle $')
-plt.legend()
-# plt.xlim(1.1, 3)
-plt.show()
+            plt.errorbar(x, y, yerr = yerr, fmt = '.', capsize = 3, ms = 1, label = rf'p={p}, $\rho$ = {rho}')
+            plt.plot(w, z)
+            plt.legend()
+            plt.show()
+# plt.ylabel(r'$\Pi(\langle k \rangle)$')
+# plt.xlabel(r'$\langle k \rangle $')
+# plt.legend()
+# # plt.xlim(1.1, 3)
+# plt.show()
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
+def dfunc(x, xm, alpha):
+    return np.exp(-(xm/x)**alpha) * (alpha * xm ** alpha)/(x**(alpha+1))
+
 for d in D:
-    for p in P[-1:]:
+    for p in P[:]:
         for rho in RHO:
-            x = [k for k in K]
-            y = [dataframe[d][p][k][rho]['p'] for k in K]
+            x = np.array([k for k in K])
+            y = np.array([dataframe[d][p][k][rho]['p']/M for k in K])
             dx = [x[i+1] - x[i] for i in range(len(x)-1)]
             dy = [y[i+1] - y[i] for i in range(len(y)-1)]
-            dydx = [dy[i]/dx[i] for i in range(len(dx))]
+            dydx = [(dy[i]/dx[i]) for i in range(len(dx))]
             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
-            dydxerr = [d/np.sqrt(M) for d in dydx]
+            dydxerr = [d/np.sqrt(d*M) for d in dydx]
+            
+            w, z, params, cov = funcfit(dfunc, x_p, dydx, p0 = [2, 9])
+            z = [z[i] for i in range(len(w)) if w[i] != 0]
+            w = [w[i] for i in range(len(w)) if w[i] != 0]
+            plt.plot(w, z)
+            # z0, z1 = params
+            # xp = z0/((1/z1 + 1)**(1/z1))
             # plt.plot(x_p, dydx, label = rf'p={p}, $\rho$ = {rho}')
+            print(params)
             plt.errorbar(x_p, dydx, dydxerr, fmt = '.', capsize = 3, label = rf'p={p}, $\rho$ = {rho}')
             # plt.show()
-            plt.legend()
             plt.ylabel(r'$\frac{d}{d\langle k \rangle} \Pi(\langle k \rangle)$')
             plt.xlabel(r'$\langle k \rangle$')
             # print(x_p[dydx.index(max(dydx))])
-            plt.xscale('log')
-            plt.yscale('log')
+            # plt.xscale('log')
+            # plt.yscale('log')
             plt.xlim(1)
+            # plt.ylim(1e-2, 1.5)
+            # plt.axvline(params[0], label = 'mean?')
+            # plt.axvline(params[0]/((1+ 1/(params[1]))**(1/params[1])), color = 'red', label = 'mode')
+            plt.legend()
             plt.show()
         # plt.xscale('log')
         # plt.yscale('log')
         # plt.show()
+        
 #%% PRINT BASTAS PLOT
 
 X = {d: {p:{rho:{k:[] for k in K} for rho in RHO} for p in P}for d in D}
@@ -172,31 +178,6 @@ def cost(k, x, d = 2, p = 2):
                 sigma += 0.5 * (H(i, k, x, d, p) - H(j, k, x, d, p))**2
     return sigma
 
-# def mincost(dataframe, x0 = 0.33):
-#     kappa = [k for k in K if k > 2 and k < 4]
-#     X = {rho: {k: [] for k in K if k > 2 and k < 4} for rho in RHO}
-#     for d in D:
-#         for p in P:
-#             for rho in RHO:
-#                 for k in kappa:
-#                     X[rho][k] = dataframe[d][p][k][rho]['p']/M
-    
-#     x = x0
-#     dx = 0.1 * x0
-#     dc = np.inf
-#     while abs(dc) > 0.00000000001:
-#         c = min([cost(k, x) for k in kappa])
-#         dc = min([cost(k, (x+dx)) for k in kappa])  - c
-#         if dc <0:
-#             x = x + dx 
-#             dx = dx/2
-#         if dc >0:
-#             dx = -dx/2
-#         print(dx)
-#     cost_min = min([cost(k, x) for k in kappa])
-#     k_c = kappa[[cost(k,x) for k in kappa].index(cost_min)]
-#     return k_c, x
-
 def Ye(rho, k, x, d = 2, p = 2):
     return Y(rho, k, x, d, p)
 
@@ -215,7 +196,7 @@ def cost2(k ,x, d = 2, p = 2):
             sigma += (He(rho, k, x, ye, d, p) - 2)
     return (sigma)
 
-kappa = [k for k in K if k >2 and k < 2.7]
+kappa = [k for k in K if k >1.8 and k < 2.7]
 for x in np.arange(0.10, 0.25, 0.01):
     plt.plot(kappa, [cost(kap, x, d = 2, p = 0.5) for kap in kappa], label = np.round(x,3))
     plt.legend()
@@ -225,9 +206,9 @@ plt.xlabel('k')
 plt.show()
 
 
-kappa = [k for k in K if k >2 and k < 3]
+kappa = [k for k in K if k >1.8 and k < 2.7]
 for x in np.arange(0.1, 0.2, 0.005):
-    plt.plot(kappa, [cost2(kap, x, p = 1) for kap in kappa], label = 'x = %s' % (np.round(x,3)))
+    plt.plot(kappa, [cost2(kap, x, p = 0.5) for kap in kappa], label = 'x = %s' % (np.round(x,3)))
     # plt.plot(kappa, [He(RHO[0], kap, x, Ye(RHO[4], kap, x, p = 2)) for kap in kappa])
     plt.legend()
     plt.yscale('log')
@@ -273,8 +254,8 @@ ax.view_init(10, 60)
 plt.show()
 #%% PRINT HEATMAP OF BASTAS COST
 for p in P:
-    kappa = [k for k in K if k > 1.7 and k < 3]
-    x_range = np.arange(0.1, 0.37, 0.005)
+    kappa = [k for k in K if k > 1.8 and k < 3]
+    x_range = np.arange(0.1, 0.3, 0.005)
     lp = p
     C = -np.log(Cost(kappa, x_range, p = lp))
     
