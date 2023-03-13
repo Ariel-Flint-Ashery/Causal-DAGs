@@ -39,9 +39,9 @@ P = [0.5, 1, 2] # 3 values; one p<1, one p=1, one p>1
 V = 1
 RHO = [2**10] #, 2**11, 2**12] # ideally 4 or more different values of RHO to see if there is any trend
 M = 5000 # ideally 1000 or more, so we have a higher "resolution" when it comes to looking at derivatives
-K_micro = [np.round(k,2) for k in np.arange(1, 4, 0.02)] # searches in small region around the supposed critical point
-K_macro = [np.round(k,2) for k in np.arange(0.25, 6.25, 0.25)] # wide sweep to see the entire critical behaviour
-K = list(set(K_micro + K_macro))
+K_micro = [np.round(k,2) for k in np.arange(0.4, 6.02, 0.04)] # searches in small region around the supposed critical point
+# K_macro = [np.round(k,2) for k in np.arange(0.2, 6.2, 0.2)] # wide sweep to see the entire critical behaviour
+K = K_micro # list(set(K_micro + K_macro))
 K.sort()
 #%%
 def generateDataframe(M = None):
