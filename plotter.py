@@ -147,8 +147,8 @@ M = dataframe['config']['constants'][-1]
 #%%
 "PLOT DISTANCE"
 fig, (ax1, ax2) = plt.subplots(2,1)
-col = iter(['green', 'blue', 'red', 'm', 'c'])
-shape = iter(['^', 's', 'd', '*', '.'])
+col = iter(['green', 'blue', 'red', 'm', 'c', 'k', 'brown'])
+shape = iter(['^', 's', 'd', '*', '.', '>', 'v'])
 #plot ax1
 for path in path_type:
     colour = next(col)
@@ -225,7 +225,7 @@ for i in range(len(L)):
     ls = next(linestyle)
     x = dffit[L[i]]['p']
     y = dffit[L[i]]['d']
-    yerr = dffit[l]['d_err']
+    yerr = dffit[L[i]]['d_err']
     u, v, params, cov = ff.Dfit(x, y, sigma = yerr, absolute_sigma = True)
     for path in path_type[:2]:
         colour = next(col)
@@ -260,19 +260,21 @@ for i in range(len(L)):
 #%%
 "PLOT ANGLES"
 
-col = iter(['green', 'blue', 'red', 'm', 'c'])
-shape = iter(['^', 's', 'd', '*', '.'])
+col = iter(['green', 'blue', 'red', 'm', 'c', 'k', 'brown'])
+shape = iter(['^', 's', 'd', '*', '.', '>', 'v'])
 fig, (ax1, ax2) = plt.subplots(2,1)
 
 #plot ax1
 for path in path_type:
     colour = next(col)
+    fmt = next(shape)
     x = P
     y = [np.average(dataframe['j3'][path][p]['mean']) for p in P]
     yerr = [np.average(dataframe['j3'][path][p]['err'])/np.sqrt(M) for p in P] 
-    ax1.plot(x, y, color = colour)
-    ax1.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
-
+    #ax1.plot(x, y, color = colour)
+    #ax1.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
+    ax1.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = 10, color = colour,
+                 markerfacecolor = 'none', markeredgewidth = 1)
 ax1.set_xlabel('p')
 ax1.set_ylabel('j3 average')
 ax1.legend()
@@ -285,12 +287,14 @@ col = iter(['green', 'blue', 'red', 'm', 'c'])
 shape = iter(['^', 's', 'd', '*', '.'])
 for path in path_type:
     colour = next(col)
+    fmt = next(shape)
     x = [p for p in P if p >= 0.91 and p <= 1.1]
     y = [np.average(dataframe['j3'][path][p]['mean']) for p in x]
     yerr = [np.average(dataframe['j3'][path][p]['err'])/np.sqrt(M) for p in x] 
-    ax2.plot(x, y, color = colour)
-    ax2.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
-
+    #ax2.plot(x, y, color = colour)
+    #ax2.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = '.', ms = 20, capsize = 10, color = colour)
+    ax2.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = 10, color = colour,
+                 markerfacecolor = 'none', markeredgewidth = 1)
 ax2.set_xlabel('p')
 ax2.set_ylabel('j3 average')
 #ax2.legend()

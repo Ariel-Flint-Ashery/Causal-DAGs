@@ -11,6 +11,7 @@ from tqdm import tqdm
 import pickle
 import multiprocessing
 import time
+import scipy.optimize as op
 #%%
 def radiusBinarySearch(X, p, epsilon, end = np.inf):
     """
@@ -152,62 +153,100 @@ with open('radius_scaling_df_1000_0001.pkl', 'rb') as f:
 for rho in RHO:
     df[rho]['rho_avg'] = {p: np.average(df[rho][p]) for p in P}
     df[rho]['rho_anal_scale'] = [(df[rho]['rho_avg'][p])/analyticCritRadius(p, D, rho) for p in P] #/analyticCritRadius(p, D, rho) #**D)*rho*gamma_factor(p,D)
-    df[rho]['rho_err'] = [np.sqrt(np.std(df[rho]['rho_scale'], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P] #df[rho][p], ddof = 1)**2
+    df[rho]['rho_err'] = [np.sqrt(np.std(df[rho]['rho_anal_scale'], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P] #df[rho][p], ddof = 1)**2
     df[rho]['avg_err'] = [np.sqrt(np.std(df[rho][p], ddof = 1)**2 + epsilon**2)/np.sqrt(M) for p in P]
     df[rho]['rho_scale'] = [(df[rho]['rho_avg'][p]**D)*rho*gamma_factor(p,D) for p in P]
     
 #%%
 #plot
-normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
-cmap = mpl.cm.get_cmap('rainbow')
-#plot critical radius scaled by expected analytic radius for <k> = 1
-for rho, mrkr in zip(RHO, mrkrs):
-    plt.plot(P, df[rho]['rho_anal_scale'], c = cmap(normalize(rho)))
-    plt.errorbar(P, df[rho]['rho_anal_scale'], yerr = df[rho]['rho_err'],
-                  label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
-                  color = cmap(normalize(rho)))
-plt.xlabel('p')
-plt.ylabel('Critical Radius')
-plt.legend()
-plt.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
-plt.xscale('log')
-plt.yscale('log')
-plt.tight_layout()
-plt.show()
+# normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
+# cmap = mpl.cm.get_cmap('rainbow')
+# #plot critical radius scaled by expected analytic radius for <k> = 1
+# for rho, mrkr in zip(RHO, mrkrs):
+#     plt.plot(P, df[rho]['rho_anal_scale'], c = cmap(normalize(rho)))
+#     plt.errorbar(P, df[rho]['rho_anal_scale'], yerr = df[rho]['rho_err'],
+#                   label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
+#                   color = cmap(normalize(rho)))
+# plt.xlabel('p')
+# plt.ylabel('Critical Radius')
+# plt.legend()
+# plt.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
+# plt.xscale('log')
+# plt.yscale('log')
+# plt.tight_layout()
+# plt.show()
 
-#plot critical radius scaled by full relation
-for rho, mrkr in zip(RHO, mrkrs):
-    plt.plot(P, df[rho]['rho_scale'], c = cmap(normalize(rho)))
-    plt.errorbar(P, df[rho]['rho_scale'], yerr = df[rho]['rho_err'],
-                  label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
-                  color = cmap(normalize(rho)))
-plt.xlabel('p')
-plt.ylabel('Critical Radius')
-plt.legend()
-plt.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
-plt.xscale('log')
-plt.yscale('log')
-plt.tight_layout()
-plt.show()
+# #plot critical radius scaled by full relation
+# for rho, mrkr in zip(RHO, mrkrs):
+#     plt.plot(P, df[rho]['rho_scale'], c = cmap(normalize(rho)))
+#     plt.errorbar(P, df[rho]['rho_scale'], yerr = df[rho]['rho_err'],
+#                   label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
+#                   color = cmap(normalize(rho)))
+# plt.xlabel('p')
+# plt.ylabel('Critical Radius')
+# plt.legend()
+# plt.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
+# plt.xscale('log')
+# plt.yscale('log')
+# plt.tight_layout()
+# plt.show()
 
 #plot average radius
-for rho, mrkr in zip(RHO, mrkrs):
-    plt.plot(P, df[rho]['rho_avg'].values(), c = cmap(normalize(rho)))
-    plt.errorbar(P, df[rho]['rho_avg'].values(), yerr = df[rho]['avg_err'],
-                 label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
-                 color = cmap(normalize(rho)))
+# for rho, mrkr in zip(RHO, mrkrs):
+#     plt.plot(P, df[rho]['rho_avg'].values(), c = cmap(normalize(rho)))
+#     plt.errorbar(P, df[rho]['rho_avg'].values(), yerr = df[rho]['avg_err'],
+#                  label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
+#                  color = cmap(normalize(rho)))
 
-plt.xlabel('p')
-plt.ylabel('Critical Radius')
-plt.legend()
-plt.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
-plt.xscale('log')
-plt.yscale('log')
-plt.tight_layout()
-plt.show()
+# plt.xlabel('p')
+# plt.ylabel('Critical Radius')
+# plt.legend()
+# plt.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
+# plt.xscale('log')
+# plt.yscale('log')
+# plt.tight_layout()
+# plt.show()
 
 #%%
 
+fig, (ax1, ax2) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
+
+
+
+
+normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
+cmap = mpl.cm.get_cmap('rainbow')
+xfit = np.linspace(0.5, 5, 1000)
+for rho, mrkr in zip(RHO, mrkrs):
+    #ax1.plot(P, df[rho]['rho_avg'].values(), c = cmap(normalize(rho)))
+    ax1.errorbar(P, df[rho]['rho_avg'].values(), yerr = df[rho]['avg_err'],
+                 label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
+                 color = cmap(normalize(rho)))
+    def func(x, a, b):
+        # gamma_factor = (gamma(1 + 1/x)**D)/gamma(1 + x/D)
+        # g = 1/gamma_factor
+        # R = (g / rho)**(1/D)
+        return a**(1/D)*analyticCritRadius(x, D, rho) + b #(a**(1/D))*R + b
+    popt, cov = op.curve_fit(func, P, list(df[rho]['rho_avg'].values()))#, sigma = df[rho]['avg_err'])
+    error = np.sqrt(np.diag(cov))
+    ax1.plot(xfit, func(xfit, *popt), color = cmap(normalize(rho)), linestyle = '--')
+    ax1.fill_between(xfit, func(xfit, popt[0]+error[0], popt[1]+error[1]), func(xfit, popt[0]-error[0], popt[1]-error[1]), alpha = 0.2,
+                     color = cmap(normalize(rho)))
+    #ax2.scatter(rho, np.sqrt(np.diag(cov)), marker = mrkr, color = cmap(normalize(rho)), ms = 200)
+
+ax1.set_xlabel('p')
+ax1.set_ylabel('Critical Radius')
+ax1.legend()
+fig.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
+ax1.set_xscale('log')
+ax1.set_yscale('log')
+plt.tight_layout()
+plt.show()
+
+
+
+    
+    
 
 
 
