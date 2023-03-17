@@ -22,7 +22,7 @@ params = {
         'axes.labelsize':16,
         'axes.titlesize':28,
         'font.size':20,
-        'figure.figsize': [11,11],
+        'figure.figsize': [15,11],
         'mathtext.fontset': 'stix',
         }
 plt.rcParams.update(params)
@@ -53,7 +53,7 @@ def file_id(name, pathfolder = None, pkl = True, directory = None):
     return file_name
 
 #%% RETRIEVE FILE
-fname2 = 'percolation_data_prelim_08' #percolation_data_prelim_06 #percolation_data_40000_2-3
+fname2 = 'percolation_data_local_01' #percolation_data_prelim_06 #percolation_data_40000_2-3
 pathfolder = 'percolation_data'
 try: 
     dataframe = pickle.load(open(f'{file_id(fname2, pathfolder = pathfolder)}', 'rb'))
@@ -71,8 +71,11 @@ M = config[4]
 P = config[5]
 
 #%% PRINT PERCOLATION PLOT
-def func(x, xm, alpha):
-    return np.exp(-(xm/x)**alpha)
+def frechet(x, s, alpha):
+    return np.exp(-((x)/s)**-alpha)
+
+def gumbel(x, mu, sigma):
+    return np.exp(-np.exp((x - mu)/sigma))
 
 def funcfit(func, xdata, ydata, x = None, **kwargs):
     params, cov = op.curve_fit(func, xdata, ydata, **kwargs)
@@ -86,13 +89,13 @@ def funcfit(func, xdata, ydata, x = None, **kwargs):
 shapes = iter(['.', '.', '.'])
 for d in D:
     for p in P[:]:
-        for rho in RHO[:]:
+        for rho in [512, 1024, 2048, 4096]:
             x = np.array([k for k in K])
             y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
-            Y = y * rho ** 0.16
             yerr = [np.sqrt(M*y*(1-y))/M for y in y]
-            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] != 0]))
-            w, z, params, cov = funcfit(func, x[x_min:], y[x_min:], p0 = [2, 8], sigma = yerr[x_min:], absolute_sigma = True)
+            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0])) 
+            x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+            w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, -8], sigma = yerr[x_min:x_max])
             z0, z1 = params
             x_p = z0/((1/z1 + 1)**(1/z1))
             # plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
@@ -102,11 +105,11 @@ for d in D:
             # plt.yscale('log')
             # plt.xscale('log')
             # plt.ylim(10e-2, 1)
-            # plt.xlim(1.5,6)
-            plt.errorbar(x, y, yerr = yerr, fmt = '.', capsize = 3, ms = 1, label = rf'p={p}, $\rho$ = {rho}')
-            plt.plot(w, z)
+            plt.xlim(x[x_min], x[x_max])
+            plt.errorbar(x, 1-y, yerr = yerr, fmt = '.', capsize = 3, ms = 1, label = rf'p={p}, $\rho$ = {rho}')
+            plt.plot(w, 1-z)
             plt.legend()
-            plt.show()
+        plt.show()
 # plt.ylabel(r'$\Pi(\langle k \rangle)$')
 # plt.xlabel(r'$\langle k \rangle $')
 # plt.legend()
@@ -134,8 +137,8 @@ for d in D:
             z0, z1 = params
             xp = z0/((1/z1 + 1)**(1/z1))
             # plt.plot(x_p, dydx, label = rf'p={p}, $\rho$ = {rho}')
-            print(params, xp)
-            plt.errorbar(x_p, dydx, dydxerr, fmt = '.', capsize = 3, label = rf'p={p}, $\rho$ = {rho}')
+            # print(params, xp)
+            # plt.errorbar(x_p, dydx, dydxerr, fmt = '.', capsize = 3, label = rf'p={p}, $\rho$ = {rho}')
             # plt.show()
             plt.ylabel(r'$\frac{d}{d\langle k \rangle} \Pi(\langle k \rangle)$')
             plt.xlabel(r'$\langle k \rangle$')
@@ -143,14 +146,14 @@ for d in D:
             # plt.xscale('log')
             # plt.yscale('log')
             plt.xlim(1)
-            # plt.ylim(1e-2, 1.5)
+            plt.ylim(0, 1.5)
             # plt.axvline(params[0], label = 'mean?')
             # plt.axvline(params[0]/((1+ 1/(params[1]))**(1/params[1])), color = 'red', label = 'mode')
             plt.legend()
-            plt.show()
+            # plt.show()
         # plt.xscale('log')
         # plt.yscale('log')
-        # plt.show()
+        plt.show()
         
 #%% PRINT BASTAS PLOT
 
@@ -230,36 +233,50 @@ def Cost(K, x, d = 2, p = 2):
     for k in K:
         costs.append(cost(k, x, d=d, p=p))
     return np.array(costs)
+
 C = -np.log(Cost(kappa, x_range, p = 2))
 
-x_range, kappa = np.meshgrid(x_range, kappa)
+# x_range, kappa = np.meshgrid(x_range, kappa)
 
-fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+# fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
 
-# Plot the surface.
-surf = ax.plot_surface(x_range, kappa, C, cmap=cm.coolwarm,
-                        linewidth=0, antialiased=False)
+# # Plot the surface.
+# surf = ax.plot_surface(x_range, kappa, C, cmap=cm.coolwarm,
+#                         linewidth=0, antialiased=False)
 
-# # Customize the z axis.
-# ax.set_zlim(1, 4)
-# ax.zaxis.set_major_locator(LinearLocator(10))
-# # A StrMethodFormatter is used automatically
-ax.zaxis.set_major_formatter('{x:.02f}')
-ax.view_init(10, 60)
+# # # Customize the z axis.
+# # ax.set_zlim(1, 4)
+# # ax.zaxis.set_major_locator(LinearLocator(10))
+# # # A StrMethodFormatter is used automatically
+# ax.zaxis.set_major_formatter('{x:.02f}')
+# ax.view_init(10, 60)
 
-# # Add a color bar which maps values to colors.
-# fig.colorbar(surf, shrink=0.5, aspect=5)
+# # # Add a color bar which maps values to colors.
+# # fig.colorbar(surf, shrink=0.5, aspect=5)
 
-plt.show()
+# plt.show()
 #%% PRINT HEATMAP OF BASTAS COST
+def maxCost(C):
+    cmax = max([max(c) for c in C])
+    kappamax, xmax= np.where(C == cmax)
+    return kappa[kappamax[0]][xmax[0]], x_range[kappamax[0]][xmax[0]], cmax
+
+_i = 0
 for p in P:
-    kappa = [k for k in K if k > 1.8 and k < 2.6]
-    x_range = np.arange(0.12, 0.3, 0.005)
-    C = -np.log(Cost(kappa, x_range, p = p))
+    _i += 0.05
+    kappa = [k for k in K if k > 1.8 + _i and k < 2.5 + _i]
+    x_range = np.arange(0.16, 0.24, 0.005)
+    C = np.power(1.1, -np.log(Cost(kappa, x_range, p = p)))
+    # C[C < 5] = 5
     
-    x_range, kappa = np.meshgrid(x_range, kappa)
+    x_range, kappa = np.meshgrid(x_range, kappa)    
+    kappamax, xmax, cmax = maxCost(C)
+    print(kappamax, xmax)
+
     c = plt.pcolormesh(kappa, x_range, C, cmap ='magma', shading = 'auto')
+    plt.scatter(kappamax, xmax, marker = '*', color = 'magenta', s =100)
+    
     plt.colorbar(c, label = 'Bastas Cost')
     plt.xlabel(r'$\langle k \rangle$')
     plt.ylabel(r'$\beta/\nu$')
