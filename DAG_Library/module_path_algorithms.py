@@ -218,7 +218,16 @@ def DFS(graph_dict, source=0):
     return visited
                 
 
-def greedy_path_net(graph_dict, source = None, target = None):
+def greedy_path_net(graph_dict, source = None, target = None, type = 'short'):
+    """
+    Greedy path that travels to the nodes with the most or least neighbours.
+    'short': most neighbours
+    'long': least neighbours
+    
+    We hypothesise that the network path with the most connections will approximate 
+    the geodesic. 
+    
+    """
     if source == None:
         source = 0
     if target == None:
@@ -239,11 +248,14 @@ def greedy_path_net(graph_dict, source = None, target = None):
             return visited
         
         grand_children = {len(graph_dict[c].keys()):c for c in children}
-        most_childs = max(grand_children)
-        if most_childs == 0:
+        if type == 'short':
+            best_child = max(grand_children)
+        if type == 'long':
+            best_child = min(grand_children)
+        if best_child == 0:
             return "No greedy path found"
         else:
-            greedy_child = grand_children[most_childs]
+            greedy_child = grand_children[best_child]
         
         visited.append(greedy_child)
         queue.append(greedy_child)
@@ -380,8 +392,10 @@ def pathJaggy3(pos, path):
     """
     theta = []
     for i in range(len(path)-2):
-        x = pos[path[i]] - pos[path[i+1]]
-        theta.append(np.abs(np.arccos(x/(np.linalg.norm(x)*np.sqrt(2)))))
+        vector = pos[path[i]] - pos[path[i+1]]
+        vector /= np.linalg.norm(vector) #unit vector of test vector
+        geodesic = [1,1]/np.linalg.norm([1,1])
+        theta.append(np.pi - np.abs(np.arccos(np.clip(np.dot(vector, geodesic), -1.0, 1.0))))
         # u = pos[path[i]] + np.ones(len(pos[0]))
         # v = pos[path[i+1]] - pos[path[i]]
         # theta.append(np.abs(np.arccos(np.dot(u, v)/(np.linalg.norm(v) * np.linalg.norm(u)))))
