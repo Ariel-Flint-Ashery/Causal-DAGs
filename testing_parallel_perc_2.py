@@ -6,14 +6,10 @@ import DAG_Library.module_path_algorithms as pa
 import pickle
 import numpy as np
 import os
-import matplotlib.pyplot as plt
 import time
-import scipy.optimize as op
-from tqdm import tqdm
-import copy 
 import multiprocessing
 #%% Naming the file to save 
-fname = 'percolation_data_prelim_08'
+fname = 'percolation_data_prelim_09'
 def file_id(name, pkl = True, directory = None):
     """
     Returns:
@@ -38,9 +34,9 @@ r2 = np.sqrt(2)
 D = [2] # Only look at dimension = 2; structure allows for further investigation in higher dimension if needed
 P = [0.5, 1, 2] # 3 values; one p<1, one p=1, one p>1
 V = 1
-RHO = [int(r2**17), int(r2**18), int(r2**19), int(r2**20), int(r2**21)] #, 2**11] #, 2**12] #, 2**13] # ideally 4 or more different values of RHO to see if there is any trend
-M = 1000 # ideally 1000 or more, so we have a higher "resolution" when it comes to looking at derivatives
-K_micro = [np.round(k,2) for k in np.arange(0.4, 6.04, 0.04)] # searches in small region around the supposed critical point
+RHO = [2**13] #[int(r2**17), int(r2**18), int(r2**19), int(r2**20), int(r2**21)] #, 2**11] #, 2**12] #, 2**13] # ideally 4 or more different values of RHO to see if there is any trend
+M = 5 # ideally 1000 or more, so we have a higher "resolution" when it comes to looking at derivatives
+K_micro = [np.round(k,2) for k in np.arange(0.4, 6.02, 0.04)] # searches in small region around the supposed critical point
 # K_macro = [np.round(k,2) for k in np.arange(0.2, 6.2, 0.2)] # wide sweep to see the entire critical behaviour
 K = K_micro # list(set(K_micro + K_macro))
 K.sort()
@@ -95,7 +91,7 @@ if __name__ == "__main__":
           -----------------------------
           """)
     # pool = multiprocessing.Pool(cpus + 1) # uses half + 1 of available processors
-    pool = multiprocessing.Pool(multiprocessing.cpu_count()- 2) #uses all available processors 
+    pool = multiprocessing.Pool(multiprocessing.cpu_count()- 1) #uses all available processors 
     dfs = pool.starmap(perc_generator, [() for _ in range(M)])
     pool.close()
     pool.join()

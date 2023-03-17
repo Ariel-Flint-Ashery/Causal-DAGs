@@ -87,7 +87,7 @@ for d in D[:]:
     plt.fill_between(xfit, yfit + 3*yfiterr, yfit - 3*yfiterr, alpha = 0.2, color = col, 
                      label = rf'$\rho = {d}$ {fit_legend}')
     
-plt.axhline(4, linestyle = 'dotted', color = 'black', label = r'$\langle k_{exp} \rangle$') # plot the expected value
+plt.axhline(K, linestyle = 'dotted', color = 'black', label = r'$\langle k_{exp} \rangle$') # plot the expected value
 plt.xscale('log') 
 plt.xlabel(r'$p$')
 plt.ylabel(r'$\langle k \rangle$')

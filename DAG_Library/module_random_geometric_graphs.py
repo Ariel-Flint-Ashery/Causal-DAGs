@@ -6,9 +6,6 @@ Created on Mon Oct 31 01:41:47 2022
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-import scipy as sp
-import networkx as nx
 from operator import itemgetter
 
 def _poisson_cube_sprinkling(density, vol, d, fixed_N = False):

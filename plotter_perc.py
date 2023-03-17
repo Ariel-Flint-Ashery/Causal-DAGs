@@ -131,10 +131,10 @@ for d in D:
             z = [z[i] for i in range(len(w)) if w[i] != 0]
             w = [w[i] for i in range(len(w)) if w[i] != 0]
             plt.plot(w, z)
-            # z0, z1 = params
-            # xp = z0/((1/z1 + 1)**(1/z1))
+            z0, z1 = params
+            xp = z0/((1/z1 + 1)**(1/z1))
             # plt.plot(x_p, dydx, label = rf'p={p}, $\rho$ = {rho}')
-            print(params)
+            print(params, xp)
             plt.errorbar(x_p, dydx, dydxerr, fmt = '.', capsize = 3, label = rf'p={p}, $\rho$ = {rho}')
             # plt.show()
             plt.ylabel(r'$\frac{d}{d\langle k \rangle} \Pi(\langle k \rangle)$')
@@ -254,15 +254,14 @@ ax.view_init(10, 60)
 plt.show()
 #%% PRINT HEATMAP OF BASTAS COST
 for p in P:
-    kappa = [k for k in K if k > 1.8 and k < 3]
-    x_range = np.arange(0.1, 0.3, 0.005)
-    lp = p
-    C = -np.log(Cost(kappa, x_range, p = lp))
+    kappa = [k for k in K if k > 1.8 and k < 2.6]
+    x_range = np.arange(0.12, 0.3, 0.005)
+    C = -np.log(Cost(kappa, x_range, p = p))
     
     x_range, kappa = np.meshgrid(x_range, kappa)
     c = plt.pcolormesh(kappa, x_range, C, cmap ='magma', shading = 'auto')
     plt.colorbar(c, label = 'Bastas Cost')
     plt.xlabel(r'$\langle k \rangle$')
     plt.ylabel(r'$\beta/\nu$')
-    plt.title(f'Bastas Cost Colormap for p={lp}')
+    plt.title(f'Bastas Cost Colormap for p={p}')
     plt.show()
