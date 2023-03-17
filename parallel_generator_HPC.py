@@ -11,7 +11,7 @@ from tqdm import tqdm
 import copy 
 import multiprocessing
 
-fname = 'para_geo_500_5' #HPC_opt_data_rho_M
+ #HPC_opt_data_rho_M
 #%%
 def file_id(name, pkl = True, directory = None):
     """
@@ -34,21 +34,25 @@ def file_id(name, pkl = True, directory = None):
     return file_name
 
 #%% Independent Variable
-RHO = 500
+RHO = 4000
 V = 1
 D = 2
 K = 3
-M = 5
+M = 10000
 #%% Measurement variables
 dep_var = ['d', 'l','j3']
-path_type = ['sp', 'lp', 'gp_s', 'gp_l', 'random_walk'] #['spg', 'lpg', 'gp'] or #['spn', 'lpn', 'gp']  #use __n for network optimization, __g for geometric optimization
 optimizer = 'geo' #or 'net'
+if optimizer == 'geo':
+    path_type = ['sp', 'lp', 'GreedyGeoShort', 'GreedyGeoLong', 'GreedyNetShort', 'GreedyNetLong', 'rwlk'] #['spg', 'lpg', 'gp'] or #['spn', 'lpn', 'gp']  #use __n for network optimization, __g for geometric optimization
+if optimizer == 'net':
+    path_type = ['sp', 'lp', 'GreedyNetShort', 'GreedyNetLong', 'rwlk']
 a = np.sqrt(2)
 b = 1.025
 P = list(np.round([a**n for n in range(-4,5)], decimals = 5)) + list(np.round([b**n for n in range(-4,5)], decimals = 5))
 P = list(set(P))
 P.sort()
-sprinkling_type = 'random' #'random' or 'consistent'
+sprinkling_type = 'consistent' #'random' or 'consistent'
+fname = 'para_%s_%s_%s_%s' % (optimizer, RHO, M, sprinkling_type)
 #%% define generation functions
 def generateDataframe(M = None):
     dataframe = {dv:{pt:{p:{'raw':[]} for p in P} for pt in path_type} for dv in dep_var}
@@ -103,12 +107,18 @@ def geo_generator():
         graph_dict = G[p]['graph_dict']
 
         sp, lp = pa.getPaths(graph_dict, optimizer)
-        gp_s = pa.greedy_path_geo(graph_dict, type = 'short')
-        gp_l = pa.greedy_path_geo(graph_dict, type = 'long')
-        r_walk = pa.random_walk(graph_dict)
-        paths = [sp, lp, gp_s, gp_l, r_walk] 
-        paths = {path_type[i]: paths[i] for i in range(len(paths))}
+        rwlk = pa.random_walk(graph_dict)
+        GreedyNetShort = pa.greedy_path_net(graph_dict, type = 'short')
+        GreedyNetLong = pa.greedy_path_net(graph_dict, type = 'long')
+        if optimizer == 'geo':
+            GreedyGeoShort = pa.greedy_path_geo(graph_dict, type = 'short')
+            GreedyGeoLong = pa.greedy_path_geo(graph_dict, type = 'long')
+            paths = [sp, lp, GreedyGeoShort, GreedyGeoLong, GreedyNetShort, GreedyNetLong, rwlk]
+        if optimizer == 'net':
+            paths = [sp, lp, GreedyNetShort, GreedyNetLong, rwlk]
 
+        paths = {path_type[i]: paths[i] for i in range(len(paths))}
+        #print(paths)
         for path in path_type:
             _d, _l = pa.pathDist(graph_dict, paths[path], p)
             _J3 = pa.pathJaggy3(pos, paths[path])
@@ -157,4 +167,5 @@ pickle.dump(df, f)
 f.close()
 
 print('Time elapsed: %s'% (time.perf_counter()-start))
+print(sprinkling_type)
 
