@@ -109,12 +109,14 @@ def poisson(x, mu):
 colour = iter(['tab:blue', 'tab:orange', 'tab:green', 'tab:red'])
 
 all_degree_dict = {}
-for d in D[:]:
+for d in D[2]:
     all_degree_dict[d] = list_sum(degree_dict[d][p])
-    binh, bine, __ = plt.hist(all_degree_dict[d], bins = np.arange(0, 19, 0.5) - 0.5)
-    
-    k = np.linspace(bine[0] + 0.5, bine[-1] + 0.5, 1000)
-    plt.plot(k, np.sum(binh) * poisson(k, K), label = r'poisson(k, $\mu = k_{exp}$)')
+    binh, bine, __ = plt.hist(all_degree_dict[d], bins = np.arange(0, 15, 1))
+    xfit = np.arange(0, 14, 1)
+    popt, cov = op.curve_fit(poisson, xfit, binh/np.sum(binh))
+    k = np.linspace(bine[0], bine[-1], 1000)
+    yfit = np.sum(binh)*poisson(k, *popt)
+    plt.plot(k, yfit, label = r'poisson(k, $\mu = {popt[0]} \pm {np.sqrt(np.diag(cov))[0]}$)')
     plt.xlabel('k')
     plt.ylabel('count')
     plt.legend()

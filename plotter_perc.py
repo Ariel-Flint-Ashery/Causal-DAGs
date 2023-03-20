@@ -13,6 +13,7 @@ from mpl_toolkits.axes_grid1.inset_locator import BboxPatch, BboxConnector,\
     BboxConnectorPatch
 from DAG_Library.custom_functions import file_id
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 import scipy.optimize as op
 import scipy.special as sps
@@ -110,11 +111,105 @@ for d in D:
             plt.plot(w, 1-z)
             plt.legend()
         plt.show()
+#%% PRINT PERCOLATION RESULTS 
+for d in D:
+    col = iter(['green', 'blue', 'red', 'm'])
+    for p in [0.5, 1, 2]:
+        # col = iter(['green', 'blue', 'red', 'm'])
+        shapes = iter(['.', '^', '*', 'd'])
+        colour = next(col)
+        for rho in [2048, 4096]:
+            #colour = next(col)
+            shape = next(shapes)
+            x = np.array([k for k in K[0::5] if k<4])
+            y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+            yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+            x_min = [k for k in K[0::5] if k<4].index(min([x[i] for i in range(len(x)) if y[i] > 0])) 
+            x_max = [k for k in K[0::5] if k<4].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+            w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, -8], sigma = yerr[x_min:x_max])
+            z0, z1 = params
+            x_p = z0/((1/z1 + 1)**(1/z1))
+            # plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
+            #print(params)
+            plt.ylabel(r'$\Pi(\langle k \rangle)$')
+            plt.xlabel(r'$\langle k \rangle $')
+            # plt.yscale('log')
+            # plt.xscale('log')
+            # plt.ylim(10e-2, 1)
+            plt.xlim(x[x_min], x[x_max])
+            plt.errorbar(x, y, yerr = yerr, fmt = shape, capsize = 4, ms = 8,
+                         label = rf'p={p}, $\rho$ = {rho}', c = colour, markerfacecolor = 'none',
+                         markeredgewidth = 1)
+            plt.plot(w, z, c = colour, alpha = 0.5, linestyle = '--')
+            plt.legend()
+    plt.show()
 # plt.ylabel(r'$\Pi(\langle k \rangle)$')
 # plt.xlabel(r'$\langle k \rangle $')
 # plt.legend()
 # # plt.xlim(1.1, 3)
 # plt.show()
+#%%
+fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True,figsize = (12,12), gridspec_kw={'height_ratios': [2, 1]})
+col = iter(['green', 'blue', 'red', 'm', 'k'])
+#print(next(col))
+shapes = iter(['.', 'd', '^', 's', '*'])
+#for d in D:
+for p in P[:]:
+    rho = 4096
+    colour = next(col)
+    shape = next(shapes)
+    x = np.array([k for k in K])
+    y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+    yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+    x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0])) 
+    x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+
+    # plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
+    #print(params)
+    ax1.set_ylabel(r'$\Pi(\langle k \rangle)$', fontsize = 28)
+    ax1.set_xlabel(r'$\langle k \rangle $', fontsize = 28)
+    # plt.yscale('log')
+    # plt.xscale('log')
+    # plt.ylim(10e-2, 1)
+    ax1.set_xlim(x[x_min], x[x_max])
+    ax1.errorbar(x, y, yerr = yerr, fmt = shape, capsize = 4, ms = 6, label = rf'p={p}, $\rho$ = {rho}', color = colour)
+    #plt.plot(w, 1-z, c = colour, alpha = 0.7, linestyle = '--')
+    ax1.legend()
+
+#plt.savefig('ariel_figs\percolation-fig1.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+#plt.show()
+
+RHO = [512, 1024, 2048, 4096]
+normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
+cmap = mpl.cm.get_cmap('Dark2')
+shapes = iter(['.', 'd', '^', 's'])
+for d in D:
+    for rho in RHO:
+        p=2
+        # colour = next(col)
+        shape = next(shapes)
+        x = np.array([k for k in K])
+        y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+        yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+        x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0])) 
+        x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+
+        # plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
+        #print(params)
+        ax2.set_ylabel(r'$\Pi(\langle k \rangle)$', fontsize = 28)
+        ax2.set_xlabel(r'$\langle k \rangle $', fontsize = 28)
+        # plt.yscale('log')
+        # plt.xscale('log')
+        # plt.ylim(10e-2, 1)
+        ax2.set_xlim(x[x_min], x[x_max])
+        ax2.errorbar(x, y, yerr = yerr, fmt = shape, capsize = 3, ms = 5, label = rf'p={p}, $\rho$ = {rho}', color = cmap(normalize(rho)))
+        #plt.plot(w, 1-z, c = colour, alpha = 0.7, linestyle = '--')
+        ax2.legend()
+
+#plt.savefig('ariel_figs\percolation-fig1.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+plt.tight_layout()
+plt.show()
+
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
 def dfunc(x, xm, alpha):
     return np.exp(-(xm/x)**alpha) * (alpha * xm ** alpha)/(x**(alpha+1))
@@ -200,7 +295,7 @@ def cost2(k ,x, d = 2, p = 2):
     return (sigma)
 
 kappa = [k for k in K if k >1.8 and k < 2.7]
-for x in np.arange(0.10, 0.25, 0.01):
+for x in np.arange(0.10, 0.25, 0.005):
     plt.plot(kappa, [cost(kap, x, d = 2, p = 0.5) for kap in kappa], label = np.round(x,3))
     plt.legend()
     plt.yscale('log')
@@ -258,7 +353,7 @@ C = -np.log(Cost(kappa, x_range, p = 2))
 # plt.show()
 #%% PRINT HEATMAP OF BASTAS COST
 def maxCost(C):
-    cmax = max([max(c) for c in C])
+    cmax = min([min(c) for c in C])
     kappamax, xmax= np.where(C == cmax)
     return kappa[kappamax[0]][xmax[0]], x_range[kappamax[0]][xmax[0]], cmax
 
@@ -267,12 +362,12 @@ for p in P:
     _i += 0.05
     kappa = [k for k in K if k > 1.8 + _i and k < 2.5 + _i]
     x_range = np.arange(0.16, 0.24, 0.005)
-    C = np.power(1.1, -np.log(Cost(kappa, x_range, p = p)))
+    C = np.power(1.1, np.log(Cost(kappa, x_range, p = p)))
     # C[C < 5] = 5
     
     x_range, kappa = np.meshgrid(x_range, kappa)    
     kappamax, xmax, cmax = maxCost(C)
-    print(kappamax, xmax)
+    print(kappamax, xmax, cost(kappamax, xmax, d=2, p=p))
 
     c = plt.pcolormesh(kappa, x_range, C, cmap ='magma', shading = 'auto')
     plt.scatter(kappamax, xmax, marker = '*', color = 'magenta', s =100)
@@ -282,3 +377,32 @@ for p in P:
     plt.ylabel(r'$\beta/\nu$')
     plt.title(f'Bastas Cost Colormap for p={p}')
     plt.show()
+#%%
+#empirical minimizer
+# def mincost(dataframe, d, p, x0 = 0.33):
+#     kappa = [k for k in K if k > 2 and k < 4]
+#     # X = {rho: {k: [] for k in K if k > 2 and k < 4} for rho in RHO}
+#     # for d in D:
+#     #     for p in P:
+#     #         for rho in RHO:
+#     #             for k in kappa:
+#     #                 X[rho][k] = dataframe[d][p][k][rho]['p']/M
+
+#     x = x0
+#     dx = 0.1 * x0
+#     dc = np.inf
+#     while abs(dc) > 0.00000000001:
+#         c = min([cost(k, x, d, p) for k in kappa])
+#         dc = min([cost(k, (x+dx), d, p) for k in kappa])  - c
+#         if dc <0:
+#             x = x + dx 
+#             dx = dx/2
+#         if dc >0:
+#             dx = -dx/2
+#         print(dx)
+#     cost_min = min([cost(k, x, d, p) for k in kappa])
+#     k_c = kappa[[cost(k, x, d, p) for k in kappa].index(cost_min)]
+#     return k_c, x
+
+# k_c, x = mincost(dataframe, d=2, p=2, x0 = 0.15)
+# print(k_c, x, cost(k_c, x))
