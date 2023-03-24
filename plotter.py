@@ -113,7 +113,7 @@ def file_id(name, pkl = True, directory = None):
 #load data
 
 #NOTE: MAKE SURE TO UNZIP HPC DATA!
-fname = 'para_geo_4000_5000_cst' #odd = kevin, even = ariel
+fname = 'HPC_data\HPC_geo_data_test_2000_2000' #odd = kevin, even = ariel
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
 except:
@@ -150,14 +150,14 @@ fig, (ax1, ax2) = plt.subplots(2,1)
 col = iter(['green', 'blue', 'red', 'm', 'c', 'k', 'brown'])
 shape = iter(['^', 's', 'd', '*', '.', '>', 'v'])
 #plot ax1
-for path in path_type:
+for path in path_type[:-1]:
     colour = next(col)
     fmt = next(shape)
     x = [p for p in P if p <= 0.91 or p >= 1.1 or p == 1]
     y = [np.average(dataframe['d'][path][p]['raw']) for p in x]
     yerr = [np.std(dataframe['d'][path][p]['raw']) for p in x]
     # ax1.plot(x, y, color = colour)
-    ax1.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = None, color = colour,
+    ax1.errorbar(x, y, yerr = yerr, label = r'$%s$' % (path), fmt = fmt, ms = 12, capsize = None, color = colour,
                  markerfacecolor = 'none', markeredgewidth = 1)
 
 ax1.set_xlabel('p')
@@ -173,14 +173,14 @@ ax1.set_yscale('log', base = 2)
 # our desire P range is [4:13]
 col = iter(['green', 'blue', 'red', 'm', 'c'])
 shape = iter(['^', 's', 'd', '*', '.'])
-for path in path_type:
+for path in path_type[:-1]:
     colour = next(col)
     fmt = next(shape)
     x = [p for p in P if p >= 0.9 and p <=1.2]
     y = [np.average(dataframe['d'][path][p]['raw']) for p in x]
     yerr = [np.std(dataframe['d'][path][p]['raw']) for p in x]
     # ax2.plot(x, y, color = colour)
-    ax2.errorbar(x, y, yerr = yerr, label = r'$%s {%s}$' % (path, optimizer), fmt = fmt, ms = 10, capsize = 10, color = colour,
+    ax2.errorbar(x, y, yerr = yerr, label = r'$%s$' % (path), fmt = fmt, ms = 12, capsize = None, color = colour,
                  markerfacecolor = 'none', markeredgewidth = 1)
 
 # dffit = ff.swapdata(dataframe, measure = 'd')
@@ -195,8 +195,8 @@ for path in path_type:
 #     u, v, params, cov = ff.Dfit(x, y, sigma = yerr, absolute_sigma = True)
 #     uu = np.array([uu for uu in u if uu < P[-5] and uu > P[4]])
 #     vv = ff.Dfunc(uu, *params)
-#     ax1.plot(u, v, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
-#     ax2.plot(uu, vv, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
+#     ax1.plot(u, v, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 3)
+#     ax2.plot(uu, vv, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 3)
 
 ax2.set_xlabel('p')
 if optimizer == 'G':
@@ -221,7 +221,7 @@ linestyle = iter(['dashed', 'dotted'])
 L = list(dffit.keys())
 for i in range(len(L)):
     fig, (ax1, ax2) = plt.subplots(2,1)
-    col = iter(['darkmagenta', 'teal'])
+    col = iter(['green', 'blue'])
     ls = next(linestyle)
     x = dffit[L[i]]['p']
     y = dffit[L[i]]['d']
@@ -232,13 +232,13 @@ for i in range(len(L)):
         x = [p for p in P if p <= 0.91 or p >= 1.1 or p == 1]
         y = [np.average(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
         yerr = [np.std(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
-        ax1.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = 'x', ms = 5, capsize = None, color = colour,
+        ax1.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = 'x', ms = 5, capsize = 10, color = colour,
                      markerfacecolor = 'none', markeredgewidth = 1)
         
         x = [p for p in P if p >= 0.9 and p <= 1.1]
         y = [np.average(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
         yerr = [np.std(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
-        ax2.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = 'x', ms = 5, capsize = None, color = colour,
+        ax2.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = 'x', ms = 5, capsize = 10, color = colour,
                      markerfacecolor = 'none', markeredgewidth = 1)
     ax1.legend()
     ax1.axhline(1, linestyle = 'dotted')
