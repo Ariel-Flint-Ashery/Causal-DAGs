@@ -97,9 +97,15 @@ for p,col,l in zip(P, cols, ls):
         
     ax.annotate('p=%s' % (p), np.array(intersection(x,y,x,x)) + np.array([[-0.01],[0.03]]),c = col, fontsize = 38)
 #plt.axis('off)
+<<<<<<< HEAD
 fig.set_facecolor(background)
 ax.set_facecolor(background)
 # plt.savefig('poster_figs/lp-unit-circle.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+=======
+#fig.set_facecolor(background)
+#ax.set_facecolor(background)
+plt.savefig('clean_figs/lp-unit-circle.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+>>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
 plt.show()
 #%%
 "PLOT CONNECTION KERNEL"
@@ -167,6 +173,7 @@ ax.tick_params(axis='both', which='major', pad=25, labelsize = 44)
 ax.spines[["left", "bottom"]].set_position(("data", 0))
 ax.spines[["top", "right"]].set_visible(False)
 ax.spines[["left", "bottom"]].set_alpha(0.7)
+<<<<<<< HEAD
 ax.annotate("Connection Kernel (p=%s)" % (p),
             (0.04, 0.84), c = 'tab:blue', fontsize = 52)
 ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.045), c = 'tab:blue', fontsize = 52)
@@ -176,6 +183,17 @@ ax.set_yticks(np.arange(0,2,1))
 fig.set_facecolor(background)
 ax.set_facecolor(background)
 # plt.savefig('poster_figs/connection-kernel.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+=======
+# ax.annotate("Connection Kernel (p=%s)" % (p),
+#             (0.04, 0.84), c = 'r', fontsize = 52)
+ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.045), c = 'r', fontsize = 52)
+ax.annotate("R", xy = (0,0), xytext = (-0.04, R - 0.013), c = 'r', fontsize = 52)
+ax.set_xticks(np.arange(0,2,1))
+ax.set_yticks(np.arange(0,2,1))
+fig.set_facecolor(background)
+#ax.set_facecolor(background)
+plt.savefig('poster_figs/connection-kernel.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+>>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
 plt.show()
 
 #%%
@@ -191,7 +209,7 @@ def plt_edges(edge_list, pos, paths, ax, labels = None, node_size = 50, show_nod
     labels = iter(labels)
     lines = iter(['--', '-.', ':'])
     ax.plot(np.linspace(0,1, 100),np.linspace(0,1, 100), ls = '-', alpha = 0.7,
-                        color = 'k', label = 'pseudo-geodesic', linewidth = 2.5)
+                        color = 'k', label = 'Quasi-geodesic', linewidth = 2.5)
     for path in paths:
         color = next(colors, 'black')
         label = next(labels)
@@ -209,7 +227,7 @@ def plt_edges(edge_list, pos, paths, ax, labels = None, node_size = 50, show_nod
 #%%
 #constants
 
-labels = ['short', 'long', 'pseudo-geodesic']
+labels = ['Short', 'Long', 'Quasi-geodesic']
 P = [0.5, 2]
 V = 1
 D = 2
@@ -245,10 +263,11 @@ while _P:
 
 # PATHS
 #find geometric paths
-
+#%%
 fig, (ax1, ax2) = plt.subplots(1,2, figsize = (18,9))
 
 #plot
+labels = ['Short', 'Long', 'Quasi-geodesic']
 for p, ax in zip(P, (ax1, ax2)) :    
     shortest_path, longest_path = pa.getPaths(G[p]['graph_dict'], 'geo')
     gnx = nx.DiGraph(G[p]['edge_list'])
@@ -268,9 +287,16 @@ for p, ax in zip(P, (ax1, ax2)) :
     
 # ax.legend(loc = 'lower right')
 handles, labels = ax.get_legend_handles_labels()
-fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28, facecolor = background, edgecolor = background)
+fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28)#, facecolor = background, edgecolor = background)
 plt.tight_layout()
+<<<<<<< HEAD
 fig.set_facecolor(background)
 ax.set_facecolor(background)
 # plt.savefig('poster_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+=======
+#fig.set_facecolor(background)
+#ax.set_facecolor(background)
+#plt.savefig('poster_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+plt.savefig('clean_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+>>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
 plt.show()
