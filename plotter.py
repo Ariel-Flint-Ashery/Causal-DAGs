@@ -254,7 +254,7 @@ for i in range(len(L)):
         yerr = [np.std(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
         ax1.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = 'x', ms = 5, capsize = None, color = colour,
                      markerfacecolor = 'none', markeredgewidth = 1)
-        
+        print(path, yerr)
         x = [p for p in P if p >= 0.9 and p <= 1.1]
         y = [np.average(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
         yerr = [np.std(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
@@ -264,10 +264,10 @@ for i in range(len(L)):
     ax1.axhline(1, linestyle = 'dotted')
     ax1.set_xscale('log', base = 2)
     ax1.set_ylim(0.94, 1.06)
-    if optimizer == 'G':
+    if optimizer == 'geo':
         ax1.set_ylabel(r'$D_{geo}$' + '/' + r'$Fit_{%s}$' % (L[i]))
         ax2.set_ylabel(r'$D_{geo}$' + '/' + r'$Fit_{%s}$' % (L[i]))
-    if optimizer == 'N':
+    if optimizer == 'net':
         ax1.set_ylabel(r'$D_{net}$' + '/' + r'$Fit_{%s}$' % (L[i]))
         ax2.set_ylabel(r'$D_{net}$' + '/' + r'$Fit_{%s}$' % (L[i]))
     

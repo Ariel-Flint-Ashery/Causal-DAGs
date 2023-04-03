@@ -29,9 +29,9 @@ try:
 except:
     initialise = 1
 #%% Parameters 
-D = [500, 1000, 2000] # density
+D = [1000, 2000] # density
 P = np.round([np.sqrt(2)**a for a in range(-2,3)], decimals = 3) # p values
-M = 100 # number of iterations 
+M = 50 # number of iterations 
 K = 3 # k_expected aka the theoretically expected value of the average degree
 #%%
 if initialise == 1:
@@ -122,6 +122,21 @@ for d in D[2]:
     plt.legend()
     plt.show()
     
+#%%
+#plot a boxplot showing the median and whisker out-degree for each density. 
+fig, axs = plt.subplots(2, 1)
+for ax,d in zip(axs.flatten(), D):
+    x = P #* (1 + np.log(d)/50)
+    y = [avg_degree_dict[d][p]['avg'] for p in P]
+    #y = np.array([degree_dict[d][p] for p in P])
+    ax.boxplot(y)
+    #yerr = [np.sqrt(np.average(avg_degree_dict[d][p]['var']))/np.sqrt(M) for p in P]
+    #print()
+    
+#%%
+for item in y:
+    plt.boxplot(item)
+plt.show()
 #%%
 for d in D:
     print(np.sqrt(np.sum(avg_degree_dict[d][p]['var']) * 1/M))

@@ -228,7 +228,7 @@ for d in D:
             w, z, params, cov = funcfit(dfunc, x_p, dydx, p0 = [2, 9])
             z = [z[i] for i in range(len(w)) if w[i] != 0]
             w = [w[i] for i in range(len(w)) if w[i] != 0]
-            plt.plot(w, z)
+            plt.plot(w, z, label = f'{rho}')
             z0, z1 = params
             xp = z0/((1/z1 + 1)**(1/z1))
             # plt.plot(x_p, dydx, label = rf'p={p}, $\rho$ = {rho}')
@@ -361,7 +361,7 @@ _i = 0
 for p in P:
     _i += 0.05
     kappa = [k for k in K if k > 1.8 + _i and k < 2.5 + _i]
-    x_range = np.arange(0.16, 0.24, 0.005)
+    x_range = np.arange(0.12, 0.24, 0.0005)
     C = np.power(1.1, np.log(Cost(kappa, x_range, p = p)))
     # C[C < 5] = 5
     
