@@ -28,7 +28,7 @@ params = {
         }
 plt.rcParams.update(params)
 
-background = '#ebecf0'
+background = 'white'
 #%%
 mpl.rcParams.update(mpl.rcParamsDefault)
 #%%
@@ -97,9 +97,15 @@ for p,col,l in zip(P, cols, ls):
         
     ax.annotate('p=%s' % (p), np.array(intersection(x,y,x,x)) + np.array([[-0.01],[0.03]]),c = col, fontsize = 38)
 #plt.axis('off)
+<<<<<<< HEAD
+fig.set_facecolor(background)
+ax.set_facecolor(background)
+# plt.savefig('poster_figs/lp-unit-circle.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+=======
 #fig.set_facecolor(background)
 #ax.set_facecolor(background)
 plt.savefig('clean_figs/lp-unit-circle.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+>>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
 plt.show()
 #%%
 "PLOT CONNECTION KERNEL"
@@ -136,29 +142,29 @@ ax.set_ylim(bottom = -0.025, top = 1.03)
 
 #draw connection kernel
 mrkr = R - 0.02
-ax.plot(mrkr, 0, ">r", transform=ax.get_yaxis_transform(), clip_on=False, ms = 14)
-ax.plot(0, mrkr, "^r", transform=ax.get_xaxis_transform(), clip_on=False, ms = 14)
-ax.plot(np.linspace(0,mrkr, 10000), [0]*10000, lw = 4, c = 'r', ls = '--')
-ax.plot([0]*10000, np.linspace(0,mrkr, 10000), lw = 4, c = 'r', ls = '--')
+ax.plot(mrkr, 0, ">r", transform=ax.get_yaxis_transform(), clip_on=False, ms = 14, c = 'tab:blue')
+ax.plot(0, mrkr, "^r", transform=ax.get_xaxis_transform(), clip_on=False, ms = 14, c = 'tab:blue')
+ax.plot(np.linspace(0,mrkr, 10000), [0]*10000, lw = 4, c = 'tab:blue', ls = '--')
+ax.plot([0]*10000, np.linspace(0,mrkr, 10000), lw = 4, c = 'tab:blue', ls = '--')
 
 x = np.linspace(0,1, 10000)
 y = lp_circle(x, p, R)
-ax.plot(x,y, c = 'r', ls = '--', lw = 4)
+ax.plot(x,y, c = 'tab:blue', ls = '--', lw = 4)
 
 #check if node lies in connection kernel
-ncolors = ['r']+['k']*(len(graph_temp)-1)
+ncolors = ['tab:blue']+['k']*(len(graph_temp)-1)
 ecolors = ['k']*len(edge_temp)
 
 for n in graph_temp[0]:
-    ncolors[n] = 'r'
-    ecolors[edge_temp.index((0,n))] = 'r'
+    ncolors[n] = 'tab:blue'
+    ecolors[edge_temp.index((0,n))] = 'tab:blue'
 
 arrow = mpl.patches.ArrowStyle.Simple(head_length = 1.2, head_width = 1.2, tail_width = 0.2)
 # draw graph
 G = nx.DiGraph()
 G.add_nodes_from([n for n in graph_temp])
 G.add_edges_from(edge_temp)
-nx.draw_networkx(G, pos_temp, arrows = True, ax = ax, node_color = ['r']+['none']*(len(graph_temp)-1), 
+nx.draw_networkx(G, pos_temp, arrows = True, ax = ax, node_color = ['tab:blue']+['none']*(len(graph_temp)-1), 
                  edgecolors = ncolors, edge_color = ecolors, width = 1,
                  arrowstyle = arrow, arrowsize = 20, node_size = 2500, linewidths = 4, font_size = 44)
 
@@ -167,6 +173,17 @@ ax.tick_params(axis='both', which='major', pad=25, labelsize = 44)
 ax.spines[["left", "bottom"]].set_position(("data", 0))
 ax.spines[["top", "right"]].set_visible(False)
 ax.spines[["left", "bottom"]].set_alpha(0.7)
+<<<<<<< HEAD
+ax.annotate("Connection Kernel (p=%s)" % (p),
+            (0.04, 0.84), c = 'tab:blue', fontsize = 52)
+ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.045), c = 'tab:blue', fontsize = 52)
+ax.annotate("R", xy = (0,0), xytext = (-0.04, R - 0.013), c = 'tab:blue', fontsize = 52)
+ax.set_xticks(np.arange(0,2,1))
+ax.set_yticks(np.arange(0,2,1))
+fig.set_facecolor(background)
+ax.set_facecolor(background)
+# plt.savefig('poster_figs/connection-kernel.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+=======
 # ax.annotate("Connection Kernel (p=%s)" % (p),
 #             (0.04, 0.84), c = 'r', fontsize = 52)
 ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.045), c = 'r', fontsize = 52)
@@ -176,6 +193,7 @@ ax.set_yticks(np.arange(0,2,1))
 fig.set_facecolor(background)
 #ax.set_facecolor(background)
 plt.savefig('poster_figs/connection-kernel.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+>>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
 plt.show()
 
 #%%
@@ -200,7 +218,7 @@ def plt_edges(edge_list, pos, paths, ax, labels = None, node_size = 50, show_nod
         nx.draw_networkx_edges(G, pos, path, arrows = False, label = label, edge_color = color, style = ls, ax = ax, **edge_kwargs)
         #ax.legend()
     if show_nodes == True:    
-        nx.draw_networkx_nodes(G, pos, node_size = node_size, ax = ax, node_color = 'r', edgecolors = None)
+        nx.draw_networkx_nodes(G, pos, node_size = node_size, ax = ax, node_color = 'tab:blue', edgecolors = None)
     #ax.axis('off')
     # ax.set_xticks([], fontsize = 5)
     # ax.set_yticks([], fontsize = 5)
@@ -232,16 +250,16 @@ while _P:
 #find network paths
 
 #create figure
-fig, (ax1, ax2) = plt.subplots(1,2, figsize = (18,12))
+# fig, (ax1, ax2) = plt.subplots(1,2, figsize = (18,12))
 
-#plot
-for p, ax in zip(P, (ax1, ax2)) :    
-    shortest_path, longest_path = pa.short_long_paths(G[p]['graph_dict'], edge_list = G[p]['edge_list'])
-    greedy_path = pa.greedy_path(G[p]['graph_dict'], 'geo')
-    paths = [shortest_path, longest_path, greedy_path]
-    plt_edges(G[p]['edge_list'], pos, paths, labels = labels, show_nodes = True, ax = ax, width = 2)
+# #plot
+# for p, ax in zip(P, (ax1, ax2)) :    
+#     shortest_path, longest_path = pa.short_long_paths(G[p]['graph_dict'], edge_list = G[p]['edge_list'])
+#     greedy_path = pa.greedy_path(G[p]['graph_dict'], 'geo')
+#     paths = [shortest_path, longest_path, greedy_path]
+#     plt_edges(G[p]['edge_list'], pos, paths, labels = labels, show_nodes = True, ax = ax, width = 2)
 
-ax2.legend(loc = 'lower right')
+# ax2.legend(loc = 'lower right')
 
 # PATHS
 #find geometric paths
@@ -254,11 +272,11 @@ for p, ax in zip(P, (ax1, ax2)) :
     shortest_path, longest_path = pa.getPaths(G[p]['graph_dict'], 'geo')
     gnx = nx.DiGraph(G[p]['edge_list'])
     nx.draw_networkx(gnx, pos, arrows = False, ax = ax, node_color = 'g', 
-                      edge_color = 'k', width = 1, alpha = 0.2, with_labels = False,
-                      node_size = 50, style = '--')
+                      edge_color = 'k', width = 1, alpha = 0.1, with_labels = False,
+                      node_size = 50, style = ':')
     #greedy_path = pa.greedy_path_geo(G[p]['graph_dict'])
     paths = [shortest_path, longest_path]#, greedy_path]
-    plt_edges(G[p]['edge_list'], pos, paths, labels = labels, show_nodes = True, ax = ax, width = 4)
+    plt_edges(G[p]['edge_list'], pos, paths, labels = labels, show_nodes = True, ax = ax, width = 6)
     rect = mpl.patches.Rectangle((0, 0), 1, 1, linewidth=1, edgecolor='k', facecolor='none')
     ax.add_patch(rect)
     
@@ -271,8 +289,14 @@ for p, ax in zip(P, (ax1, ax2)) :
 handles, labels = ax.get_legend_handles_labels()
 fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28)#, facecolor = background, edgecolor = background)
 plt.tight_layout()
+<<<<<<< HEAD
+fig.set_facecolor(background)
+ax.set_facecolor(background)
+# plt.savefig('poster_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+=======
 #fig.set_facecolor(background)
 #ax.set_facecolor(background)
 #plt.savefig('poster_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
 plt.savefig('clean_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+>>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
 plt.show()
