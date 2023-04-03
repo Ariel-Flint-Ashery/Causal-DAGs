@@ -55,7 +55,7 @@ def file_id(name, pathfolder = None, pkl = True, directory = None):
     return file_name
 
 #%% RETRIEVE FILE
-fname2 = 'percolation_data_local_02' #percolation_data_prelim_06 #percolation_data_40000_2-3
+fname2 = 'percolation_data_local_01' #percolation_data_prelim_06 #percolation_data_40000_2-3
 pathfolder = 'percolation_data'
 try: 
     dataframe = pickle.load(open(f'{file_id(fname2, pathfolder = pathfolder)}', 'rb'))
@@ -69,7 +69,7 @@ RHO = config[0]
 V = config[1]
 D = config[2] 
 K = config[3]
-M = config[4] - 250
+M = config[4]
 P = config[5]
 
 #%% PRINT PERCOLATION PLOT
@@ -116,7 +116,7 @@ def KSfit(params, x, ecdf, tcdf, M, print_results = False):
     kst = lambda x0: kstest((x0[0], x0[1]), x, ecdf, tcdf, M)[0]
     mks = minimize(kst, params)
     params = mks.x
-    print(params)
+    # print(params)
     return x, frechet(x, *params), params
 
 shapes = iter(['.', '.', '.'])
@@ -126,13 +126,14 @@ for d in D:
             x = np.array([k for k in K])
             y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
             yerr = [np.sqrt(M*y*(1-y))/M for y in y]
-            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0])) 
+            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 5/M])) 
             x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
             w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, -8], sigma = yerr[x_min:x_max])
             z0, z1 = params
             x_p = z0/((1/z1 + 1)**(1/z1))
             # plt.plot(x, y, label = rf'p={p}, $\rho$ = {rho}')
-            print(params)
+            # print(params)
+            print(np.average([dataframe[d][p][k][rho]['r'] for k in K]), max(y))
             plt.ylabel(r'$\Pi(\langle k \rangle)$')
             plt.xlabel(r'$\langle k \rangle $')
             # plt.yscale('log')
@@ -150,7 +151,7 @@ for d in D:
             epsilon = np.sqrt(np.log(2/0.05)/(2*M))
             y_band_low = [i - epsilon for i in y]
             y_band_up = [i + epsilon for i in y]
-            # plt.fill_between(x, y_band_low, y_band_up, alpha = 0.3)
+            plt.fill_between(x, y_band_low, y_band_up, alpha = 0.3)
             plt.legend()
             plt.show()
             
