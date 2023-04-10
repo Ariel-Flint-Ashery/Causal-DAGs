@@ -113,7 +113,7 @@ def kstest(params, x, ecdf, tcdf, M, print_results = False):
     
 
 def KSfit(params, x, ecdf, tcdf, M, print_results = False):
-    kst = lambda x0: kstest((x0[0], x0[1]), x, ecdf, tcdf, M)[0]
+    kst = lambda x0: kstest((x0[0], x0[1]), x, ecdf, tcdf, M, print_results)[0]
     mks = minimize(kst, params)
     params = mks.x
     # print(params)
@@ -121,8 +121,8 @@ def KSfit(params, x, ecdf, tcdf, M, print_results = False):
 
 shapes = iter(['.', '.', '.'])
 for d in D:
-    for p in P[:]:
-        for rho in [512, 1024, 2048, 4096]:
+    for p in P[3:4]:
+        for rho in RHO[-5:]:
             x = np.array([k for k in K])
             y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
             yerr = [np.sqrt(M*y*(1-y))/M for y in y]
@@ -145,7 +145,7 @@ for d in D:
             # plt.show()
             
             # kstest(x, y, frechet, params)
-            w, z, params = KSfit(params, x, y, frechet, M)
+            w, z, params = KSfit(params, x, y, frechet, M, print_results = True)
             plt.plot(w, z, label = 'KS')
             
             epsilon = np.sqrt(np.log(2/0.05)/(2*M))
@@ -226,6 +226,23 @@ for d in D:
             plt.show()
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
 def dfunc(x, xm, alpha):
+    """
+
+    Parameters
+    ----------
+    x : array
+        The range of the control parameter for the distribution.
+    xm : float
+        scale of the Frechet distribution.
+    alpha : float
+        shape of the Frechet distribution.
+
+    Returns
+    -------
+    array
+        returns Y values of the Frechet PDF.
+
+    """
     return np.exp(-(xm/x)**alpha) * (alpha * xm ** alpha)/(x**(alpha+1))
 
 def likelihood(k, count, xm, alpha):
@@ -248,7 +265,7 @@ for d in D:
             z = [z[i] for i in range(len(w)) if w[i] != 0]
             w = [w[i] for i in range(len(w)) if w[i] != 0]
             plt.plot(w, z)
-            print(likelihood(x_p, dydx *M, *params))
+            print(likelihood(x_p, dydx , *params))
             z0, z1 = params
             xp = z0/((1/z1 + 1)**(1/z1))
             plt.plot(x_p, dydx, label = rf'p={p}, $\rho$ = {rho}')
@@ -270,6 +287,7 @@ for d in D:
         # plt.yscale('log')
         plt.show()
 #%% LIKELIHOOD
+## Compare MLE (+) and non-linear WLS (X)
 import random
 r = lambda: random.randint(50,200)
 print('#%02X%02X%02X' % (r(),r(),r()))
@@ -297,7 +315,8 @@ for d in D:
             alpha = params[1]
             # plt.plot(w, z)
             mle = minimize(Likelihood, params)
-            print(likelihood(x_p, np.array(dydx), *params), Likelihood(params), Likelihood(mle.x))
+            #
+            print(f'WLS: {Likelihood(params)}, MLE: {Likelihood(mle.x)}') #likelihood(x_p, np.array(dydx), *params),
             dalpha = np.array([i/10 for i in range(-10, 10)])
             dxm = np.array([i/50 for i in range(-10, 10)])
             col = '#%02X%02X%02X' % (r(),r(),r())
@@ -308,6 +327,7 @@ for d in D:
             plt.show()
             plt.plot(xm + dxm, [likelihood(x_p, dydx, XM, alpha) for XM in xm + dxm], color = col)
             plt.plot(xm, likelihood(x_p, dydx, xm, alpha), 'x', color = col, ms = 20)
+            plt.plot(mle.x[0], Likelihood(mle.x), '+', color = col, ms = 20)
             plt.title('xm')
             plt.show()
             
@@ -347,3 +367,252 @@ for d in D:
             # plt.yscale('log')
             # plt.show()
             
+
+#%% PLOT FINAL FIGURES -- RHO = 4096, VARY P
+fig, (ax1, ax2) = plt.subplots(2, 1,figsize = (15,15), gridspec_kw={'height_ratios': [2, 1]})
+
+col = iter(['green', 'blue', 'red', 'm', 'k'])
+shapes = iter(['.', 'd', '^', 's', '*'])
+for d in D:
+    for p in P[:]:
+        rho = 4096
+        colour = next(col)
+        shape = next(shapes)
+        x = np.array([k for k in K])
+        y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+        yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+        x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 5/M])) 
+        x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+        w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, -8], sigma = yerr[x_min:x_max])
+
+        # kstest(x, y, frechet, params)
+        w, z, params = KSfit(params, x, y, frechet, M, print_results = True)
+        ax1.plot(w, z, linestyle = '--', alpha = 0.7, color = colour)
+        
+        ax1.set_ylabel(r'$\Pi(\langle k \rangle)$', fontsize = 28)
+        ax1.set_xlabel(r'$\langle k \rangle $', fontsize = 28)
+        
+        x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.9]))
+        ax1.set_xlim(x[x_min], x[x_max])
+        
+        ax1.errorbar(x, y, yerr = yerr, fmt = shape, capsize = 4, ms = 6, label = rf'p={p}', color = colour)
+        #ax1.plot(w, 1-z, c = colour, alpha = 0.7, linestyle = '--') #PDF
+        ax1.legend(loc = 'lower right', ncol = 3, fontsize = 22)
+        ax1.yaxis.get_ticklocs(minor = True)
+        ax1.minorticks_on()
+        ax1.tick_params(axis='y', which='minor', length = 5)
+        ax1.tick_params(axis='y', which='major', length = 10)
+
+        ax1.xaxis.get_ticklocs(minor = True)
+        ax1.tick_params(axis='x', which='minor', length = 5)
+        ax1.tick_params(axis='x', which='major', length = 10)
+        
+        #plot fractional errors
+        y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x[x_min:x_max]])/z[x_min:x_max]
+        yerr = yerr[x_min:x_max]/z[x_min:x_max]
+        ax2.axhline(1, linestyle = 'dotted', color = 'k')
+        ax2.errorbar(x[x_min:x_max], y, yerr = yerr, fmt = shape, capsize = 4, ms = 6, label = rf'p={p}', color = colour)
+        
+        ax2.yaxis.get_ticklocs(minor = True)
+        ax2.minorticks_on()
+        ax2.tick_params(axis='y', which='minor', length = 5)
+        ax2.tick_params(axis='y', which='major', length = 10)
+
+        ax2.xaxis.get_ticklocs(minor = True)
+        ax2.tick_params(axis='x', which='minor', length = 5)
+        ax2.tick_params(axis='x', which='major', length = 10)
+        
+        ax2.set_ylabel(r'$\Pi(\langle k \rangle)/Fit$', fontsize = 28)
+        ax2.set_xlabel(r'$\langle k \rangle $', fontsize = 28)
+        ax2.set_xlim(x[x_min]+0.005, x[x_max])
+        ax2.set_ylim(0.5, 1.2)
+        ax2.legend(ncol=3, fontsize = 22)
+        
+plt.tight_layout()
+plt.show()
+
+#%% PLOT FINAL FIGURES -- VARY RHO, P=2
+fig, (ax1, ax2) = plt.subplots(2, 1,figsize = (15,15), gridspec_kw={'height_ratios': [2, 1]})
+
+col = iter(['green', 'blue', 'red', 'm', 'k'])
+shapes = iter(['.', 'd', '^', 's', '*'])
+for d in D:
+    for p in P[3:4]: #choose constant P
+        for rho in [1448, 2048, 4096]:
+            colour = next(col) 
+            shape = next(shapes)
+            x = np.array([k for k in K])
+            y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+            yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 5/M])) 
+            x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+            w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, -8], sigma = yerr[x_min:x_max])
+    
+            # kstest(x, y, frechet, params)
+            w, z, params = KSfit(params, x, y, frechet, M, print_results = True)
+            ax1.plot(w, z, linestyle = '--', alpha = 0.7, color = colour)
+            
+            ax1.set_ylabel(r'$\Pi(\langle k \rangle)$', fontsize = 28)
+            ax1.set_xlabel(r'$\langle k \rangle $', fontsize = 28)
+            
+            x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.9]))
+            ax1.set_xlim(x[x_min], x[x_max])
+            
+            ax1.errorbar(x, y, yerr = yerr, fmt = shape, capsize = 4, ms = 6, label = rf'$\rho={rho}$', color = colour)
+            #ax1.plot(w, 1-z, c = colour, alpha = 0.7, linestyle = '--') #PDF
+            ax1.legend(loc = 'lower right', ncol = 3, fontsize = 24)
+            ax1.yaxis.get_ticklocs(minor = True)
+            ax1.minorticks_on()
+            ax1.tick_params(axis='y', which='minor', length = 5)
+            ax1.tick_params(axis='y', which='major', length = 10)
+    
+            ax1.xaxis.get_ticklocs(minor = True)
+            ax1.tick_params(axis='x', which='minor', length = 5)
+            ax1.tick_params(axis='x', which='major', length = 10)
+            
+            #plot fractional errors
+            y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x[x_min:x_max]])/z[x_min:x_max]
+            yerr = yerr[x_min:x_max]/z[x_min:x_max]
+            ax2.axhline(1, linestyle = 'dotted', color = 'k')
+            ax2.errorbar(x[x_min:x_max], y, yerr = yerr, fmt = shape, capsize = 4, ms = 6, label = rf'$\rho={rho}$', color = colour)
+            
+            ax2.yaxis.get_ticklocs(minor = True)
+            ax2.minorticks_on()
+            ax2.tick_params(axis='y', which='minor', length = 5)
+            ax2.tick_params(axis='y', which='major', length = 10)
+    
+            ax2.xaxis.get_ticklocs(minor = True)
+            ax2.tick_params(axis='x', which='minor', length = 5)
+            ax2.tick_params(axis='x', which='major', length = 10)
+            
+            ax2.set_ylabel(r'$\Pi(\langle k \rangle)/Fit$', fontsize = 28)
+            ax2.set_xlabel(r'$\langle k \rangle $', fontsize = 28)
+            ax2.set_xlim(x[x_min]+0.005, x[x_max])
+            ax2.set_ylim(0.4, 1.8)
+            ax2.legend(ncol=3, fontsize = 24)
+
+#annotate ax1
+
+ax1.annotate("", xy=(2.2, 0.91), xycoords = 'data', 
+            xytext=(2.55, 0.91), textcoords = 'data', 
+            arrowprops=dict(width = 2, ec='k', fc = 'k', headwidth = 15, headlength = 25), color = 'k')
+
+ax1.annotate("", xy=(3.275, 0.91), xycoords = 'data', 
+            xytext=(2.925, 0.91), textcoords = 'data', 
+            arrowprops=dict(width = 2, ec='k', fc = 'k', headwidth = 15, headlength = 25), color = 'k')
+
+ax1.annotate(r'BROADENING', xy = (2.6, 0.9), xycoords = 'data',
+             xytext = (2.6, 0.9), textcoords = 'data', fontsize = 22)
+
+plt.tight_layout()
+plt.show()
+
+#%% FIND DERIVATIVES
+
+fig, (ax) = plt.subplots(1,1)
+col = iter(['green', 'blue', 'red', 'm', 'k'])
+shapes = iter(['.', 'd', '^', 's', '*'])
+for d in D:
+    for p in P[:]:
+        rho = 4096
+        colour = next(col)
+        shape = next(shapes)
+        x = np.array([k for k in K])
+        y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+        yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+        x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 5/M])) 
+        x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+        w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, -8], sigma = yerr[x_min:x_max])
+
+        # kstest(x, y, frechet, params)
+        w, z, params = KSfit(params, x, y, frechet, M, print_results = True)
+        x = np.linspace(1, x[x_max], 1000)
+        y = dfunc(x, *params)
+        s, alpha = params
+        mode = s*(alpha/(alpha+1))**(1/alpha)
+        ax.plot([mode, mode], [0, max(y)], linestyle = 
+                '--', color = colour, alpha = 0.7)
+        ax.plot(x, y, color = colour, label = rf'$p={p}, k_c = {round(mode, 3)}$')
+        ax.set_ylabel(r'$\frac{d}{d\langle k \rangle} \Pi(\langle k \rangle)$', fontsize = 28)
+        ax.set_xlabel(r'$\langle k \rangle$', fontsize = 28)
+        
+        ax.legend(loc = 'upper right', fontsize = 22)
+        ax.yaxis.get_ticklocs(minor = True)
+        ax.minorticks_on()
+        ax.tick_params(axis='y', which='minor', length = 5)
+        ax.tick_params(axis='y', which='major', length = 10)
+
+        ax.xaxis.get_ticklocs(minor = True)
+        ax.tick_params(axis='x', which='minor', length = 5)
+        ax.tick_params(axis='x', which='major', length = 10)
+                
+        ax.set_xlim(1.96, 3.68)
+        ax.set_ylim(0, 1.2)
+        
+# ax.annotate("", xy=(4.6, 0.4), xycoords = 'data', 
+#             xytext=(3.7, 0.4), textcoords = 'data', 
+#             arrowprops=dict(width = 2, ec='k', fc = 'k', headwidth = 15, headlength = 25), color = 'k')
+
+# ax.annotate(r'$p$', xy = (4.1, 0.435), xycoords = 'data',
+#              xytext = (4.1, 0.435), textcoords = 'data', fontsize = 26)
+
+ax.annotate("", xy=(3.6, 0.565), xycoords = 'data', 
+            xytext=(3.25, 0.565), textcoords = 'data', 
+            arrowprops=dict(width = 2, ec='k', fc = 'k', headwidth = 15, headlength = 25), color = 'k')
+
+ax.annotate(r'$p$', xy = (3.4, 0.6), xycoords = 'data',
+             xytext = (3.4, 0.6), textcoords = 'data', fontsize = 26)
+
+plt.tight_layout()
+plt.show()
+
+#%%
+fig, (ax) = plt.subplots(1,1)
+col = iter(['green', 'blue', 'red', 'm', 'k'])
+shapes = iter(['.', 'd', '^', 's', '*'])
+for d in D:
+    for p in P[3:4]: #choose constant P
+        for rho in [1448, 2048, 4096]:
+            colour = next(col) 
+            shape = next(shapes)
+            x = np.array([k for k in K])
+            y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+            yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 5/M])) 
+            x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+            w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, -8], sigma = yerr[x_min:x_max])
+    
+            # kstest(x, y, frechet, params)
+            w, z, params = KSfit(params, x, y, frechet, M, print_results = True)
+            x = np.linspace(1, x[x_max], 1000)
+            y = dfunc(x, *params)
+            s, alpha = params
+            mode = s*(alpha/(alpha+1))**(1/alpha)
+            ax.plot([mode, mode], [0, max(y)], linestyle = 
+                    '--', color = colour, alpha = 0.7)
+            ax.plot(x, y, color = colour, label = rf'$\rho={rho}, k_c = {round(mode, 3)}$')
+            ax.set_ylabel(r'$\frac{d}{d\langle k \rangle} \Pi(\langle k \rangle)$', fontsize = 28)
+            ax.set_xlabel(r'$\langle k \rangle$', fontsize = 28)
+            
+            ax.legend(loc = 'upper right', fontsize = 22)
+            ax.yaxis.get_ticklocs(minor = True)
+            ax.minorticks_on()
+            ax.tick_params(axis='y', which='minor', length = 5)
+            ax.tick_params(axis='y', which='major', length = 10)
+        
+            ax.xaxis.get_ticklocs(minor = True)
+            ax.tick_params(axis='x', which='minor', length = 5)
+            ax.tick_params(axis='x', which='major', length = 10)
+                    
+            ax.set_xlim(1.92, 3.6)
+            ax.set_ylim(0, 1.1)        
+
+ax.annotate("", xy=(3.5, 0.665), xycoords = 'data', 
+            xytext=(3.1, 0.665), textcoords = 'data', 
+            arrowprops=dict(width = 2, ec='k', fc = 'k', headwidth = 15, headlength = 25), color = 'k')
+
+ax.annotate(r'$\rho$', xy = (3.3, 0.7), xycoords = 'data',
+             xytext = (3.3, 0.7), textcoords = 'data', fontsize = 26)
+
+plt.tight_layout()
+plt.show()

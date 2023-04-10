@@ -8,7 +8,7 @@ Created on Tue Feb 28 01:21:22 2023
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize as op
-from scipy.optmize import minimize
+from scipy.optimize import minimize
 
 def Dfunc(x, a, b):
     return 2 ** (1 - b**(-a) + (b*x)**(-a))

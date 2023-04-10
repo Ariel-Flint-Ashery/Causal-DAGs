@@ -142,58 +142,57 @@ ax.set_ylim(bottom = -0.025, top = 1.03)
 
 #draw connection kernel
 mrkr = R - 0.02
-ax.plot(mrkr, 0, ">r", transform=ax.get_yaxis_transform(), clip_on=False, ms = 14, c = 'tab:blue')
-ax.plot(0, mrkr, "^r", transform=ax.get_xaxis_transform(), clip_on=False, ms = 14, c = 'tab:blue')
-ax.plot(np.linspace(0,mrkr, 10000), [0]*10000, lw = 4, c = 'tab:blue', ls = '--')
-ax.plot([0]*10000, np.linspace(0,mrkr, 10000), lw = 4, c = 'tab:blue', ls = '--')
+ax.plot(mrkr, 0, ">r", transform=ax.get_yaxis_transform(), clip_on=False, ms = 14, c = 'forestgreen')
+ax.plot(0, mrkr, "^r", transform=ax.get_xaxis_transform(), clip_on=False, ms = 14, c = 'forestgreen')
+ax.plot(np.linspace(0,mrkr, 10000), [0]*10000, lw = 4, c = 'forestgreen', ls = '--')
+ax.plot([0]*10000, np.linspace(0,mrkr, 10000), lw = 4, c = 'forestgreen', ls = '--')
 
 x = np.linspace(0,1, 10000)
 y = lp_circle(x, p, R)
-ax.plot(x,y, c = 'tab:blue', ls = '--', lw = 4)
+ax.plot(x,y, c = 'forestgreen', ls = '--', lw = 4)
 
 #check if node lies in connection kernel
-ncolors = ['tab:blue']+['k']*(len(graph_temp)-1)
+ncolors = ['forestgreen']+['k']*(len(graph_temp)-1)
 ecolors = ['k']*len(edge_temp)
 
 for n in graph_temp[0]:
-    ncolors[n] = 'tab:blue'
-    ecolors[edge_temp.index((0,n))] = 'tab:blue'
+    ncolors[n] = 'forestgreen'
+    ecolors[edge_temp.index((0,n))] = 'forestgreen'
 
 arrow = mpl.patches.ArrowStyle.Simple(head_length = 1.2, head_width = 1.2, tail_width = 0.2)
 # draw graph
 G = nx.DiGraph()
 G.add_nodes_from([n for n in graph_temp])
 G.add_edges_from(edge_temp)
-nx.draw_networkx(G, pos_temp, arrows = True, ax = ax, node_color = ['tab:blue']+['none']*(len(graph_temp)-1), 
+nx.draw_networkx(G, pos_temp, arrows = True, ax = ax, node_color = ['forestgreen']+['none']*(len(graph_temp)-1), 
                  edgecolors = ncolors, edge_color = ecolors, width = 1,
-                 arrowstyle = arrow, arrowsize = 20, node_size = 2500, linewidths = 4, font_size = 44)
+                 arrowstyle = arrow, arrowsize = 20, node_size = 2500, linewidths = 4, font_size = 36)
 
 ax.tick_params(left=True, bottom=True, labelleft=False, labelbottom=False)
 ax.tick_params(axis='both', which='major', pad=25, labelsize = 44)
 ax.spines[["left", "bottom"]].set_position(("data", 0))
 ax.spines[["top", "right"]].set_visible(False)
 ax.spines[["left", "bottom"]].set_alpha(0.7)
-<<<<<<< HEAD
-ax.annotate("Connection Kernel (p=%s)" % (p),
-            (0.04, 0.84), c = 'tab:blue', fontsize = 52)
-ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.045), c = 'tab:blue', fontsize = 52)
-ax.annotate("R", xy = (0,0), xytext = (-0.04, R - 0.013), c = 'tab:blue', fontsize = 52)
+
+ax.annotate("CONNECTION KERNEL (p=%s)" % (p),
+            (0.04, 0.9), c = 'forestgreen', fontsize = 52)
+ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.045), c = 'forestgreen', fontsize = 52)
+ax.annotate("R", xy = (0,0), xytext = (-0.04, R - 0.013), c = 'forestgreen', fontsize = 52)
 ax.set_xticks(np.arange(0,2,1))
 ax.set_yticks(np.arange(0,2,1))
 fig.set_facecolor(background)
 ax.set_facecolor(background)
 # plt.savefig('poster_figs/connection-kernel.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
-=======
+
 # ax.annotate("Connection Kernel (p=%s)" % (p),
 #             (0.04, 0.84), c = 'r', fontsize = 52)
-ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.045), c = 'r', fontsize = 52)
-ax.annotate("R", xy = (0,0), xytext = (-0.04, R - 0.013), c = 'r', fontsize = 52)
+ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.045), c = 'forestgreen', fontsize = 52)
+ax.annotate("R", xy = (0,0), xytext = (-0.04, R - 0.013), c = 'forestgreen', fontsize = 52)
 ax.set_xticks(np.arange(0,2,1))
 ax.set_yticks(np.arange(0,2,1))
-fig.set_facecolor(background)
+#fig.set_facecolor(background)
 #ax.set_facecolor(background)
-plt.savefig('poster_figs/connection-kernel.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
->>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
+plt.savefig('clean_figs/connection-kernel.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
 plt.show()
 
 #%%
@@ -289,14 +288,13 @@ for p, ax in zip(P, (ax1, ax2)) :
 handles, labels = ax.get_legend_handles_labels()
 fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28)#, facecolor = background, edgecolor = background)
 plt.tight_layout()
-<<<<<<< HEAD
+
 fig.set_facecolor(background)
 ax.set_facecolor(background)
 # plt.savefig('poster_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
-=======
 #fig.set_facecolor(background)
 #ax.set_facecolor(background)
 #plt.savefig('poster_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
 plt.savefig('clean_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
->>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
+
 plt.show()

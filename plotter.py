@@ -114,11 +114,8 @@ def file_id(name, pkl = True, directory = None):
 #load data
 
 #NOTE: MAKE SURE TO UNZIP HPC DATA!
-<<<<<<< HEAD
-fname = 'HPC_data\HPC_geo_data_test_2000_2000' #odd = kevin, even = ariel
-=======
+
 fname = 'para_geo_4000_10000_consistent' #odd = kevin, even = ariel
->>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
 except:
@@ -156,24 +153,19 @@ fig, (ax1, ax2) = plt.subplots(2,1)
 col = iter(['r', 'k'])
 shape = iter(['^', 's', 'd', '*', '.', '>', 'v'])
 
-labels = ['shortest path', 'longest path']
-#plot ax1
-<<<<<<< HEAD
-for path in path_type[:-1]:
-=======
+labels = ['Shortest path', 'Longest path']
+
+
 for path, label in zip(path_type[:2], labels):
->>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
     colour = next(col)
     fmt = next(shape)
     x = [p for p in P if p <= 0.91 or p >= 1.1 or p == 1]
     y = [np.average(dataframe['d'][path][p]['raw']) for p in x]
     yerr = [np.std(dataframe['d'][path][p]['raw']) for p in x]
     # ax1.plot(x, y, color = colour)
-<<<<<<< HEAD
-    ax1.errorbar(x, y, yerr = yerr, label = r'$%s$' % (path), fmt = fmt, ms = 12, capsize = None, color = colour,
-=======
+    #ax1.errorbar(x, y, yerr = yerr, label = r'$%s$' % (path), fmt = fmt, ms = 12, capsize = None, color = colour,
+
     ax1.errorbar(x, y, yerr = yerr, label = label, fmt = fmt, ms = 10, capsize = 10, color = colour, #label = r'$%s {%s}$' % (path, optimizer)
->>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
                  markerfacecolor = 'none', markeredgewidth = 1)
 
 ax1.set_xlabel('p')
@@ -191,36 +183,36 @@ ax1.xaxis.set_major_locator(x_major)
 x_minor = mpl.ticker.LogLocator(base = 2, subs = np.arange(1.0, 10) * 0.1, numticks = 10)
 ax1.xaxis.set_minor_locator(x_minor)
 ax1.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
-ax1.tick_params(axis='x', which='minor')
-
+ax1.tick_params(axis='x', which='minor', length = 5)
+ax1.tick_params(axis='x', which='major', length = 10)
 #set y ticks
 y_major = mpl.ticker.LogLocator(base = 2, numticks = 10)
 ax1.yaxis.set_major_locator(y_major)
 y_minor = mpl.ticker.LogLocator(base = 2, subs = np.arange(1.0, 10) * 0.1, numticks = 10)
 ax1.yaxis.set_minor_locator(y_minor)
 ax1.yaxis.set_minor_formatter(mpl.ticker.NullFormatter())
-ax1.tick_params(axis='y', which='minor')
+ax1.tick_params(axis='y', which='minor', length = 5)
+ax1.tick_params(axis='y', which='major', length = 10)
 
 #plot ax2
 # our desire P range is [4:13]
-<<<<<<< HEAD
+
 col = iter(['green', 'blue', 'red', 'm', 'c'])
 shape = iter(['^', 's', 'd', '*', '.'])
-for path in path_type[:-1]:
-=======
+#for path in path_type[:-1]:
+
 col = iter(['r', 'k'])
 shape = iter(['^', 's', 'd', '*', '.', '>', 'v'])
 for path, label in zip(path_type[:2], labels):
->>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
     colour = next(col)
     fmt = next(shape)
     x = [p for p in P if p >= 0.9 and p <=1.2]
     y = [np.average(dataframe['d'][path][p]['raw']) for p in x]
     yerr = [np.std(dataframe['d'][path][p]['raw']) for p in x]
     # ax2.plot(x, y, color = colour)
-<<<<<<< HEAD
-    ax2.errorbar(x, y, yerr = yerr, label = r'$%s$' % (path), fmt = fmt, ms = 12, capsize = None, color = colour,
-                 markerfacecolor = 'none', markeredgewidth = 1)
+
+    #ax2.errorbar(x, y, yerr = yerr, label = r'$%s$' % (path), fmt = fmt, ms = 12, capsize = None, color = colour,
+    #             markerfacecolor = 'none', markeredgewidth = 1)
 
 # dffit = ff.swapdata(dataframe, measure = 'd')
 # col = iter(['darkmagenta', 'teal'])
@@ -236,7 +228,7 @@ for path, label in zip(path_type[:2], labels):
 #     vv = ff.Dfunc(uu, *params)
 #     ax1.plot(u, v, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 3)
 #     ax2.plot(uu, vv, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 3)
-=======
+
     ax2.errorbar(x, y, yerr = yerr, label = label, fmt = fmt, ms = 10, capsize = 10, color = colour,
                  markerfacecolor = 'none', markeredgewidth = 1)
 
@@ -254,7 +246,7 @@ for l in dffit:
     vv = ff.Dfunc(uu, *params)
     ax1.plot(u, v, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
     ax2.plot(uu, vv, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
->>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
+
 
 ax2.set_xlabel('p')
 if optimizer == 'geo':
@@ -264,10 +256,16 @@ if optimizer == 'net':
 ax2.legend(ncol = 2)
 # ax2.set_xscale('log', base = 2)
 # ax2.set_yscale('log', base = 2)
-
+ax2.tick_params(axis='x', which='minor', length = 5)
+ax2.tick_params(axis='x', which='major', length = 10)
+ax2.yaxis.get_ticklocs(minor = True)
+ax2.minorticks_on()
+ax2.tick_params(axis='y', which='minor', length = 5)
+ax2.tick_params(axis='y', which='major', length = 10)
 #plot zoom in effect
 zoom_effect(ax2, ax1, zoom_type)
 plt.tight_layout()
+plt.savefig('clean_figs/path_geo_dist.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
 plt.show()
 
 #%% 
@@ -277,29 +275,38 @@ dffit = ff.swapdata(dataframe, measure = 'd')
 col = iter(['darkmagenta', 'teal'])
 linestyle = iter(['dashed', 'dotted'])
 L = list(dffit.keys())
-for i in range(len(L)):
+for i in range(len(L)-1):
     fig, (ax1, ax2) = plt.subplots(2,1)
-    col = iter(['green', 'blue'])
+    col = iter(['r', 'k'])
     ls = next(linestyle)
     x = dffit[L[i]]['p']
     y = dffit[L[i]]['d']
     yerr = dffit[L[i]]['d_err']
     u, v, params, cov = ff.Dfit(x, y, sigma = yerr, absolute_sigma = True)
-    for path in path_type[:2]:
+    for path, label in zip(path_type[:2], labels):
         colour = next(col)
-        x = [p for p in P if p <= 0.91 or p >= 1.1 or p == 1]
+        if path == 'sp':
+        # x = [p for p in P if p <= 0.91 or p >= 1.1 or p == 1]
+        # y = [np.average(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
+            x = [p for p in P if p <= 0.91 or p == 1]
+        
+        if path == 'lp':
+            x = [p for p in P if p >= 1.1 or p == 1]
+                
         y = [np.average(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
         yerr = [np.std(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
-        ax1.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = 'x', ms = 5, capsize = 10, color = colour,
+        ax1.errorbar(x, y, yerr = yerr, label = label, fmt = 'x', ms = 5, capsize = 10, color = colour,
                      markerfacecolor = 'none', markeredgewidth = 1)
-        print(path, yerr)
-        x = [p for p in P if p >= 0.9 and p <= 1.1]
+        #print(path, yerr)
+        x = [p for p in P if p >= 0.9 and p <= 1.11]
         y = [np.average(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
         yerr = [np.std(dataframe['d'][path][p]['raw'])/ff.Dfunc(p, *params) for p in x]
-        ax2.errorbar(x, y, yerr = yerr, label = r'$%s_{%s}$' % (path, optimizer), fmt = 'x', ms = 5, capsize = 10, color = colour,
+        ax2.errorbar(x, y, yerr = yerr, label = label, fmt = 'x', ms = 5, capsize = 10, color = colour,
                      markerfacecolor = 'none', markeredgewidth = 1)
+    
+    
     ax1.legend()
-    ax1.axhline(1, linestyle = 'dotted')
+    ax1.axhline(1, linestyle = 'dotted', color = 'k')
     ax1.set_xscale('log', base = 2)
     ax1.set_ylim(0.94, 1.06)
     if optimizer == 'geo':
@@ -308,12 +315,34 @@ for i in range(len(L)):
     if optimizer == 'net':
         ax1.set_ylabel(r'$D_{net}$' + '/' + r'$Fit_{%s}$' % (L[i]))
         ax2.set_ylabel(r'$D_{net}$' + '/' + r'$Fit_{%s}$' % (L[i]))
-    
-    ax2.axhline(1, linestyle = 'dotted')
-    ax2.set_ylim(0.99, 1.01)
-    
+    ax1.set_xlabel('p')
+    ax2.set_xlabel('p')
+    #set y ticks
+    ax1.yaxis.get_ticklocs(minor = True)
+    ax1.minorticks_on()
+    ax1.tick_params(axis='y', which='minor', length = 5)
+    ax1.tick_params(axis='y', which='major', length = 10)
+    #set x ticks
+    x_major = mpl.ticker.LogLocator(base = 2, numticks = 10)
+    ax1.xaxis.set_major_locator(x_major)
+    x_minor = mpl.ticker.LogLocator(base = 2, subs = np.arange(1.0, 10) * 0.1, numticks = 10)
+    ax1.xaxis.set_minor_locator(x_minor)
+    ax1.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
+    ax1.tick_params(axis='x', which='minor', length = 5)
+    ax1.tick_params(axis='x', which='major', length = 10)
+
+    ax2.legend()
+    ax2.axhline(1, linestyle = 'dotted', color = 'k')
+    ax2.set_ylim(0.996, 1.004)
+    ax2.tick_params(axis='x', which='minor', length = 5)
+    ax2.tick_params(axis='x', which='major', length = 10)
+    ax2.yaxis.get_ticklocs(minor = True)
+    ax2.minorticks_on()
+    ax2.tick_params(axis='y', which='minor', length = 5)
+    ax2.tick_params(axis='y', which='major', length = 10)
     zoom_effect(ax2, ax1, zoom_type)
     plt.tight_layout()
+    plt.savefig('clean_figs/path_geo_dist_frac_err.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
     plt.show()
 #%%
 "PLOT ANGLES"
@@ -338,14 +367,19 @@ ax1.set_xlabel('p')
 ax1.set_ylabel('Average Angular Deviation')
 ax1.legend()
 ax1.set_xscale('log', base = 2)
+#set y ticks
+ax1.yaxis.get_ticklocs(minor = True)
+ax1.minorticks_on()
+ax1.tick_params(axis='y', which='minor', length = 5)
+ax1.tick_params(axis='y', which='major', length = 10)
 #set x ticks
 x_major = mpl.ticker.LogLocator(base = 2, numticks = 10)
 ax1.xaxis.set_major_locator(x_major)
 x_minor = mpl.ticker.LogLocator(base = 2, subs = np.arange(1.0, 10) * 0.1, numticks = 10)
 ax1.xaxis.set_minor_locator(x_minor)
 ax1.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
-ax1.tick_params(axis='x', which='minor')
-
+ax1.tick_params(axis='x', which='minor', length = 5)
+ax1.tick_params(axis='x', which='major', length = 10)
 #plot ax2
 # our desire P range is [4:13]
 col = iter(['r', 'k'])
@@ -353,7 +387,7 @@ shape = iter(['^', 's', 'd', '*', '.'])
 for path, label in zip(path_type[:2], labels):
     colour = next(col)
     fmt = next(shape)
-    x = [p for p in P if p >= 0.91 and p <= 1.1]
+    x = [p for p in P if p >= 0.9 and p <= 1.11]
     y = [np.average(dataframe['j3'][path][p]['mean']) for p in x]
     yerr = [np.average(dataframe['j3'][path][p]['err'])/np.sqrt(M) for p in x] 
     #ax2.plot(x, y, color = colour)
@@ -362,11 +396,19 @@ for path, label in zip(path_type[:2], labels):
                  markerfacecolor = 'none', markeredgewidth = 1)
 ax2.set_xlabel('p')
 ax2.set_ylabel('Average Angular Deviation')
-#ax2.legend()
+ax2.legend()
 # ax2.set_xscale('log')
 # ax2.set_yscale('log')
+ax2.yaxis.get_ticklocs(minor = True)
+ax2.minorticks_on()
+ax2.tick_params(axis='y', which='minor', length = 5)
+ax2.tick_params(axis='y', which='major', length = 10)
 
+ax2.xaxis.get_ticklocs(minor = True)
+ax2.tick_params(axis='x', which='minor', length = 5)
+ax2.tick_params(axis='x', which='major', length = 10)
 #plot zoom in effect
 zoom_effect(ax2, ax1, zoom_type)
 plt.tight_layout()
+plt.savefig('clean_figs/path_geo_angle.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
 plt.show()

@@ -71,14 +71,14 @@ V = 1
 D = 2
 M = 1000 #200
 a = np.sqrt(2)
-P = [a**n for n in range(-2, 5)]
+P = [a**n for n in range(-2, 8)]
 epsilon = 0.0001
 #%% plotting params
 params = {
         'axes.labelsize':28,
         'axes.titlesize':28,
         'font.size':28,
-        'figure.figsize': [18,12],
+        'figure.figsize': [20,15],
         'mathtext.fontset': 'stix',
         }
 plt.rcParams.update(params)
@@ -92,6 +92,23 @@ if os.path.isfile('radius_scaling_df_1000_0001.pkl'):
                         PROCEED TO PLOTTING STAGE
                 -----------------------------------------        
                         """)
+    # RHO = list(df.keys())[:-1]
+    # mrkrs = ['d', '*', '^', 's', '.']
+    # datakeys = list(df.keys())[-1]
+    # config = df[datakeys]['constants']
+    # RHO = config[0]
+    # V = config[1]
+    # D = config[2] 
+    # K = config[3]
+    # M = config[4]
+    # P = config[5]
+    # epsilon = config[6]
+    # V = 1
+    # D = 2
+    # M = 1000 #200
+    # a = np.sqrt(2)
+    # P = [a**n for n in range(-2, 5)]
+    # epsilon = 0.0001
 #%%
 def generateDataframe(M = None):
     dataframe = {rho: {p: [] for p in P} for rho in RHO}
@@ -209,50 +226,193 @@ for rho in RHO:
 
 #%%
 
-fig, (ax1, ax2) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
-
-
-
+fig, (ax1, ax2) = plt.subplots(1, 2)#, gridspec_kw={'height_ratios': [1, 1]})
 
 normalize = mpl.colors.Normalize(vmin=min(RHO), vmax=max(RHO))
 cmap = mpl.cm.get_cmap('rainbow')
-xfit = np.linspace(0.5, 5, 1000)
+xfit = np.linspace(P[0], P[-1], 1000)
+cols = iter(['purple', 'blue', 'green', 'red'])
 for rho, mrkr in zip(RHO, mrkrs):
+    col = next(cols)
     #ax1.plot(P, df[rho]['rho_avg'].values(), c = cmap(normalize(rho)))
     ax1.errorbar(P, df[rho]['rho_avg'].values(), yerr = df[rho]['avg_err'],
-                 label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 20, capsize = 10, 
-                 color = cmap(normalize(rho)))
+                 label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 15, capsize = 10, 
+                 color = col)#cmap(normalize(rho)))
     def func(x, a, b):
         # gamma_factor = (gamma(1 + 1/x)**D)/gamma(1 + x/D)
         # g = 1/gamma_factor
         # R = (g / rho)**(1/D)
         return a**(1/D)*analyticCritRadius(x, D, rho) + b #(a**(1/D))*R + b
-    popt, cov = op.curve_fit(func, P, list(df[rho]['rho_avg'].values()))#, sigma = df[rho]['avg_err'])
+    popt, cov = op.curve_fit(func, P, list(df[rho]['rho_avg'].values()), sigma = df[rho]['avg_err'])
     error = np.sqrt(np.diag(cov))
-    ax1.plot(xfit, func(xfit, *popt), color = cmap(normalize(rho)), linestyle = '--')
-    ax1.fill_between(xfit, func(xfit, popt[0]+error[0], popt[1]+error[1]), func(xfit, popt[0]-error[0], popt[1]-error[1]), alpha = 0.2,
-                     color = cmap(normalize(rho)))
+    ax1.plot(xfit, func(xfit, *popt), linestyle = '--', color = col)#cmap(normalize(rho)))
+    #ax1.fill_between(xfit, func(xfit, popt[0]+error[0], popt[1]+error[1]), func(xfit, popt[0]-error[0], popt[1]-error[1]), alpha = 0.2,
+    #                 color = cmap(normalize(rho)))
     #ax2.scatter(rho, np.sqrt(np.diag(cov)), marker = mrkr, color = cmap(normalize(rho)), ms = 200)
 
+    y = np.array(list(df[rho]['rho_avg'].values()))/func(np.array(P), *popt)
+    yerr = np.array(df[rho]['avg_err'])/func(np.array(P), *popt)
+    
+    ax2.errorbar(P, y, yerr = yerr, 
+                 label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 15, capsize = 10, 
+                 color = col)#cmap(normalize(rho)))
+
+ax2.axhline(1, linestyle = 'dotted', color = 'k')
+
+#labels
 ax1.set_xlabel('p')
 ax1.set_ylabel('Critical Radius')
-ax1.legend()
-fig.colorbar(mpl.cm.ScalarMappable(norm=normalize, cmap=cmap))
-ax1.set_xscale('log')
-ax1.set_yscale('log')
+ax2.set_xlabel('p')
+ax2.set_ylabel('Critical Radius / Fit')
+
+#set scales and axis
+ax1.set_xscale('log', base = 2)
+#ax1.set_yscale('log', base = 2)
+ax2.set_xscale('log', base = 2)
+#ax2.set_yscale('log')
+
+ax1.yaxis.get_ticklocs(minor = True)
+ax1.minorticks_on()
+ax1.tick_params(axis='y', which='minor', length = 10)
+ax1.tick_params(axis='y', which='major', length = 15)
+
+ax2.yaxis.get_ticklocs(minor = True)
+ax2.minorticks_on()
+ax2.tick_params(axis='y', which='minor', length = 10)
+ax2.tick_params(axis='y', which='major', length = 15)
+
+x_major = mpl.ticker.LogLocator(base = 2, numticks = 10)
+ax1.xaxis.set_major_locator(x_major)
+x_minor = mpl.ticker.LogLocator(base = 2, subs = np.arange(1.0, 10) * 0.1, numticks = 10)
+ax1.xaxis.set_minor_locator(x_minor)
+ax1.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
+ax1.tick_params(axis='x', which='minor', length = 10)
+ax1.tick_params(axis='x', which='major', length = 15)
+
+x_major = mpl.ticker.LogLocator(base = 2, numticks = 10)
+ax2.xaxis.set_major_locator(x_major)
+x_minor = mpl.ticker.LogLocator(base = 2, subs = np.arange(1.0, 10) * 0.1, numticks = 10)
+ax2.xaxis.set_minor_locator(x_minor)
+ax2.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
+ax2.tick_params(axis='x', which='minor', length = 10)
+ax2.tick_params(axis='x', which='major', length = 15)
+
+
+
+#set labels
+handles, labels = ax1.get_legend_handles_labels()
+fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28)
+
+#annotate
+ax1.annotate("", xy=(3, 0.1), xycoords = 'data', 
+            xytext=(3, 0.15), textcoords = 'data', 
+            arrowprops=dict(width = 10, ec='k', fc = 'k', headwidth = 25, headlength = 25), color = 'k')
+ax1.annotate("DECREASING DENSITY", xy = (3.5, 0.125), xycoords = 'data',
+             xytext = (3.5, 0.125), textcoords = 'data')
 plt.tight_layout()
 plt.show()
 
+#%%
+fig, (ax1) = plt.subplots()
+xfit = np.linspace(P[0], P[-1], 1000)
+cols = iter(['purple', 'blue', 'green', 'red'])
+for rho, mrkr in zip(RHO, mrkrs):
+    col = next(cols)
+    #ax1.plot(P, df[rho]['rho_avg'].values(), c = cmap(normalize(rho)))
+    ax1.errorbar(P, df[rho]['rho_avg'].values(), yerr = df[rho]['avg_err'],
+                 label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 15, capsize = 10, 
+                 color = col)#cmap(normalize(rho)))
+    def func(x, a, b):
+        # gamma_factor = (gamma(1 + 1/x)**D)/gamma(1 + x/D)
+        # g = 1/gamma_factor
+        # R = (g / rho)**(1/D)
+        return a**(1/D)*analyticCritRadius(x, D, rho) + b #(a**(1/D))*R + b
+    popt, cov = op.curve_fit(func, P, list(df[rho]['rho_avg'].values()), sigma = df[rho]['avg_err'])
+    error = np.sqrt(np.diag(cov))
+    ax1.plot(xfit, func(xfit, *popt), linestyle = '--', color = col)#cmap(normalize(rho)))
+    #ax1.fill_between(xfit, func(xfit, popt[0]+error[0], popt[1]+error[1]), func(xfit, popt[0]-error[0], popt[1]-error[1]), alpha = 0.2,
+    #                 color = cmap(normalize(rho)))
+
+#labels
+ax1.set_xlabel('p')
+ax1.set_ylabel('Critical Radius')
 
 
+#set scales and axis
+ax1.set_xscale('log', base = 2)
+ax1.yaxis.get_ticklocs(minor = True)
+ax1.minorticks_on()
+ax1.tick_params(axis='y', which='minor', length = 10)
+ax1.tick_params(axis='y', which='major', length = 15)
+
+x_major = mpl.ticker.LogLocator(base = 2, numticks = 10)
+ax1.xaxis.set_major_locator(x_major)
+x_minor = mpl.ticker.LogLocator(base = 2, subs = np.arange(1.0, 10) * 0.1, numticks = 10)
+ax1.xaxis.set_minor_locator(x_minor)
+ax1.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
+ax1.tick_params(axis='x', which='minor', length = 10)
+ax1.tick_params(axis='x', which='major', length = 15)
+
+#set labels
+handles, labels = ax1.get_legend_handles_labels()
+fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28)
+
+#annotate
+ax1.annotate("", xy=(3, 0.1), xycoords = 'data', 
+            xytext=(3, 0.15), textcoords = 'data', 
+            arrowprops=dict(width = 10, ec='k', fc = 'k', headwidth = 25, headlength = 25), color = 'k')
+ax1.annotate("DECREASING DENSITY", xy = (3.5, 0.125), xycoords = 'data',
+             xytext = (3.5, 0.125), textcoords = 'data')
+plt.tight_layout()
+plt.savefig('clean_figs/radius_bs.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+plt.show()
+
+#%%
+fig, (ax2) = plt.subplots()
+xfit = np.linspace(P[0], P[-1], 1000)
+cols = iter(['purple', 'blue', 'green', 'red'])
+for rho, mrkr in zip(RHO, mrkrs):
+    col = next(cols)
+    #ax1.plot(P, df[rho]['rho_avg'].values(), c = cmap(normalize(rho)))
+
+    def func(x, a, b):
+        # gamma_factor = (gamma(1 + 1/x)**D)/gamma(1 + x/D)
+        # g = 1/gamma_factor
+        # R = (g / rho)**(1/D)
+        return a**(1/D)*analyticCritRadius(x, D, rho) + b #(a**(1/D))*R + b
+    popt, cov = op.curve_fit(func, P, list(df[rho]['rho_avg'].values()), sigma = df[rho]['avg_err'])
+    error = np.sqrt(np.diag(cov))
+
+    y = np.array(list(df[rho]['rho_avg'].values()))/func(np.array(P), *popt)
+    yerr = np.array(df[rho]['avg_err'])/func(np.array(P), *popt)
     
-    
+    ax2.errorbar(P, y, yerr = yerr, 
+                 label = r'$\rho = %s$' % (rho), fmt = mrkr, ms = 15, capsize = 10, 
+                 color = col)#cmap(normalize(rho)))
 
+ax2.axhline(1, linestyle = 'dotted', color = 'k')
 
+ax2.set_xlabel('p')
+ax2.set_ylabel('Critical Radius / Fit')
 
+ax2.set_xscale('log', base = 2)
+ax2.yaxis.get_ticklocs(minor = True)
+ax2.minorticks_on()
+ax2.tick_params(axis='y', which='minor', length = 10)
+ax2.tick_params(axis='y', which='major', length = 15)
 
+x_major = mpl.ticker.LogLocator(base = 2, numticks = 10)
+ax2.xaxis.set_major_locator(x_major)
+x_minor = mpl.ticker.LogLocator(base = 2, subs = np.arange(1.0, 10) * 0.1, numticks = 10)
+ax2.xaxis.set_minor_locator(x_minor)
+ax2.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
+ax2.tick_params(axis='x', which='minor', length = 10)
+ax2.tick_params(axis='x', which='major', length = 15)
 
-
-
-
-            
+#set labels
+handles, labels = ax1.get_legend_handles_labels()
+fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28)
+         
+plt.tight_layout()
+plt.savefig('clean_figs/radius_bs_err.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+plt.show()   
