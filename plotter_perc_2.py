@@ -205,25 +205,7 @@ for d in D:
             plt.fill_between(x, y_band_low, y_band_up, alpha = 0.3)
             plt.plot(x, frechet(x, xme, alphae))
             plt.show()
-#%%
-def linear(x, a, b):
-    return a*x + b
 
-for d in D:
-    for p in P[:]:
-        for rho in RHO[:]:
-            x = np.array([k for k in K])
-            y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
-            xmin = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0]))
-            X = np.log(x[xmin:])
-            Y = -np.log(-np.log(y[xmin:]))
-            W, Z, (a,b), cov = funcfit(linear, X, Y)
-            plt.plot(X, Y)
-            plt.plot(W, Z)
-            plt.show()
-            plt.plot(x, y)
-            plt.plot(x, frechet(x, np.exp(-b/a), a))
-            plt.show()
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
 def dfunc(x, xm, alpha):
     """
@@ -616,3 +598,88 @@ ax.annotate(r'$\rho$', xy = (3.3, 0.7), xycoords = 'data',
 
 plt.tight_layout()
 plt.show()
+
+#%%
+def Frechet(x, s, alpha):
+    return np.exp(-((x)/s)**-alpha)
+
+def Gumbel(x, mu, beta):
+    return np.exp(-np.exp(-(x-mu)/beta))
+
+def FrechetGumbel(x, s, alpha, mu, beta):
+    return Frechet(x, s, alpha) * Gumbel(x, mu, beta)
+
+def funcfit(func, xdata, ydata, x = None, **kwargs):
+    params, cov = op.curve_fit(func, xdata, ydata, **kwargs)
+    if x == None:
+        x = np.linspace(xdata[0], xdata[-1], 500)
+        y = func(x, *params)
+    else:
+        y = func(x, *params)
+    return x, y, params, cov
+
+shapes = iter(['.', '.', '.'])
+params_dict = {p:{rho:{'params': None} for rho in RHO} for p in P}
+for d in D:
+    for p in P[:]:
+        for rho in [4096]:
+            x = np.array([k for k in K])
+            y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+            yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0])) 
+            x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+            # w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, 8], sigma = yerr[x_min:x_max])
+            # z0, z1 = params
+            # x_p = z0/((1/z1 + 1)**(1/z1))
+            s, t, params, cov = funcfit(FrechetGumbel, x[x_min:x_max], y[x_min:x_max], sigma = yerr[x_min:x_max], p0 = [2, 8, 2, 2])
+            params_dict[p][rho]['params'] = params
+            print(params, params[0])
+            plt.ylabel(r'$\Pi(\langle k \rangle)$')
+            plt.xlabel(r'$\langle k \rangle $')
+            # plt.yscale('log')
+            # plt.xscale('log')
+            # plt.ylim(10e-2, 1)
+            # plt.xlim(x[x_min], x[x_max])
+            plt.errorbar(x, y, yerr = yerr, fmt = '.', capsize = 3, ms = 1, label = rf'p={p}, $\rho$ = {rho}')
+            # plt.plot(w, z, label = 'frechet')
+            # plt.plot(x, Frechet(x, *params[:2]))
+            # plt.plot(x, Gumbel(x, *params[2:]))
+            plt.plot(s, t, label = 'frechet * gumbel')
+            epsilon = np.sqrt(np.log(2/0.1)/(2*M))
+            y_band_low = [i - epsilon for i in y]
+            y_band_low = [max([0,i]) for i in y_band_low]
+            y_band_up = [i + epsilon for i in y]
+            y_band_up = [min([1, i]) for i in y_band_up]
+            plt.fill_between(x, y_band_low, y_band_up, alpha = 0.3)
+            plt.legend()
+            plt.show()
+#%%
+
+def frechet(x, s, alpha):
+    return (alpha/s) * ((x/s) ** (-1-alpha)) * Frechet(x, s, alpha)
+
+def gumbel(x, mu, beta):
+    return (1/beta) * np.exp(-(x-mu)/beta) * Gumbel(x, mu, beta)
+    
+def frechetgumbel(x, s, alpha, mu, beta):
+    return Frechet(x, s, alpha) * gumbel(x, mu, beta) + frechet(x, s, alpha) * Gumbel(x, mu, beta)
+
+for d in D:
+    for p in P[:]:
+        for rho in [4096]:
+            x = np.array([k for k in K])
+            y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+            yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0])) 
+            x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+            params = params_dict[p][rho]['params']
+            fparams = params[:2]
+            gparams = params[2:]
+            
+            u = np.linspace(x[0], x[-1], 1000)
+            v = [i for i in frechetgumbel(u, *params)]
+            plt.plot(u, v, label = f'p = {p}')
+            plt.legend()
+            plt.ylabel(rf'$\partial_x \; \Pi(k)$')
+            plt.xlabel('k')
+            print(u[v.index(max(v))])

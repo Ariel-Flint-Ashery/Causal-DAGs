@@ -115,7 +115,7 @@ def file_id(name, pkl = True, directory = None):
 
 #NOTE: MAKE SURE TO UNZIP HPC DATA!
 
-fname = 'para_geo_4000_10000_consistent' #odd = kevin, even = ariel
+fname = 'para_net_4000_10000_consistent' #odd = kevin, even = ariel
 try:
     dataframe = pickle.load(open(f'{file_id(fname)}', 'rb'))
 except:
@@ -167,6 +167,9 @@ for path, label in zip(path_type[:2], labels):
 
     ax1.errorbar(x, y, yerr = yerr, label = label, fmt = fmt, ms = 10, capsize = 10, color = colour, #label = r'$%s {%s}$' % (path, optimizer)
                  markerfacecolor = 'none', markeredgewidth = 1)
+
+ax1.plot(np.linspace(x[0], x[-1], 100), np.array([2**(1/i) for i in np.linspace(x[0], x[-1], 100)]), label = 'diagonal')
+ax1.plot(np.linspace(x[0], x[-1], 100), np.array([2 for i in range(100)]), label = 'perimeter')
 
 ax1.set_xlabel('p')
 if optimizer == 'geo':
@@ -244,8 +247,8 @@ for l in dffit:
     u, v, params, cov = ff.Dfit(x, y, sigma = yerr, absolute_sigma = True)
     uu = np.array([uu for uu in u if uu < P[-5] and uu > P[4]])
     vv = ff.Dfunc(uu, *params)
-    ax1.plot(u, v, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
-    ax2.plot(uu, vv, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
+    # ax1.plot(u, v, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
+    # ax2.plot(uu, vv, color = colour, label = r'$fit:$ $2^{(1 - b + bp^{-a})}$', linestyle = ls, linewidth = 2)
 
 
 ax2.set_xlabel('p')
@@ -412,3 +415,11 @@ zoom_effect(ax2, ax1, zoom_type)
 plt.tight_layout()
 plt.savefig('clean_figs/path_geo_angle.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
 plt.show()
+
+#%%
+for path, label in zip(path_type[:2], labels):
+    x = [p for p in P if p <= 0.91 or p >= 1.1 or p == 1]
+    y = [np.average(dataframe['l'][path][p]['raw']) for p in x]
+    yerr = [np.std(dataframe['l'][path][p]['raw']) for p in x]
+    plt.plot(x, y, label = label)
+    plt.legend()
