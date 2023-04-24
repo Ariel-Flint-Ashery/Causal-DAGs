@@ -178,33 +178,33 @@ def funcfit(func, xdata, ydata, x = None, **kwargs):
 def invfrechet(y, s, alpha):
     return np.exp((-np.log(-np.log(y)))/alpha + np.log(s))
 
-for d in D:
-    for p in P[-2:-1]:
-        for rho in RHO[-2:-1]:
-            x = np.array([k for k in K])
-            y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
-            alpha = 0.05
-            epsilon = np.sqrt(np.log(2/alpha)/(2*M))
-            y_band_low = [i - epsilon for i in y]
-            y_band_up = [i + epsilon for i in y]
-            yerr = [np.sqrt(M*y*(1-y))/M for y in y]
-            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0.05])) 
-            x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
-            w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, -8], sigma = yerr[x_min:x_max])
-            xm, alpha = params
-            xme = xm 
-            alphae = alpha + -0
-            # Plotting positions?
-            qe = y[x_min:]
-            qt = frechet(x[x_min:], *params)
-            plt.plot(x[x_min:], invfrechet(qe, xme, alphae), '+')
-            plt.plot([1,6], [1,6])
-            plt.show()
-            print(epsilon)
-            plt.plot(x, y)
-            plt.fill_between(x, y_band_low, y_band_up, alpha = 0.3)
-            plt.plot(x, frechet(x, xme, alphae))
-            plt.show()
+# for d in D:
+#     for p in P[-2:-1]:
+#         for rho in RHO[-2:-1]:
+#             x = np.array([k for k in K])
+#             y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
+#             alpha = 0.05
+#             epsilon = np.sqrt(np.log(2/alpha)/(2*M))
+#             y_band_low = [i - epsilon for i in y]
+#             y_band_up = [i + epsilon for i in y]
+#             yerr = [np.sqrt(M*y*(1-y))/M for y in y]
+#             x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0.05])) 
+#             x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
+#             w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, -8], sigma = yerr[x_min:x_max])
+#             xm, alpha = params
+#             xme = xm 
+#             alphae = alpha + -0
+#             # Plotting positions?
+#             qe = y[x_min:]
+#             qt = frechet(x[x_min:], *params)
+#             plt.plot(x[x_min:], invfrechet(qe, xme, alphae), '+')
+#             plt.plot([1,6], [1,6])
+#             plt.show()
+#             print(epsilon)
+#             plt.plot(x, y)
+#             plt.fill_between(x, y_band_low, y_band_up, alpha = 0.3)
+#             plt.plot(x, frechet(x, xme, alphae))
+#             plt.show()
 
 #%% PRINT 1ST DERIVATIVE OF PERCOLATION PLOT
 def dfunc(x, xm, alpha):
@@ -270,75 +270,75 @@ for d in D:
         plt.show()
 #%% LIKELIHOOD
 ## Compare MLE (+) and non-linear WLS (X)
-import random
-r = lambda: random.randint(50,200)
-print('#%02X%02X%02X' % (r(),r(),r()))
+# import random
+# r = lambda: random.randint(50,200)
+# print('#%02X%02X%02X' % (r(),r(),r()))
 
-def Likelihood(params):
-    xm, alpha = params
-    L = -np.sum([dydx[i] * np.log(dfunc(x_p[i], xm, alpha)) for i in range(len(x_p)) if dydx[i] != 0])
-    return L
+# def Likelihood(params):
+#     xm, alpha = params
+#     L = -np.sum([dydx[i] * np.log(dfunc(x_p[i], xm, alpha)) for i in range(len(x_p)) if dydx[i] != 0])
+#     return L
 
-for d in D:
-    for p in P[:]:
-        for rho in RHO[-2:-1]:
-            x = np.array([k for k in K])
-            y = np.array([dataframe[d][p][k][rho]['p']/M for k in K])
-            dx = [x[i+1] - x[i] for i in range(len(x)-1)]
-            dy = [y[i+1] - y[i] for i in range(len(y)-1)]
-            dydx = [(dy[i]/dx[i]) for i in range(len(dx))]
-            x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
-            # dydxerr = [d/np.sqrt(d*M) for d in dydx]
+# for d in D:
+#     for p in P[:]:
+#         for rho in RHO[-2:-1]:
+#             x = np.array([k for k in K])
+#             y = np.array([dataframe[d][p][k][rho]['p']/M for k in K])
+#             dx = [x[i+1] - x[i] for i in range(len(x)-1)]
+#             dy = [y[i+1] - y[i] for i in range(len(y)-1)]
+#             dydx = [(dy[i]/dx[i]) for i in range(len(dx))]
+#             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
+#             # dydxerr = [d/np.sqrt(d*M) for d in dydx]
             
-            w, z, params, cov = funcfit(dfunc, x_p, dydx, p0 = [2, 9])
-            z = [z[i] for i in range(len(w)) if w[i] != 0]
-            w = [w[i] for i in range(len(w)) if w[i] != 0]
-            xm = params[0]
-            alpha = params[1]
-            # plt.plot(w, z)
-            mle = minimize(Likelihood, params)
-            #
-            print(f'WLS: {Likelihood(params)}, MLE: {Likelihood(mle.x)}') #likelihood(x_p, np.array(dydx), *params),
-            dalpha = np.array([i/10 for i in range(-10, 10)])
-            dxm = np.array([i/50 for i in range(-10, 10)])
-            col = '#%02X%02X%02X' % (r(),r(),r())
-            plt.plot(alpha + dalpha , [likelihood(x_p, dydx, xm, Alpha) for Alpha in alpha + dalpha], color = col)
-            plt.plot(alpha, likelihood(x_p, dydx, xm, alpha), 'x', color = col, ms = 20)
-            plt.plot(mle.x[1], Likelihood(mle.x), '+', color = col, ms = 20)
-            plt.title('alpha')
-            plt.show()
-            plt.plot(xm + dxm, [likelihood(x_p, dydx, XM, alpha) for XM in xm + dxm], color = col)
-            plt.plot(xm, likelihood(x_p, dydx, xm, alpha), 'x', color = col, ms = 20)
-            plt.plot(mle.x[0], Likelihood(mle.x), '+', color = col, ms = 20)
-            plt.title('xm')
-            plt.show()
+#             w, z, params, cov = funcfit(dfunc, x_p, dydx, p0 = [2, 9])
+#             z = [z[i] for i in range(len(w)) if w[i] != 0]
+#             w = [w[i] for i in range(len(w)) if w[i] != 0]
+#             xm = params[0]
+#             alpha = params[1]
+#             # plt.plot(w, z)
+#             mle = minimize(Likelihood, params)
+#             #
+#             print(f'WLS: {Likelihood(params)}, MLE: {Likelihood(mle.x)}') #likelihood(x_p, np.array(dydx), *params),
+#             dalpha = np.array([i/10 for i in range(-10, 10)])
+#             dxm = np.array([i/50 for i in range(-10, 10)])
+#             col = '#%02X%02X%02X' % (r(),r(),r())
+#             plt.plot(alpha + dalpha , [likelihood(x_p, dydx, xm, Alpha) for Alpha in alpha + dalpha], color = col)
+#             plt.plot(alpha, likelihood(x_p, dydx, xm, alpha), 'x', color = col, ms = 20)
+#             plt.plot(mle.x[1], Likelihood(mle.x), '+', color = col, ms = 20)
+#             plt.title('alpha')
+#             plt.show()
+#             plt.plot(xm + dxm, [likelihood(x_p, dydx, XM, alpha) for XM in xm + dxm], color = col)
+#             plt.plot(xm, likelihood(x_p, dydx, xm, alpha), 'x', color = col, ms = 20)
+#             plt.plot(mle.x[0], Likelihood(mle.x), '+', color = col, ms = 20)
+#             plt.title('xm')
+#             plt.show()
             
 #%%
-for d in D:
-    for p in P[:]:
-        for rho in RHO[:]:
-            x = np.array([k for k in K])
-            y = np.array([dataframe[d][p][k][rho]['p']/M for k in K])
-            dx = [x[i+1] - x[i] for i in range(len(x)-1)]
-            dy = [y[i+1] - y[i] for i in range(len(y)-1)]
-            dydx = [(dy[i]/dx[i]) for i in range(len(dx))]
-            x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
-            # dydxerr = [d/np.sqrt(d*M) for d in dydx]
+# for d in D:
+#     for p in P[:]:
+#         for rho in RHO[:]:
+#             x = np.array([k for k in K])
+#             y = np.array([dataframe[d][p][k][rho]['p']/M for k in K])
+#             dx = [x[i+1] - x[i] for i in range(len(x)-1)]
+#             dy = [y[i+1] - y[i] for i in range(len(y)-1)]
+#             dydx = [(dy[i]/dx[i]) for i in range(len(dx))]
+#             x_p = [x[i] + dx[i]/2 for i in range(len(dx))]
+#             # dydxerr = [d/np.sqrt(d*M) for d in dydx]
             
-            mle = minimize(Likelihood, [2,6])
-            params = mle.x
+#             mle = minimize(Likelihood, [2,6])
+#             params = mle.x
             
-            w = np.arange(x[0], x[-1], 0.01)
-            z = dfunc(w, *params)
+#             w = np.arange(x[0], x[-1], 0.01)
+#             z = dfunc(w, *params)
             
-            u, v, olsparams, olscov = funcfit(dfunc, x_p, dydx, p0 = [2, 9])
-            s, t, olsparamscdf, olscovcdf = funcfit(frechet, x, y, p0 = [2,9])
+#             u, v, olsparams, olscov = funcfit(dfunc, x_p, dydx, p0 = [2, 9])
+#             s, t, olsparamscdf, olscovcdf = funcfit(frechet, x, y, p0 = [2,9])
             
             
-            plt.plot(x_p, dydx, 'x')
-            plt.plot(w, z, color = 'green')
-            plt.plot(u, v, color = 'red')
-            plt.show()
+#             plt.plot(x_p, dydx, 'x')
+#             plt.plot(w, z, color = 'green')
+#             plt.plot(u, v, color = 'red')
+#             plt.show()
             
             # plt.plot(x, 1-y)
             # plt.plot(x, 1-frechet(x, *params), color = 'green')
@@ -618,30 +618,54 @@ def funcfit(func, xdata, ydata, x = None, **kwargs):
         y = func(x, *params)
     return x, y, params, cov
 
+def Residuals(func, params, xdata, ydata):
+    xfit = xdata
+    yfit = func(xfit, *params)
+    res = ydata - yfit
+    return res
+
+def normResiduals(func, params, xdata, ydata, sigdata):
+    xfit = xdata
+    yfit = func(xfit, *params)
+    nres = (ydata - yfit)/sigdata
+    return nres
+
+def reducedChiSq(func, params, xdata, ydata, sigdata):
+    xfit = xdata
+    yfit = func(xfit, *params)
+    chisq = np.sum(((ydata - yfit)**2)/(np.array(sigdata)**2))
+    ddof = len(xdata) - len(params)
+    return chisq/ddof
+
 shapes = iter(['.', '.', '.'])
 params_dict = {p:{rho:{'params': None} for rho in RHO} for p in P}
 for d in D:
     for p in P[:]:
-        for rho in [4096]:
+        for rho in RHO: #[4096]:
             x = np.array([k for k in K])
             y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
             yerr = [np.sqrt(M*y*(1-y))/M for y in y]
-            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0])) 
+            x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0.01])) 
             x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
-            # w, z, params, cov = funcfit(frechet, x[x_min:x_max], y[x_min:x_max], p0 = [2, 8], sigma = yerr[x_min:x_max])
+            
+            X = x[x_min:x_max]
+            Y = y[x_min:x_max]
+            YERR = yerr[x_min:x_max]
+            
+            w, z, params0, cov = funcfit(Frechet, X, Y, p0 = [2, 8], sigma = YERR)
             # z0, z1 = params
             # x_p = z0/((1/z1 + 1)**(1/z1))
-            s, t, params, cov = funcfit(FrechetGumbel, x[x_min:x_max], y[x_min:x_max], sigma = yerr[x_min:x_max], p0 = [2, 8, 2, 2])
+            s, t, params, cov = funcfit(FrechetGumbel, X, Y, sigma = YERR, p0 = [2, 8, 2, 2])
             params_dict[p][rho]['params'] = params
-            print(params, params[0])
+            # print(params, params[0])
             plt.ylabel(r'$\Pi(\langle k \rangle)$')
             plt.xlabel(r'$\langle k \rangle $')
             # plt.yscale('log')
             # plt.xscale('log')
             # plt.ylim(10e-2, 1)
-            # plt.xlim(x[x_min], x[x_max])
+            plt.xlim(x[x_min], x[x_max])
             plt.errorbar(x, y, yerr = yerr, fmt = '.', capsize = 3, ms = 1, label = rf'p={p}, $\rho$ = {rho}')
-            # plt.plot(w, z, label = 'frechet')
+            plt.plot(w, z, label = 'frechet')
             # plt.plot(x, Frechet(x, *params[:2]))
             # plt.plot(x, Gumbel(x, *params[2:]))
             plt.plot(s, t, label = 'frechet * gumbel')
@@ -650,8 +674,13 @@ for d in D:
             y_band_low = [max([0,i]) for i in y_band_low]
             y_band_up = [i + epsilon for i in y]
             y_band_up = [min([1, i]) for i in y_band_up]
-            plt.fill_between(x, y_band_low, y_band_up, alpha = 0.3)
+            # plt.fill_between(x, y_band_low, y_band_up, alpha = 0.3)
             plt.legend()
+            plt.show()
+            
+
+            rchisq = reducedChiSq(FrechetGumbel, params, X, Y, YERR)
+            print(rchisq)
             plt.show()
 #%%
 
