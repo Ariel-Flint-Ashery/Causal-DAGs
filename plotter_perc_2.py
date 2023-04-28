@@ -600,6 +600,7 @@ plt.tight_layout()
 plt.show()
 
 #%%
+"Print the percolation plots fitted with GEVD"
 def Frechet(x, s, alpha):
     return np.exp(-((x)/s)**-alpha)
 
@@ -675,9 +676,7 @@ for d in D:
             # plt.fill_between(x, y_band_low, y_band_up, alpha = 0.3)
             plt.legend(ncol = 2)
         plt.show()
-            
 
-            
 #%%
 from math import gamma
 
