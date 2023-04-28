@@ -645,6 +645,7 @@ def reducedChiSq(func, params, xdata, ydata, sigdata):
 
 shapes = iter(['.', '.', '.'])
 params_dict = {p:{rho:{'params': None} for rho in RHO} for p in P}
+cov_dict = {p:{rho:{'cov': None} for rho in RHO} for p in P}
 for d in D:
     for p in P[:]:
         for rho in RHO:
@@ -660,6 +661,7 @@ for d in D:
             
             s, t, params, cov = funcfit(GEVD, X, Y, sigma = YERR, p0 = [2, 1, 1])
             params_dict[p][rho]['params'] = params
+            cov_dict[p][rho]['cov'] = cov
             rchisq = reducedChiSq(GEVD, params, X, Y, YERR)
             print(rchisq, params)
             # print(params, params[0])
@@ -698,11 +700,17 @@ def gevdMode(mu, sigma, xi):
     frac = ((1 + xi)**(-xi) - 1)/xi
     return mu + sigma * frac
 
-def gevdVar(mu, sigma, xi):
-    g1 = gamma(1 - 1*xi)
-    g2 = gamma(1 - 2*xi)
-    var = (sigma**2) * (g2 - g1**2)/(xi**2)
-    return var
+def gevdModeVar(params, cov):
+    mu, sigma, xi = params
+    varmu = cov[0][0]
+    varsig = cov[1][1]
+    varxi = cov[2][2]
+    dM_dmu = 1
+    dM_dsigma = ((1 + xi)**(-xi) - 1)/xi
+    dM_dxi = sigma * (((((1 + xi)**(-xi)) * (-(xi)/(1+xi) - np.log(1+xi)))/xi) - ((((1+xi)**(-xi)) -1)/(xi**2)))
+    print()
+    varM = varmu * (dM_dmu**2) + varsig * (dM_dsigma**2) + varxi * (dM_dxi**2)
+    return varM
 
 for d in D:
     for p in P[:]:
@@ -724,6 +732,8 @@ for d in D:
             plt.legend()
             plt.ylabel(rf'$\partial_x \; \Pi(k)$')
             plt.xlabel('k')
-            print(f'{rho}, {p}: critical point at {np.round(gevdMode(*params),3)}' )
+            Mode = np.round(gevdMode(*params), 3)
+            Mode_err = np.round(np.sqrt(gevdModeVar(params, cov)),3)
+            print(f'{rho}, {p}: critical point at {Mode} +/- {Mode_err}' )
             # u[v.index(max(v))]
         plt.show()
