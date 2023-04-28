@@ -734,6 +734,5 @@ for d in D:
             plt.xlabel('k')
             Mode = np.round(gevdMode(*params), 3)
             Mode_err = np.round(np.sqrt(gevdModeVar(params, cov)),3)
-            print(f'{rho}, {p}: critical point at {Mode} +/- {Mode_err}' )
-            # u[v.index(max(v))]
+            print(f'p={p}: {rho}: critical point at {Mode} +/- {Mode_err}')
         plt.show()
