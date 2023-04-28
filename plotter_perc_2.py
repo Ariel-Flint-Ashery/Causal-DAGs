@@ -609,6 +609,11 @@ def Gumbel(x, mu, beta):
 def FrechetGumbel(x, s, alpha, mu, beta):
     return Frechet(x, s, alpha) * Gumbel(x, mu, beta)
 
+def GEVD(x, mu, sigma, xi):
+    s = (x-mu)/sigma
+    F = np.exp(-(1+xi*s)**(-1/xi))
+    return F
+
 def funcfit(func, xdata, ydata, x = None, **kwargs):
     params, cov = op.curve_fit(func, xdata, ydata, **kwargs)
     if x == None:
@@ -641,7 +646,7 @@ shapes = iter(['.', '.', '.'])
 params_dict = {p:{rho:{'params': None} for rho in RHO} for p in P}
 for d in D:
     for p in P[:]:
-        for rho in RHO: #[4096]:
+        for rho in RHO:
             x = np.array([k for k in K])
             y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
             yerr = [np.sqrt(M*y*(1-y))/M for y in y]
@@ -652,37 +657,29 @@ for d in D:
             Y = y[x_min:x_max]
             YERR = yerr[x_min:x_max]
             
-            w, z, params0, cov = funcfit(Frechet, X, Y, p0 = [2, 8], sigma = YERR)
-            # z0, z1 = params
-            # x_p = z0/((1/z1 + 1)**(1/z1))
-            s, t, params, cov = funcfit(FrechetGumbel, X, Y, sigma = YERR, p0 = [2, 8, 2, 2])
+            s, t, params, cov = funcfit(GEVD, X, Y, sigma = YERR, p0 = [2, 1, 1])
             params_dict[p][rho]['params'] = params
+            rchisq = reducedChiSq(GEVD, params, X, Y, YERR)
+            print(rchisq, params)
             # print(params, params[0])
             plt.ylabel(r'$\Pi(\langle k \rangle)$')
             plt.xlabel(r'$\langle k \rangle $')
-            # plt.yscale('log')
-            # plt.xscale('log')
-            # plt.ylim(10e-2, 1)
-            plt.xlim(x[x_min], x[x_max])
+            plt.xlim(1.5, x[x_max])
             plt.errorbar(x, y, yerr = yerr, fmt = '.', capsize = 3, ms = 1, label = rf'p={p}, $\rho$ = {rho}')
-            plt.plot(w, z, label = 'frechet')
-            # plt.plot(x, Frechet(x, *params[:2]))
-            # plt.plot(x, Gumbel(x, *params[2:]))
-            plt.plot(s, t, label = 'frechet * gumbel')
+            plt.plot(s, t, label = r'GEVD fit, $\chi_{red}=$' + f'{np.round(rchisq, 3)}')
             epsilon = np.sqrt(np.log(2/0.1)/(2*M))
             y_band_low = [i - epsilon for i in y]
             y_band_low = [max([0,i]) for i in y_band_low]
             y_band_up = [i + epsilon for i in y]
             y_band_up = [min([1, i]) for i in y_band_up]
             # plt.fill_between(x, y_band_low, y_band_up, alpha = 0.3)
-            plt.legend()
-            plt.show()
+            plt.legend(ncol = 2)
+        plt.show()
             
 
-            rchisq = reducedChiSq(FrechetGumbel, params, X, Y, YERR)
-            print(rchisq)
-            plt.show()
+            
 #%%
+from math import gamma
 
 def frechet(x, s, alpha):
     return (alpha/s) * ((x/s) ** (-1-alpha)) * Frechet(x, s, alpha)
@@ -693,22 +690,41 @@ def gumbel(x, mu, beta):
 def frechetgumbel(x, s, alpha, mu, beta):
     return Frechet(x, s, alpha) * gumbel(x, mu, beta) + frechet(x, s, alpha) * Gumbel(x, mu, beta)
 
+def gevd(x, mu, sigma, xi):
+    s = (x-mu)/sigma
+    f = ((1 + xi*s)**(-(1+1/xi))) * GEVD(x, mu, sigma, xi)
+    return f
+
+def gevdMode(mu, sigma, xi):
+    frac = ((1 + xi)**(-xi) - 1)/xi
+    return mu + sigma * frac
+
+def gevdVar(mu, sigma, xi):
+    g1 = gamma(1 - 1*xi)
+    g2 = gamma(1 - 2*xi)
+    var = (sigma**2) * (g2 - g1**2)/(xi**2)
+    return var
+
 for d in D:
     for p in P[:]:
-        for rho in [4096]:
+        for rho in RHO:    
             x = np.array([k for k in K])
             y = np.array([(dataframe[d][p][k][rho]['p']/M) for k in x])
             yerr = [np.sqrt(M*y*(1-y))/M for y in y]
             x_min = [k for k in K].index(min([x[i] for i in range(len(x)) if y[i] > 0])) 
             x_max = [k for k in K].index(max([x[i] for i in range(len(x)) if y[i] <0.99]))
             params = params_dict[p][rho]['params']
-            fparams = params[:2]
-            gparams = params[2:]
             
-            u = np.linspace(x[0], x[-1], 1000)
-            v = [i for i in frechetgumbel(u, *params)]
+            X = x[x_min:x_max]
+            Y = y[x_min:x_max]
+            YERR = yerr[x_min:x_max]            
+            
+            u = np.linspace(X[0], X[-1], 1000)
+            v = [i for i in gevd(u, *params)]
             plt.plot(u, v, label = f'p = {p}')
             plt.legend()
             plt.ylabel(rf'$\partial_x \; \Pi(k)$')
             plt.xlabel('k')
-            print(u[v.index(max(v))])
+            print(f'{rho}, {p}: critical point at {np.round(gevdMode(*params),3)}' )
+            # u[v.index(max(v))]
+        plt.show()

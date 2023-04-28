@@ -97,15 +97,15 @@ for p,col,l in zip(P, cols, ls):
         
     ax.annotate('p=%s' % (p), np.array(intersection(x,y,x,x)) + np.array([[-0.01],[0.03]]),c = col, fontsize = 38)
 #plt.axis('off)
-<<<<<<< HEAD
+# <<<<<<< HEAD
 fig.set_facecolor(background)
 ax.set_facecolor(background)
 # plt.savefig('poster_figs/lp-unit-circle.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
-=======
+# =======
 #fig.set_facecolor(background)
 #ax.set_facecolor(background)
 plt.savefig('clean_figs/lp-unit-circle.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
->>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
+# >>>>>>> d99d0ac06fd6f6672035f9f039958d996acf0b0d
 plt.show()
 #%%
 "PLOT CONNECTION KERNEL"
@@ -188,6 +188,9 @@ ax.set_facecolor(background)
 #             (0.04, 0.84), c = 'r', fontsize = 52)
 ax.annotate("R", xy = (0,0), xytext = (R-0.012,-0.045), c = 'forestgreen', fontsize = 52)
 ax.annotate("R", xy = (0,0), xytext = (-0.04, R - 0.013), c = 'forestgreen', fontsize = 52)
+ax.annotate(r"$x$", xy = (0,0), xytext = (1+0.03,-0.015), c = 'black', fontsize = 52)
+ax.annotate(r"$y$", xy = (0,0), xytext = (-0.01,1 + 0.04), c = 'black', fontsize = 52)
+
 ax.set_xticks(np.arange(0,2,1))
 ax.set_yticks(np.arange(0,2,1))
 #fig.set_facecolor(background)
@@ -201,13 +204,14 @@ def path_node_to_edges(path_list_in_nodes):
     path_list_in_edges = [(path_list_in_nodes[i], path_list_in_nodes[i+1]) for i in range(len(path_list_in_nodes) - 1)]
     return path_list_in_edges
 
-def plt_edges(edge_list, pos, paths, ax, labels = None, node_size = 50, show_nodes = False, **edge_kwargs):
+def plt_edges(edge_list, pos, paths, ax, labels = None, node_size = 50, show_nodes = False, show_geodesic = True, **edge_kwargs):
     G = nx.DiGraph(edge_list)
     
     colors = iter(['#00CD6C', '#AF58BA'])#iter(mpl.colors.TABLEAU_COLORS)
     labels = iter(labels)
     lines = iter(['--', '-.', ':'])
-    ax.plot(np.linspace(0,1, 100),np.linspace(0,1, 100), ls = '-', alpha = 0.7,
+    if show_geodesic == True:
+        ax.plot(np.linspace(0,1, 100),np.linspace(0,1, 100), ls = '-', alpha = 0.7,
                         color = 'k', label = 'Quasi-geodesic', linewidth = 2.5)
     for path in paths:
         color = next(colors, 'black')
@@ -266,7 +270,7 @@ while _P:
 fig, (ax1, ax2) = plt.subplots(1,2, figsize = (18,9))
 
 #plot
-labels = ['Short', 'Long', 'Quasi-geodesic']
+labels = ['Shortest path', 'Longest path', 'Quasi-geodesic']
 for p, ax in zip(P, (ax1, ax2)) :    
     shortest_path, longest_path = pa.getPaths(G[p]['graph_dict'], 'geo')
     gnx = nx.DiGraph(G[p]['edge_list'])
@@ -281,12 +285,12 @@ for p, ax in zip(P, (ax1, ax2)) :
     
     ax.annotate(f'p = {p}', (0.5, -0.07), fontsize = 28, ha = 'center')
     #ax.set_xlabel(f'p = {p}', fontsize = 28)
-    ax.annotate('S', (-0.01,-0.03), ha = 'right', fontsize = 24)
-    ax.annotate('T', (1.01,1.01), ha = 'left', fontsize = 24)
+    ax.annotate('s', (-0.01,-0.03), ha = 'right', fontsize = 24)
+    ax.annotate('t', (1.01,1.01), ha = 'left', fontsize = 24)
     
 # ax.legend(loc = 'lower right')
 handles, labels = ax.get_legend_handles_labels()
-fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 28)#, facecolor = background, edgecolor = background)
+fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 24)#, facecolor = background, edgecolor = background)
 plt.tight_layout()
 
 fig.set_facecolor(background)
@@ -295,6 +299,44 @@ ax.set_facecolor(background)
 #fig.set_facecolor(background)
 #ax.set_facecolor(background)
 #plt.savefig('poster_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
-plt.savefig('clean_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+# plt.savefig('clean_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+
+plt.show()
+
+#%%
+
+fig, ax = plt.subplots(figsize = (9,9))
+
+#plot
+labels = ['Percolating Path', 'Longest path', 'Quasi-geodesic']
+   
+shortest_path, longest_path = pa.getPaths(G[p]['graph_dict'], 'geo')
+gnx = nx.DiGraph(G[p]['edge_list'])
+nx.draw_networkx(gnx, pos, arrows = False, ax = ax, node_color = 'g', 
+                   edge_color = 'k', width = 1, alpha = 0.3, with_labels = False,
+                   node_size = 50, style = ':')
+#greedy_path = pa.greedy_path_geo(G[p]['graph_dict'])
+paths = [shortest_path]#, longest_path]#, greedy_path]
+plt_edges(G[p]['edge_list'], pos, paths, labels = labels, show_nodes = True, show_geodesic = False, ax = ax, width = 6)
+rect = mpl.patches.Rectangle((0, 0), 1, 1, linewidth=1, edgecolor='k', facecolor='none')
+ax.add_patch(rect)
+
+ax.annotate(f'p = {p}', (0.5, -0.07), fontsize = 28, ha = 'center')
+#ax.set_xlabel(f'p = {p}', fontsize = 28)
+ax.annotate('s', (-0.01,-0.03), ha = 'right', fontsize = 24)
+ax.annotate('t', (1.01,1.01), ha = 'left', fontsize = 24)
+    
+# ax.legend(loc = 'lower right')
+handles, labels = ax.get_legend_handles_labels()
+fig.legend(handles=handles,ncol=len(labels),loc="lower center", bbox_to_anchor=(0.5,-0.07), fontsize = 24)#, facecolor = background, edgecolor = background)
+plt.tight_layout()
+
+fig.set_facecolor(background)
+ax.set_facecolor(background)
+# plt.savefig('poster_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+#fig.set_facecolor(background)
+#ax.set_facecolor(background)
+#plt.savefig('poster_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
+# plt.savefig('clean_figs/path-fig.png', dpi = 300, bbox_inches = 'tight', pad_inches = 0)
 
 plt.show()
